@@ -1,0 +1,5 @@
+package com.wbrawner.budgetserver.passwordresetrequest
+
+import org.springframework.data.repository.PagingAndSortingRepository
+
+interface PasswordResetRequestRepository: PagingAndSortingRepository<PasswordResetRequest, Long>
