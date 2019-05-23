@@ -5,18 +5,18 @@ import com.wbrawner.budgetserver.account.AccountRepository
 import com.wbrawner.budgetserver.getCurrentUser
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.Authorization
 import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 import javax.transaction.Transactional
 
 @RestController
 @RequestMapping("/users")
-@Api(value = "Users", tags = ["Users"])
+@Api(value = "Users", tags = ["Users"], authorizations = [Authorization("basic")])
 class UserController @Autowired constructor(private val accountRepository: AccountRepository, private val userRepository: UserRepository, private val passwordEncoder: PasswordEncoder) {
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])

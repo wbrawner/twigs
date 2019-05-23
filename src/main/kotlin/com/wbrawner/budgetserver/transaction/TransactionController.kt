@@ -7,22 +7,20 @@ import com.wbrawner.budgetserver.category.CategoryRepository
 import com.wbrawner.budgetserver.getCurrentUser
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.Authorization
 import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.lang.Integer.min
-import java.lang.RuntimeException
 import java.time.Instant
-import java.util.*
 import javax.transaction.Transactional
 
 @RestController
 @RequestMapping("/transactions")
-@Api(value = "Transactions", tags = ["Transactions"])
+@Api(value = "Transactions", tags = ["Transactions"], authorizations = [Authorization("basic")])
 class TransactionController @Autowired constructor(
         private val accountRepository: AccountRepository,
         private val categoryRepository: CategoryRepository,
