@@ -53,7 +53,7 @@ constructor(
     }
 
     override fun configure(web: WebSecurity?) {
-        web?.ignoring()?.antMatchers("/users/new", "/v2/api-docs")
+        web?.ignoring()?.antMatchers("/v2/api-docs")
     }
 
     @Throws(Exception::class)
