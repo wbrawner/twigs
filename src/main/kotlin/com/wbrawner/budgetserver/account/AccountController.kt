@@ -1,6 +1,7 @@
 package com.wbrawner.budgetserver.account
 
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.transaction.TransactionRepository
 import com.wbrawner.budgetserver.user.UserRepository
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -15,7 +16,11 @@ import javax.transaction.Transactional
 @RestController
 @RequestMapping("/accounts")
 @Api(value = "Accounts", tags = ["Accounts"], authorizations = [Authorization("basic")])
-class AccountController @Autowired constructor(private val accountRepository: AccountRepository, private val userRepository: UserRepository) {
+class AccountController @Autowired constructor(
+        private val accountRepository: AccountRepository,
+        private val transactionRepository: TransactionRepository,
+        private val userRepository: UserRepository
+) {
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getAccounts", nickname = "getAccounts", tags = ["Accounts"])
@@ -35,6 +40,16 @@ class AccountController @Autowired constructor(private val accountRepository: Ac
                 Hibernate.initialize(it.users)
                 ResponseEntity.ok(AccountResponse(it))
             } ?: ResponseEntity.notFound().build()
+
+    @Transactional
+    @GetMapping("/{id}/balance", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ApiOperation(value = "getAccountBalance", nickname = "getAccountBalance", tags = ["Accounts"])
+    fun getAccountBalance(@PathVariable id: Long): ResponseEntity<AccountBalanceResponse> =
+            accountRepository.findByUsersContainsAndId(getCurrentUser()!!, id)
+                    .orElse(null)
+                    ?.let {
+                        ResponseEntity.ok(AccountBalanceResponse(it.id!!, transactionRepository.sumBalanceByAccount(it)))
+                    } ?: ResponseEntity.notFound().build()
 
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newAccount", nickname = "newAccount", tags = ["Accounts"])

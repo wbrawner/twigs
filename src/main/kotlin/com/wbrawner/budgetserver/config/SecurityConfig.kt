@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -50,10 +49,6 @@ constructor(
 
     public override fun configure(auth: AuthenticationManagerBuilder?) {
         auth!!.authenticationProvider(authenticationProvider)
-    }
-
-    override fun configure(web: WebSecurity?) {
-        web?.ignoring()?.antMatchers("/v2/api-docs")
     }
 
     @Throws(Exception::class)
