@@ -62,7 +62,7 @@ class TransactionController @Autowired constructor(
                 date = Instant.parse(request.date),
                 amount = request.amount,
                 category = category,
-                isExpense = request.isExpense,
+                expense = request.expense,
                 account = account,
                 createdBy = getCurrentUser()!!
         ))))
@@ -78,7 +78,7 @@ class TransactionController @Autowired constructor(
         request.description?.let { transaction = transaction.copy(description = it) }
         request.date?.let { transaction = transaction.copy(date = Instant.parse(it)) }
         request.amount?.let { transaction = transaction.copy(amount = it) }
-        request.isExpense?.let { transaction = transaction.copy(isExpense = it) }
+        request.expense?.let { transaction = transaction.copy(expense = it) }
         request.accountId?.let { accountId ->
             accountRepository.findByUsersContainsAndId(getCurrentUser()!!, accountId).orElse(null)?.let {
                 account = it

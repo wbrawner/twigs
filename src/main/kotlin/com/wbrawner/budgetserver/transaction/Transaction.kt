@@ -14,7 +14,7 @@ data class Transaction(
         val date: Instant = Instant.now(),
         val amount: Long = 0,
         @ManyToOne val category: Category? = null,
-        val isExpense: Boolean = true,
+        val expense: Boolean = true,
         @ManyToOne val createdBy: User,
         @ManyToOne val account: Account
 ) : Comparable<Transaction> {
@@ -27,7 +27,7 @@ data class TransactionResponse(
         val description: String?,
         val date: String,
         val amount: Long,
-        val isExpense: Boolean,
+        val expense: Boolean,
         val accountId: Long,
         val categoryId: Long?,
         val createdBy: Long
@@ -38,7 +38,7 @@ data class TransactionResponse(
             transaction.description,
             transaction.date.toString(),
             transaction.amount,
-            transaction.isExpense,
+            transaction.expense,
             transaction.account.id!!,
             if (transaction.category != null) transaction.category.id!! else null,
             transaction.createdBy.id!!
@@ -51,7 +51,7 @@ data class NewTransactionRequest(
         val date: String,
         val amount: Long,
         val categoryId: Long?,
-        val isExpense: Boolean,
+        val expense: Boolean,
         val accountId: Long
 )
 
@@ -61,7 +61,7 @@ data class UpdateTransactionRequest(
         val date: String?,
         val amount: Long?,
         val categoryId: Long?,
-        val isExpense: Boolean?,
+        val expense: Boolean?,
         val accountId: Long?,
         val createdBy: Long?
 )
