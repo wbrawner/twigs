@@ -13,7 +13,7 @@ interface TransactionRepository: PagingAndSortingRepository<Transaction, Long> {
     fun findAllByAccountAndCategory(account: Account, category: Category): List<Transaction>
     @Query(
             nativeQuery = true,
-            value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE is_expense = 0), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE is_expense = 1), 0));"
+            value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE expense = 0), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE expense = 1), 0));"
     )
     fun sumBalanceByAccount(account: Account): Long
 }
