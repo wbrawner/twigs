@@ -36,6 +36,8 @@ data class CategoryResponse(
         )
 }
 
+data class CategoryBalanceResponse(val id: Long, val balance: Long)
+
 data class NewCategoryRequest(
         val title: String,
         val description: String?,

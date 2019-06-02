@@ -44,6 +44,15 @@ class CategoryController @Autowired constructor(
         return  ResponseEntity.ok(CategoryResponse(category))
     }
 
+    @GetMapping("/{id}/balance", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ApiOperation(value = "getCategoryBalance", nickname = "getCategoryBalance", tags = ["Categories"])
+    fun getCategoryBalance(@PathVariable id: Long): ResponseEntity<CategoryBalanceResponse> {
+        val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
+        accountRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
+                ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(CategoryBalanceResponse(category.id!!, transactionRepository.sumBalanceByCategoryId(category.id)))
+    }
+
     @Transactional
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newCategory", nickname = "newCategory", tags = ["Categories"])

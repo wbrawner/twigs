@@ -48,7 +48,7 @@ class AccountController @Autowired constructor(
             accountRepository.findByUsersContainsAndId(getCurrentUser()!!, id)
                     .orElse(null)
                     ?.let {
-                        ResponseEntity.ok(AccountBalanceResponse(it.id!!, transactionRepository.sumBalanceByAccount(it)))
+                        ResponseEntity.ok(AccountBalanceResponse(it.id!!, transactionRepository.sumBalanceByAccountId(it.id)))
                     } ?: ResponseEntity.notFound().build()
 
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
