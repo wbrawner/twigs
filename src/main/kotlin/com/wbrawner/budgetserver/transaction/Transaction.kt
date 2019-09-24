@@ -1,6 +1,6 @@
 package com.wbrawner.budgetserver.transaction
 
-import com.wbrawner.budgetserver.account.Account
+import com.wbrawner.budgetserver.budget.Budget
 import com.wbrawner.budgetserver.category.Category
 import com.wbrawner.budgetserver.user.User
 import java.time.Instant
@@ -16,7 +16,7 @@ data class Transaction(
         @ManyToOne val category: Category? = null,
         val expense: Boolean = true,
         @ManyToOne val createdBy: User,
-        @ManyToOne val account: Account
+        @ManyToOne val budget: Budget
 ) : Comparable<Transaction> {
     override fun compareTo(other: Transaction): Int = this.date.compareTo(other.date)
 }
@@ -28,7 +28,7 @@ data class TransactionResponse(
         val date: String,
         val amount: Long,
         val expense: Boolean,
-        val accountId: Long,
+        val budgetId: Long,
         val categoryId: Long?,
         val createdBy: Long
 ) {
@@ -39,7 +39,7 @@ data class TransactionResponse(
             transaction.date.toString(),
             transaction.amount,
             transaction.expense,
-            transaction.account.id!!,
+            transaction.budget.id!!,
             if (transaction.category != null) transaction.category.id!! else null,
             transaction.createdBy.id!!
     )
@@ -52,7 +52,7 @@ data class NewTransactionRequest(
         val amount: Long,
         val categoryId: Long?,
         val expense: Boolean,
-        val accountId: Long
+        val budgetId: Long
 )
 
 data class UpdateTransactionRequest(
@@ -62,6 +62,6 @@ data class UpdateTransactionRequest(
         val amount: Long?,
         val categoryId: Long?,
         val expense: Boolean?,
-        val accountId: Long?,
+        val budgetId: Long?,
         val createdBy: Long?
 )

@@ -1,11 +1,13 @@
 package com.wbrawner.budgetserver.category
 
-import com.wbrawner.budgetserver.account.Account
+import com.wbrawner.budgetserver.budget.Budget
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.PagingAndSortingRepository
 import java.util.*
 
 interface CategoryRepository: PagingAndSortingRepository<Category, Long> {
-    fun findAllByAccount(account: Account, pageable: Pageable): List<Category>
-    fun findByAccountAndId(account: Account, id: Long): Optional<Category>
+    fun findAllByBudget(budget: Budget, pageable: Pageable): List<Category>
+    fun findAllByBudgetIn(budgets: List<Budget>, pageable: Pageable? = null): List<Category>
+    fun findByBudgetAndId(budget: Budget, id: Long): Optional<Category>
+    fun findAllByBudgetInAndIdIn(budgets: List<Budget>, ids: List<Long>, pageable: Pageable? = null): List<Category>
 }

@@ -1,7 +1,7 @@
 package com.wbrawner.budgetserver.transaction
 
 import com.wbrawner.budgetserver.ErrorResponse
-import com.wbrawner.budgetserver.account.AccountRepository
+import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.category.Category
 import com.wbrawner.budgetserver.category.CategoryRepository
 import com.wbrawner.budgetserver.getCurrentUser
@@ -22,26 +22,38 @@ import javax.transaction.Transactional
 @RequestMapping("/transactions")
 @Api(value = "Transactions", tags = ["Transactions"], authorizations = [Authorization("basic")])
 class TransactionController @Autowired constructor(
-        private val accountRepository: AccountRepository,
+        private val budgetRepository: BudgetRepository,
         private val categoryRepository: CategoryRepository,
         private val transactionRepository: TransactionRepository
 ) {
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransactions", nickname = "getTransactions", tags = ["Transactions"])
-    fun getTransactions(accountId: Long, count: Int?, page: Int?): ResponseEntity<List<TransactionResponse>> {
-        val account = accountRepository.findByUsersContainsAndId(getCurrentUser()!!, accountId).orElse(null)
-                ?: return ResponseEntity.notFound().build()
-        Hibernate.initialize(account.users)
+    fun getTransactions(
+            @RequestParam categoryIds: Array<Long>? = null,
+            @RequestParam budgetIds: Array<Long>? = null,
+            @RequestParam count: Int?,
+            @RequestParam page: Int?
+    ): ResponseEntity<List<TransactionResponse>> {
+        val budgets = if (budgetIds?.isNotEmpty() == true) {
+            budgetRepository.findAllById(budgetIds.toList())
+        } else {
+            budgetRepository.findAllByUsersContainsOrOwner(getCurrentUser()!!)
+        }.toList()
+        val categories = if (categoryIds?.isNotEmpty() == true) {
+            categoryRepository.findAllByBudgetInAndIdIn(budgets, categoryIds.toList())
+        } else {
+            categoryRepository.findAllByBudgetIn(budgets)
+        }
         val pageRequest = PageRequest.of(min(0, page?.minus(1)?: 0), count?: 1000)
-        return ResponseEntity.ok(transactionRepository.findAllByAccount(account, pageRequest).map { TransactionResponse(it) })
+        return ResponseEntity.ok(transactionRepository.findAllByBudgetInAndCategoryIn(budgets, categories, pageRequest).map { TransactionResponse(it) })
     }
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransaction", nickname = "getTransaction", tags = ["Transactions"])
     fun getTransaction(@PathVariable id: Long): ResponseEntity<TransactionResponse> {
         val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        accountRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
+        budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
                 ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
@@ -50,11 +62,11 @@ class TransactionController @Autowired constructor(
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newTransaction", nickname = "newTransaction", tags = ["Transactions"])
     fun newTransaction(@RequestBody request: NewTransactionRequest): ResponseEntity<Any> {
-        val account = accountRepository.findByUsersContainsAndId(getCurrentUser()!!, request.accountId).orElse(null)
-                ?: return ResponseEntity.badRequest().body(ErrorResponse("Invalid account ID"))
-        Hibernate.initialize(account.users)
+        val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, request.budgetId).orElse(null)
+                ?: return ResponseEntity.badRequest().body(ErrorResponse("Invalid budget ID"))
+        Hibernate.initialize(budget.users)
         val category: Category? = request.categoryId?.let {
-            categoryRepository.findByAccountAndId(account, request.categoryId).orElse(null)
+            categoryRepository.findByBudgetAndId(budget, request.categoryId).orElse(null)
         }
         return ResponseEntity.ok(TransactionResponse(transactionRepository.save(Transaction(
                 title = request.title,
@@ -63,7 +75,7 @@ class TransactionController @Autowired constructor(
                 amount = request.amount,
                 category = category,
                 expense = request.expense,
-                account = account,
+                budget = budget,
                 createdBy = getCurrentUser()!!
         ))))
     }
@@ -72,21 +84,21 @@ class TransactionController @Autowired constructor(
     @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = ["Transactions"])
     fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<TransactionResponse> {
         var transaction = transactionRepository.findById(id).orElse(null)?: return ResponseEntity.notFound().build()
-        var account = accountRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction)
+        var budget = budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction)
                 .orElse(null)?: return ResponseEntity.notFound().build()
         request.title?.let { transaction = transaction.copy(title = it) }
         request.description?.let { transaction = transaction.copy(description = it) }
         request.date?.let { transaction = transaction.copy(date = Instant.parse(it)) }
         request.amount?.let { transaction = transaction.copy(amount = it) }
         request.expense?.let { transaction = transaction.copy(expense = it) }
-        request.accountId?.let { accountId ->
-            accountRepository.findByUsersContainsAndId(getCurrentUser()!!, accountId).orElse(null)?.let {
-                account = it
-                transaction = transaction.copy(account = it, category = null)
+        request.budgetId?.let { budgetId ->
+            budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, budgetId).orElse(null)?.let {
+                budget = it
+                transaction = transaction.copy(budget = it, category = null)
             }
         }
         request.categoryId?.let {
-            categoryRepository.findByAccountAndId(account, it).orElse(null)?.let { category ->
+            categoryRepository.findByBudgetAndId(budget, it).orElse(null)?.let { category ->
                 transaction = transaction.copy(category = category)
             }
         }
@@ -97,8 +109,8 @@ class TransactionController @Autowired constructor(
     @ApiOperation(value = "deleteTransaction", nickname = "deleteTransaction", tags = ["Transactions"])
     fun deleteTransaction(@PathVariable id: Long): ResponseEntity<Unit> {
         val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        // Check that the transaction belongs to an account that the user has access to before deleting it
-        accountRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
+        // Check that the transaction belongs to an budget that the user has access to before deleting it
+        budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
                 ?: return ResponseEntity.notFound().build()
         transactionRepository.delete(transaction)
         return ResponseEntity.ok().build()

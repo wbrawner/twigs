@@ -1,7 +1,7 @@
 package com.wbrawner.budgetserver.user
 
 import com.wbrawner.budgetserver.ErrorResponse
-import com.wbrawner.budgetserver.account.AccountRepository
+import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.getCurrentUser
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -17,15 +17,30 @@ import javax.transaction.Transactional
 @RestController
 @RequestMapping("/users")
 @Api(value = "Users", tags = ["Users"], authorizations = [Authorization("basic")])
-class UserController @Autowired constructor(private val accountRepository: AccountRepository, private val userRepository: UserRepository, private val passwordEncoder: PasswordEncoder) {
+class UserController @Autowired constructor(private val budgetRepository: BudgetRepository, private val userRepository: UserRepository, private val passwordEncoder: PasswordEncoder) {
+
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getUsers", nickname = "getUsers", tags = ["Users"])
-    fun getUsers(accountId: Long): ResponseEntity<List<UserResponse>> {
-        val account = accountRepository.findByUsersContainsAndId(getCurrentUser()!!, accountId).orElse(null)
+    fun getUsers(budgetId: Long): ResponseEntity<List<UserResponse>> {
+        val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, budgetId).orElse(null)
                 ?: return ResponseEntity.notFound().build()
-        Hibernate.initialize(account.users)
-        return ResponseEntity.ok(account.users.map { UserResponse(it) })
+        Hibernate.initialize(budget.users)
+        return ResponseEntity.ok(budget.users.map { UserResponse(it) })
+    }
+
+    @PostMapping("/login", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ApiOperation(value = "login", nickname = "login", tags = ["Users"])
+    fun login(): ResponseEntity<UserResponse> {
+        val user = getCurrentUser() ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(UserResponse(user))
+    }
+
+    @Transactional
+    @GetMapping("/search", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ApiOperation(value = "searchUsers", nickname = "searchUsers", tags = ["Users"])
+    fun searchUsers(query: String): ResponseEntity<List<UserResponse>> {
+        return ResponseEntity.ok(userRepository.findByNameContains(query).map { UserResponse(it) })
     }
 
     @GetMapping("/{id}")
@@ -59,7 +74,7 @@ class UserController @Autowired constructor(private val accountRepository: Accou
     @ApiOperation(value = "updateUser", nickname = "updateUser", tags = ["Users"])
     fun updateUser(@PathVariable id: Long, @RequestBody request: UpdateUserRequest): ResponseEntity<Any> {
         if (getCurrentUser()!!.id != id) return ResponseEntity.status(403)
-                .body(ErrorResponse("Attempting to modify another user's account"))
+                .body(ErrorResponse("Attempting to modify another user's budget"))
         var user = userRepository.findById(getCurrentUser()!!.id!!).orElse(null)?: return ResponseEntity.notFound().build()
         if (request.username != null) {
             if (userRepository.findByName(request.username).isPresent) throw RuntimeException("Username taken")
