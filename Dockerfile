@@ -13,7 +13,7 @@ RUN /home/maven/src/mvnw -DskipTests package
 
 FROM openjdk:8-jdk-slim
 EXPOSE 8080
-COPY --from=builder /home/maven/src/target/budget-server-0.0.1-SNAPSHOT.jar budget-server.jar
-ENTRYPOINT ["/usr/local/openjdk-8/bin/java", "-Xmx3g", "-jar", "/budget-server.jar"]
+COPY --from=builder /home/maven/src/target/budget-api.jar budget-api.jar
+ENTRYPOINT ["/usr/local/openjdk-8/bin/java", "-Xmx3g", "-jar", "/budget-api.jar"]
 
 
