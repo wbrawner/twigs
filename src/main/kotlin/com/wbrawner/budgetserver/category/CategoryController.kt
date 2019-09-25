@@ -3,6 +3,7 @@ package com.wbrawner.budgetserver.category
 import com.wbrawner.budgetserver.ErrorResponse
 import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.setToFirstOfMonth
 import com.wbrawner.budgetserver.transaction.TransactionRepository
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -14,6 +15,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.Integer.min
+import java.util.*
 import javax.transaction.Transactional
 
 @RestController
@@ -52,7 +54,8 @@ class CategoryController @Autowired constructor(
         val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
                 ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(CategoryBalanceResponse(category.id!!, transactionRepository.sumBalanceByCategoryId(category.id)))
+        val transactions = transactionRepository.sumBalanceByCategoryId(category.id!!)
+        return ResponseEntity.ok(CategoryBalanceResponse(category.id, transactions))
     }
 
     @Transactional

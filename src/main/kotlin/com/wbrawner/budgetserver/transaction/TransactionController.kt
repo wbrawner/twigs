@@ -5,6 +5,7 @@ import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.category.Category
 import com.wbrawner.budgetserver.category.CategoryRepository
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.setToFirstOfMonth
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.Integer.min
 import java.time.Instant
+import java.util.*
 import javax.transaction.Transactional
 
 @RestController
@@ -30,8 +32,10 @@ class TransactionController @Autowired constructor(
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransactions", nickname = "getTransactions", tags = ["Transactions"])
     fun getTransactions(
-            @RequestParam categoryIds: Array<Long>? = null,
-            @RequestParam budgetIds: Array<Long>? = null,
+            @RequestParam("categoryId") categoryIds: Array<Long>? = null,
+            @RequestParam("budgetId") budgetIds: Array<Long>? = null,
+            @RequestParam("from") from: Date? = null,
+            @RequestParam("to") to: Date? = null,
             @RequestParam count: Int?,
             @RequestParam page: Int?
     ): ResponseEntity<List<TransactionResponse>> {
@@ -46,7 +50,12 @@ class TransactionController @Autowired constructor(
             categoryRepository.findAllByBudgetIn(budgets)
         }
         val pageRequest = PageRequest.of(min(0, page?.minus(1)?: 0), count?: 1000)
-        return ResponseEntity.ok(transactionRepository.findAllByBudgetInAndCategoryIn(budgets, categories, pageRequest).map { TransactionResponse(it) })
+        return ResponseEntity.ok(transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThan(
+                budgets,
+                categories,
+                GregorianCalendar().setToFirstOfMonth().toInstant(),
+                pageRequest
+        ).map { TransactionResponse(it) })
     }
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
