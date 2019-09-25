@@ -54,7 +54,7 @@ constructor(
     @Throws(Exception::class)
     public override fun configure(http: HttpSecurity) {
         http.authorizeRequests()
-                .antMatchers("/users/new", "/login")
+                .antMatchers("/users/new", "/users/login")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
