@@ -5,13 +5,16 @@ import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.category.Category
 import com.wbrawner.budgetserver.category.CategoryRepository
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.setToEndOfMonth
 import com.wbrawner.budgetserver.setToFirstOfMonth
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
 import org.hibernate.Hibernate
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -28,16 +31,20 @@ class TransactionController @Autowired constructor(
         private val categoryRepository: CategoryRepository,
         private val transactionRepository: TransactionRepository
 ) {
+    private val logger = LoggerFactory.getLogger(TransactionController::class.java)
+
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransactions", nickname = "getTransactions", tags = ["Transactions"])
     fun getTransactions(
             @RequestParam("categoryId") categoryIds: Array<Long>? = null,
             @RequestParam("budgetId") budgetIds: Array<Long>? = null,
-            @RequestParam("from") from: Date? = null,
-            @RequestParam("to") to: Date? = null,
+            @RequestParam("from") from: String? = null,
+            @RequestParam("to") to: String? = null,
             @RequestParam count: Int?,
-            @RequestParam page: Int?
+            @RequestParam page: Int?,
+            @RequestParam sortBy: String?,
+            @RequestParam sortOrder: Sort.Direction?
     ): ResponseEntity<List<TransactionResponse>> {
         val budgets = if (budgetIds?.isNotEmpty() == true) {
             budgetRepository.findAllById(budgetIds.toList())
@@ -49,13 +56,36 @@ class TransactionController @Autowired constructor(
         } else {
             categoryRepository.findAllByBudgetIn(budgets)
         }
-        val pageRequest = PageRequest.of(min(0, page?.minus(1)?: 0), count?: 1000)
-        return ResponseEntity.ok(transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThan(
+        val pageRequest = PageRequest.of(
+                min(0, page?.minus(1) ?: 0),
+                count ?: 1000,
+                sortOrder ?: Sort.Direction.DESC,
+                sortBy ?: "date"
+        )
+        val fromInstant = try {
+            Instant.parse(from!!)
+        } catch (ignored: NullPointerException) {
+            null
+        } catch (e: Exception) {
+            logger.error("Failed to parse $to to Instant for 'from' parameter", e)
+            null
+        }
+        val toInstant = try {
+            Instant.parse(to!!)
+        } catch (ignored: NullPointerException) {
+            null
+        } catch (e: Exception) {
+            logger.error("Failed to parse $to to Instant for 'to' parameter", e)
+            null
+        }
+        val transactions = transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
                 budgets,
                 categories,
-                GregorianCalendar().setToFirstOfMonth().toInstant(),
+                fromInstant ?: GregorianCalendar().setToFirstOfMonth().toInstant(),
+                toInstant ?: GregorianCalendar().setToEndOfMonth().toInstant(),
                 pageRequest
-        ).map { TransactionResponse(it) })
+        ).map { TransactionResponse(it) }
+        return ResponseEntity.ok(transactions)
     }
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -92,9 +122,9 @@ class TransactionController @Autowired constructor(
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = ["Transactions"])
     fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<TransactionResponse> {
-        var transaction = transactionRepository.findById(id).orElse(null)?: return ResponseEntity.notFound().build()
+        var transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         var budget = budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction)
-                .orElse(null)?: return ResponseEntity.notFound().build()
+                .orElse(null) ?: return ResponseEntity.notFound().build()
         request.title?.let { transaction = transaction.copy(title = it) }
         request.description?.let { transaction = transaction.copy(description = it) }
         request.date?.let { transaction = transaction.copy(date = Instant.parse(it)) }

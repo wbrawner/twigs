@@ -10,9 +10,13 @@ fun getCurrentUser(): User? {
 }
 
 fun GregorianCalendar.setToFirstOfMonth(): GregorianCalendar = this.apply {
-    set(Calendar.MILLISECOND, 0)
-    set(Calendar.SECOND, 0)
-    set(Calendar.MINUTE, 0)
-    set(Calendar.HOUR_OF_DAY, 0)
-    set(Calendar.DATE, 1)
+    for (field in arrayOf(Calendar.MILLISECOND, Calendar.SECOND, Calendar.MINUTE, Calendar.HOUR_OF_DAY, Calendar.DATE)) {
+        set(field, getActualMinimum(field))
+    }
+}
+
+fun GregorianCalendar.setToEndOfMonth(): GregorianCalendar = this.apply {
+    for (field in arrayOf(Calendar.MILLISECOND, Calendar.SECOND, Calendar.MINUTE, Calendar.HOUR_OF_DAY, Calendar.DATE)) {
+        set(field, getActualMaximum(field))
+    }
 }
