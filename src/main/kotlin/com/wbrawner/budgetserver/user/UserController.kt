@@ -10,6 +10,10 @@ import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 import javax.transaction.Transactional
@@ -17,7 +21,12 @@ import javax.transaction.Transactional
 @RestController
 @RequestMapping("/users")
 @Api(value = "Users", tags = ["Users"], authorizations = [Authorization("basic")])
-class UserController @Autowired constructor(private val budgetRepository: BudgetRepository, private val userRepository: UserRepository, private val passwordEncoder: PasswordEncoder) {
+class UserController @Autowired constructor(
+        private val budgetRepository: BudgetRepository,
+        private val userRepository: UserRepository,
+        private val passwordEncoder: PasswordEncoder,
+        private val authenticationProvider: DaoAuthenticationProvider
+) {
 
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -31,9 +40,15 @@ class UserController @Autowired constructor(private val budgetRepository: Budget
 
     @PostMapping("/login", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "login", nickname = "login", tags = ["Users"])
-    fun login(): ResponseEntity<UserResponse> {
-        val user = getCurrentUser() ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(UserResponse(user))
+    fun login(@RequestBody request: LoginRequest): ResponseEntity<UserResponse> {
+        val authReq = UsernamePasswordAuthenticationToken(request.username, request.password)
+        val auth = try {
+            authenticationProvider.authenticate(authReq)
+        } catch (e: AuthenticationException) {
+            return ResponseEntity.notFound().build()
+        }
+        SecurityContextHolder.getContext().authentication = auth
+        return ResponseEntity.ok(UserResponse(getCurrentUser()!!))
     }
 
     @Transactional

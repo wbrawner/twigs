@@ -43,3 +43,5 @@ data class UserResponse(val id: Long, val username: String, val email: String) {
 data class NewUserRequest(val username: String, val password: String, val email: String)
 
 data class UpdateUserRequest(val username: String?, val password: String?, val email: String?)
+
+data class LoginRequest(val username: String, val password: String)
