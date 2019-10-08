@@ -11,6 +11,7 @@ import io.swagger.annotations.Authorization
 import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -29,13 +30,22 @@ class CategoryController @Autowired constructor(
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategories", nickname = "getCategories", tags = ["Categories"])
-    fun getCategories(budgetId: Long? = null, count: Int?, page: Int?): ResponseEntity<List<CategoryResponse>> {
+    fun getCategories(budgetId: Long? = null,
+                      count: Int?,
+                      page: Int?,
+                      sortBy: String?,
+                      sortOrder: Sort.Direction?
+    ): ResponseEntity<List<CategoryResponse>> {
         val budgets = if (budgetId != null) {
             budgetRepository.findAllById(listOf(budgetId))
         } else {
             budgetRepository.findAllByUsersContainsOrOwner(getCurrentUser()!!)
         }.toList()
-        val pageRequest = PageRequest.of(min(0, page?.minus(1)?: 0), count?: 1000)
+        val pageRequest = PageRequest.of(
+                min(0, page?.minus(1)?: 0),
+                count?: 1000,
+                Sort(sortOrder?: Sort.Direction.ASC, sortBy?: "title")
+        )
         return ResponseEntity.ok(categoryRepository.findAllByBudgetIn(budgets, pageRequest).map { CategoryResponse(it) })
     }
 
