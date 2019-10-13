@@ -90,11 +90,11 @@ class TransactionController @Autowired constructor(
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransaction", nickname = "getTransaction", tags = ["Transactions"])
-    fun getTransaction(@PathVariable id: Long): ResponseEntity<Transaction> {
+    fun getTransaction(@PathVariable id: Long): ResponseEntity<TransactionResponse> {
         val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
                 ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(transaction)
+        return ResponseEntity.ok(TransactionResponse(transaction))
     }
 
     @Transactional
@@ -107,7 +107,7 @@ class TransactionController @Autowired constructor(
         val category: Category? = request.categoryId?.let {
             categoryRepository.findByBudgetAndId(budget, request.categoryId).orElse(null)
         }
-        return ResponseEntity.ok(transactionRepository.save(Transaction(
+        return ResponseEntity.ok(TransactionResponse(transactionRepository.save(Transaction(
                 title = request.title,
                 description = request.description,
                 date = Instant.parse(request.date),
@@ -116,12 +116,12 @@ class TransactionController @Autowired constructor(
                 expense = request.expense,
                 budget = budget,
                 createdBy = getCurrentUser()!!
-        )))
+        ))))
     }
 
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = ["Transactions"])
-    fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<Transaction> {
+    fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<TransactionResponse> {
         var transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         var budget = budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction)
                 .orElse(null) ?: return ResponseEntity.notFound().build()
@@ -141,7 +141,7 @@ class TransactionController @Autowired constructor(
                 transaction = transaction.copy(category = category)
             }
         }
-        return ResponseEntity.ok(transactionRepository.save(transaction))
+        return ResponseEntity.ok(TransactionResponse(transactionRepository.save(transaction)))
     }
 
     @DeleteMapping("/{id}", produces = [MediaType.TEXT_PLAIN_VALUE])
