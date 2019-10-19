@@ -51,6 +51,13 @@ class UserController @Autowired constructor(
         return ResponseEntity.ok(UserResponse(getCurrentUser()!!))
     }
 
+    @GetMapping("/me", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ApiOperation(value = "getProfile", nickname = "getProfile", tags = ["Users"])
+    fun getProfile(): ResponseEntity<UserResponse> {
+        val user = getCurrentUser()?: return ResponseEntity.status(401).build()
+        return ResponseEntity.ok(UserResponse(user))
+    }
+
     @Transactional
     @GetMapping("/search", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "searchUsers", nickname = "searchUsers", tags = ["Users"])
