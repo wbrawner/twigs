@@ -13,7 +13,12 @@ constructor(private val userRepository: UserRepository) : UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
-        return userRepository.findByName(username).orElse(null)
-                ?: throw UsernameNotFoundException("Unable to find user with username $username")
+        userRepository.findByName(username).orElse(null)?.let {
+            return it
+        }
+        userRepository.findByEmail(username).orElse(null)?.let {
+            return it
+        }
+        throw UsernameNotFoundException("Unable to find user with username $username")
     }
 }
