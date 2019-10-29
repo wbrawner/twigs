@@ -12,7 +12,7 @@ data class Category(
         val description: String? = null,
         val amount: Long = 0,
         @ManyToOne val budget: Budget,
-        @OneToMany(mappedBy = "category") val transactions: List<Transaction> = emptyList(),
+        @OneToMany(mappedBy = "category") val transactions: Set<Transaction> = emptySet(),
         val expense: Boolean? = true
 ) : Comparable<Category> {
     override fun compareTo(other: Category): Int = title.compareTo(other.title)

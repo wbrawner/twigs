@@ -19,9 +19,9 @@ data class Budget(
         @ManyToOne val owner: User
 )
 
-data class NewBudgetRequest(val name: String, val description: String?, val userIds: List<Long>)
+data class NewBudgetRequest(val name: String, val description: String?, val userIds: Set<Long>)
 
-data class UpdateBudgetRequest(val name: String?, val description: String?, val userIds: List<Long>?)
+data class UpdateBudgetRequest(val name: String?, val description: String?, val userIds: Set<Long>?)
 
 data class BudgetResponse(val id: Long, val name: String, val description: String?, val users: List<UserResponse>) {
     constructor(budget: Budget) : this(budget.id!!, budget.name, budget.description, budget.users.map { UserResponse(it) })

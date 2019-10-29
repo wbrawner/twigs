@@ -56,30 +56,30 @@ class BudgetController @Autowired constructor(
     fun newBudget(@RequestBody request: NewBudgetRequest): ResponseEntity<BudgetResponse> {
         val users = request.userIds
                 .map { id -> userRepository.findById(id).orElse(null) }
-                .filter { user -> user != null }
+                .filterNotNull()
                 .toMutableSet()
-                .apply { this.add(getCurrentUser()) }
-        val Budget = budgetRepository.save(Budget(name = request.name, description = request.description, users = users, owner = getCurrentUser()!!))
-        return ResponseEntity.ok(BudgetResponse(Budget))
+                .apply { this.add(getCurrentUser()!!) }
+        val budget = budgetRepository.save(Budget(name = request.name, description = request.description, users = users, owner = getCurrentUser()!!))
+        return ResponseEntity.ok(BudgetResponse(budget))
     }
 
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateBudget", nickname = "updateBudget", tags = ["Budgets"])
     fun updateBudget(@PathVariable id: Long, request: UpdateBudgetRequest): ResponseEntity<BudgetResponse> {
-        var Budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, id).orElse(null)
+        var budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, id).orElse(null)
                 ?: return ResponseEntity.notFound().build()
-        if (request.name != null) Budget = Budget.copy(name = request.name)
-        if (request.description != null) Budget = Budget.copy(description = request.description)
-        if (request.userIds != null) Budget = Budget.copy(users = userRepository.findAllById(request.userIds).toSet())
-        return ResponseEntity.ok(BudgetResponse(budgetRepository.save(Budget)))
+        if (request.name != null) budget = budget.copy(name = request.name)
+        if (request.description != null) budget = budget.copy(description = request.description)
+        if (request.userIds != null) budget = budget.copy(users = userRepository.findAllById(request.userIds).toSet())
+        return ResponseEntity.ok(BudgetResponse(budgetRepository.save(budget)))
     }
 
     @DeleteMapping("/{id}", produces = [MediaType.TEXT_PLAIN_VALUE])
     @ApiOperation(value = "deleteBudget", nickname = "deleteBudget", tags = ["Budgets"])
     fun deleteBudget(@PathVariable id: Long): ResponseEntity<Unit> {
-        val Budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, id).orElse(null)
+        val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, id).orElse(null)
                 ?: return ResponseEntity.notFound().build()
-        budgetRepository.delete(Budget)
+        budgetRepository.delete(budget)
         return ResponseEntity.ok().build()
     }
 }
