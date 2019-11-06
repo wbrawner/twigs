@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
 import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -24,11 +26,14 @@ class BudgetController @Autowired constructor(
     @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getBudgets", nickname = "getBudgets", tags = ["Budgets"])
-    fun getBudgets(): ResponseEntity<List<BudgetResponse>> = ResponseEntity.ok(
-            budgetRepository.findAllByUsersContainsOrOwner(getCurrentUser()!!).map {
-                Hibernate.initialize(it.users)
-                BudgetResponse(it)
-            }
+    fun getBudgets(page: Int?, count: Int?): ResponseEntity<List<BudgetResponse>> = ResponseEntity.ok(
+            budgetRepository.findAllByUsersContainsOrOwner(
+                    user = getCurrentUser()!!,
+                    pageable = PageRequest.of(page ?: 0, count ?: 1000, Sort.by("name")))
+                    .map {
+                        Hibernate.initialize(it.users)
+                        BudgetResponse(it)
+                    }
     )
 
     @Transactional
