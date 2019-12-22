@@ -14,6 +14,5 @@ RUN /home/maven/src/mvnw -DskipTests package
 FROM openjdk:8-jdk-slim
 EXPOSE 8080
 COPY --from=builder /home/maven/src/target/budget-api.jar budget-api.jar
-ENTRYPOINT ["/usr/local/openjdk-8/bin/java", "-Xmx3g", "-jar", "/budget-api.jar"]
-
+ENTRYPOINT ["/usr/local/openjdk-8/bin/java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-XX:MaxRAMFraction=1", "-Xmx256m", "-jar", "/budget-api.jar"]
 
