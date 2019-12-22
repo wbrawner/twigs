@@ -31,6 +31,7 @@ class CategoryController @Autowired constructor(
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategories", nickname = "getCategories", tags = ["Categories"])
     fun getCategories(budgetId: Long? = null,
+                      isExpense: Boolean? = null,
                       count: Int?,
                       page: Int?,
                       sortBy: String?,
@@ -46,7 +47,12 @@ class CategoryController @Autowired constructor(
                 count?: 1000,
                 Sort(sortOrder?: Sort.Direction.ASC, sortBy?: "title")
         )
-        return ResponseEntity.ok(categoryRepository.findAllByBudgetIn(budgets, pageRequest).map { CategoryResponse(it) })
+        val categories = if (isExpense == null) {
+            categoryRepository.findAllByBudgetIn(budgets, pageRequest)
+        } else {
+            categoryRepository.findAllByBudgetInAndExpense(budgets, isExpense, pageRequest)
+        }
+        return ResponseEntity.ok(categories.map { CategoryResponse(it) })
     }
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
