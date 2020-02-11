@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk as builder
+FROM openjdk:11-jdk as builder
 MAINTAINER Billy Brawner <billy@wbrawner.com>
 
 RUN groupadd --system --gid 1000 maven \
@@ -11,8 +11,8 @@ COPY --chown=maven:maven . /home/maven/src
 WORKDIR /home/maven/src
 RUN /home/maven/src/mvnw -DskipTests package
 
-FROM openjdk:8-jdk-slim
+FROM openjdk:11-jdk-slim
 EXPOSE 8080
 COPY --from=builder /home/maven/src/target/budget-api.jar budget-api.jar
-ENTRYPOINT ["/usr/local/openjdk-8/bin/java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-XX:MaxRAMFraction=1", "-Xmx256m", "-jar", "/budget-api.jar"]
+ENTRYPOINT ["/usr/local/openjdk-11/bin/java", "-Xmx256M", "-jar", "/budget-api.jar"]
 

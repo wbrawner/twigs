@@ -20,15 +20,15 @@ import javax.sql.DataSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig @Autowired
-constructor(
+open class SecurityConfig(
         private val env: Environment,
         private val datasource: DataSource,
         private val userRepository: UserRepository,
         private val passwordResetRequestRepository: PasswordResetRequestRepository,
-        private val userDetailsService: JdbcUserDetailsService) : WebSecurityConfigurerAdapter() {
+        private val userDetailsService: JdbcUserDetailsService
+) : WebSecurityConfigurerAdapter() {
 
-    val userDetailsManager: JdbcUserDetailsManager
+    open val userDetailsManager: JdbcUserDetailsManager
         @Bean
         get() {
             val userDetailsManager = JdbcUserDetailsManager()
@@ -36,14 +36,14 @@ constructor(
             return userDetailsManager
         }
 
-    val authenticationProvider: DaoAuthenticationProvider
+    open val authenticationProvider: DaoAuthenticationProvider
         @Bean
         get() = DaoAuthenticationProvider().apply {
             this.setPasswordEncoder(passwordEncoder)
             this.setUserDetailsService(userDetailsService)
         }
 
-    val passwordEncoder: PasswordEncoder
+    open val passwordEncoder: PasswordEncoder
         @Bean
         get() = BCryptPasswordEncoder()
 
@@ -70,5 +70,5 @@ constructor(
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class MethodSecurity : GlobalMethodSecurityConfiguration()
+open class MethodSecurity : GlobalMethodSecurityConfiguration()
 

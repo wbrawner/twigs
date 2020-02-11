@@ -26,17 +26,17 @@ import javax.transaction.Transactional
 @RestController
 @RequestMapping("/transactions")
 @Api(value = "Transactions", tags = ["Transactions"], authorizations = [Authorization("basic")])
-class TransactionController @Autowired constructor(
+@Transactional
+open class TransactionController(
         private val budgetRepository: BudgetRepository,
         private val categoryRepository: CategoryRepository,
         private val transactionRepository: TransactionRepository
 ) {
     private val logger = LoggerFactory.getLogger(TransactionController::class.java)
 
-    @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransactions", nickname = "getTransactions", tags = ["Transactions"])
-    fun getTransactions(
+    open fun getTransactions(
             @RequestParam("categoryId") categoryIds: Array<Long>? = null,
             @RequestParam("budgetId") budgetIds: Array<Long>? = null,
             @RequestParam("from") from: String? = null,
@@ -90,17 +90,16 @@ class TransactionController @Autowired constructor(
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransaction", nickname = "getTransaction", tags = ["Transactions"])
-    fun getTransaction(@PathVariable id: Long): ResponseEntity<TransactionResponse> {
+    open fun getTransaction(@PathVariable id: Long): ResponseEntity<TransactionResponse> {
         val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
                 ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
 
-    @Transactional
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newTransaction", nickname = "newTransaction", tags = ["Transactions"])
-    fun newTransaction(@RequestBody request: NewTransactionRequest): ResponseEntity<Any> {
+    open fun newTransaction(@RequestBody request: NewTransactionRequest): ResponseEntity<Any> {
         val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, request.budgetId).orElse(null)
                 ?: return ResponseEntity.badRequest().body(ErrorResponse("Invalid budget ID"))
         Hibernate.initialize(budget.users)
@@ -121,7 +120,7 @@ class TransactionController @Autowired constructor(
 
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = ["Transactions"])
-    fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<TransactionResponse> {
+    open fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<TransactionResponse> {
         var transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         var budget = budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction)
                 .orElse(null) ?: return ResponseEntity.notFound().build()
@@ -146,7 +145,7 @@ class TransactionController @Autowired constructor(
 
     @DeleteMapping("/{id}", produces = [MediaType.TEXT_PLAIN_VALUE])
     @ApiOperation(value = "deleteTransaction", nickname = "deleteTransaction", tags = ["Transactions"])
-    fun deleteTransaction(@PathVariable id: Long): ResponseEntity<Unit> {
+    open fun deleteTransaction(@PathVariable id: Long): ResponseEntity<Unit> {
         val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         // Check that the transaction belongs to an budget that the user has access to before deleting it
         budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)

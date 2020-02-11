@@ -21,17 +21,17 @@ import javax.transaction.Transactional
 @RestController
 @RequestMapping("/users")
 @Api(value = "Users", tags = ["Users"], authorizations = [Authorization("basic")])
-class UserController @Autowired constructor(
+@Transactional
+open class UserController(
         private val budgetRepository: BudgetRepository,
         private val userRepository: UserRepository,
         private val passwordEncoder: PasswordEncoder,
         private val authenticationProvider: DaoAuthenticationProvider
 ) {
 
-    @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getUsers", nickname = "getUsers", tags = ["Users"])
-    fun getUsers(budgetId: Long): ResponseEntity<List<UserResponse>> {
+    open fun getUsers(budgetId: Long): ResponseEntity<List<UserResponse>> {
         val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, budgetId).orElse(null)
                 ?: return ResponseEntity.notFound().build()
         Hibernate.initialize(budget.users)
@@ -40,7 +40,7 @@ class UserController @Autowired constructor(
 
     @PostMapping("/login", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "login", nickname = "login", tags = ["Users"])
-    fun login(@RequestBody request: LoginRequest): ResponseEntity<UserResponse> {
+    open fun login(@RequestBody request: LoginRequest): ResponseEntity<UserResponse> {
         val authReq = UsernamePasswordAuthenticationToken(request.username, request.password)
         val auth = try {
             authenticationProvider.authenticate(authReq)
@@ -53,21 +53,20 @@ class UserController @Autowired constructor(
 
     @GetMapping("/me", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getProfile", nickname = "getProfile", tags = ["Users"])
-    fun getProfile(): ResponseEntity<UserResponse> {
+    open fun getProfile(): ResponseEntity<UserResponse> {
         val user = getCurrentUser()?: return ResponseEntity.status(401).build()
         return ResponseEntity.ok(UserResponse(user))
     }
 
-    @Transactional
     @GetMapping("/search", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "searchUsers", nickname = "searchUsers", tags = ["Users"])
-    fun searchUsers(query: String): ResponseEntity<List<UserResponse>> {
+    open fun searchUsers(query: String): ResponseEntity<List<UserResponse>> {
         return ResponseEntity.ok(userRepository.findByNameContains(query).map { UserResponse(it) })
     }
 
     @GetMapping("/{id}")
     @ApiOperation(value = "getUser", nickname = "getUser", tags = ["Users"])
-    fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse> = userRepository.findById(id).orElse(null)
+    open fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse> = userRepository.findById(id).orElse(null)
             ?.let {
                 ResponseEntity.ok(UserResponse(it))
             }
@@ -75,7 +74,7 @@ class UserController @Autowired constructor(
 
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newUser", nickname = "newUser", tags = ["Users"])
-    fun newUser(@RequestBody request: NewUserRequest): ResponseEntity<Any> {
+    open fun newUser(@RequestBody request: NewUserRequest): ResponseEntity<Any> {
         if (userRepository.findByName(request.username).isPresent)
             return ResponseEntity.badRequest()
                     .body(ErrorResponse("Username taken"))
@@ -94,7 +93,7 @@ class UserController @Autowired constructor(
 
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateUser", nickname = "updateUser", tags = ["Users"])
-    fun updateUser(@PathVariable id: Long, @RequestBody request: UpdateUserRequest): ResponseEntity<Any> {
+    open fun updateUser(@PathVariable id: Long, @RequestBody request: UpdateUserRequest): ResponseEntity<Any> {
         if (getCurrentUser()!!.id != id) return ResponseEntity.status(403)
                 .body(ErrorResponse("Attempting to modify another user's budget"))
         var user = userRepository.findById(getCurrentUser()!!.id!!).orElse(null)?: return ResponseEntity.notFound().build()
@@ -115,7 +114,7 @@ class UserController @Autowired constructor(
 
     @DeleteMapping("/{id}", produces = [MediaType.TEXT_PLAIN_VALUE])
     @ApiOperation(value = "deleteUser", nickname = "deleteUser", tags = ["Users"])
-    fun deleteUser(@PathVariable id: Long): ResponseEntity<Unit> {
+    open fun deleteUser(@PathVariable id: Long): ResponseEntity<Unit> {
         if(getCurrentUser()!!.id != id) return ResponseEntity.status(403).build()
         userRepository.deleteById(id)
         return ResponseEntity.ok().build()

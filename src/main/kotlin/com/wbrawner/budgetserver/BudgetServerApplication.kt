@@ -4,8 +4,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class BudgetServerApplication
-
-fun main(args: Array<String>) {
-    runApplication<BudgetServerApplication>(*args)
+open class BudgetServerApplication {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            runApplication<BudgetServerApplication>(*args)
+        }
+    }
 }

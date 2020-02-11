@@ -3,34 +3,31 @@ package com.wbrawner.budgetserver.category
 import com.wbrawner.budgetserver.ErrorResponse
 import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.getCurrentUser
-import com.wbrawner.budgetserver.setToFirstOfMonth
 import com.wbrawner.budgetserver.transaction.TransactionRepository
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
 import org.hibernate.Hibernate
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.Integer.min
-import java.util.*
 import javax.transaction.Transactional
 
 @RestController
 @RequestMapping("/categories")
 @Api(value = "Categories", tags = ["Categories"], authorizations = [Authorization("basic")])
-class CategoryController @Autowired constructor(
+@Transactional
+open class CategoryController(
         private val budgetRepository: BudgetRepository,
         private val categoryRepository: CategoryRepository,
         private val transactionRepository: TransactionRepository
 ) {
-    @Transactional
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategories", nickname = "getCategories", tags = ["Categories"])
-    fun getCategories(budgetId: Long? = null,
+    open fun getCategories(budgetId: Long? = null,
                       isExpense: Boolean? = null,
                       count: Int?,
                       page: Int?,
@@ -43,9 +40,9 @@ class CategoryController @Autowired constructor(
             budgetRepository.findAllByUsersContainsOrOwner(getCurrentUser()!!)
         }.toList()
         val pageRequest = PageRequest.of(
-                min(0, page?.minus(1)?: 0),
-                count?: 1000,
-                Sort(sortOrder?: Sort.Direction.ASC, sortBy?: "title")
+                min(0, page?.minus(1) ?: 0),
+                count ?: 1000,
+                Sort.by(sortOrder ?: Sort.Direction.ASC, sortBy ?: "title")
         )
         val categories = if (isExpense == null) {
             categoryRepository.findAllByBudgetIn(budgets, pageRequest)
@@ -57,16 +54,16 @@ class CategoryController @Autowired constructor(
 
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategory", nickname = "getCategory", tags = ["Categories"])
-    fun getCategory(@PathVariable id: Long): ResponseEntity<CategoryResponse> {
+    open fun getCategory(@PathVariable id: Long): ResponseEntity<CategoryResponse> {
         val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
                 ?: return ResponseEntity.notFound().build()
-        return  ResponseEntity.ok(CategoryResponse(category))
+        return ResponseEntity.ok(CategoryResponse(category))
     }
 
     @GetMapping("/{id}/balance", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategoryBalance", nickname = "getCategoryBalance", tags = ["Categories"])
-    fun getCategoryBalance(@PathVariable id: Long): ResponseEntity<CategoryBalanceResponse> {
+    open fun getCategoryBalance(@PathVariable id: Long): ResponseEntity<CategoryBalanceResponse> {
         val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
                 ?: return ResponseEntity.notFound().build()
@@ -74,10 +71,9 @@ class CategoryController @Autowired constructor(
         return ResponseEntity.ok(CategoryBalanceResponse(category.id, transactions))
     }
 
-    @Transactional
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newCategory", nickname = "newCategory", tags = ["Categories"])
-    fun newCategory(@RequestBody request: NewCategoryRequest): ResponseEntity<Any> {
+    open fun newCategory(@RequestBody request: NewCategoryRequest): ResponseEntity<Any> {
         val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, request.budgetId).orElse(null)
                 ?: return ResponseEntity.badRequest().body(ErrorResponse("Invalid budget ID"))
         Hibernate.initialize(budget.users)
@@ -91,7 +87,7 @@ class CategoryController @Autowired constructor(
 
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateCategory", nickname = "updateCategory", tags = ["Categories"])
-    fun updateCategory(@PathVariable id: Long, @RequestBody request: UpdateCategoryRequest): ResponseEntity<CategoryResponse> {
+    open fun updateCategory(@PathVariable id: Long, @RequestBody request: UpdateCategoryRequest): ResponseEntity<CategoryResponse> {
         var category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
                 ?: return ResponseEntity.notFound().build()
@@ -103,7 +99,7 @@ class CategoryController @Autowired constructor(
 
     @DeleteMapping("/{id}", produces = [MediaType.TEXT_PLAIN_VALUE])
     @ApiOperation(value = "deleteCategory", nickname = "deleteCategory", tags = ["Categories"])
-    fun deleteCategory(@PathVariable id: Long): ResponseEntity<Unit> {
+    open fun deleteCategory(@PathVariable id: Long): ResponseEntity<Unit> {
         val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         val budget = budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
                 ?: return ResponseEntity.notFound().build()

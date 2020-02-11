@@ -12,9 +12,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 @Configuration
 @EnableSwagger2
-class SwaggerConfig : WebMvcConfigurationSupport() {
+open class SwaggerConfig : WebMvcConfigurationSupport() {
     @Bean
-    fun budgetApi(): Docket = Docket(DocumentationType.SWAGGER_2)
+    open fun budgetApi(): Docket = Docket(DocumentationType.SWAGGER_2)
             .securitySchemes(mutableListOf(BasicAuth("basic")))
             .select()
             .apis(RequestHandlerSelectors.basePackage("com.wbrawner.budgetserver"))
