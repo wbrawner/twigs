@@ -15,7 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.JdbcUserDetailsManager
-import org.springframework.security.web.header.writers.StaticHeadersWriter
+import org.springframework.web.cors.CorsConfiguration
 import javax.sql.DataSource
 
 
@@ -62,14 +62,13 @@ open class SecurityConfig(
                 .and()
                 .httpBasic()
                 .and()
+                .cors()
+                .configurationSource {
+                    CorsConfiguration().applyPermitDefaultValues()
+                }
+                .and()
                 .csrf()
                 .disable()
-                .headers()
-                .addHeaderWriter(StaticHeadersWriter("Access-Control-Allow-Origin", "*"))
-                .addHeaderWriter(StaticHeadersWriter("Access-Control-Allow-Methods", "GET", "POST", "PUT", "DELETE"))
-                .addHeaderWriter(StaticHeadersWriter("Access-Control-Max-Age", "3600"))
-                .addHeaderWriter(StaticHeadersWriter("Access-Control-Allow-Credentials", "true"))
-                .addHeaderWriter(StaticHeadersWriter("Access-Control-Allow-Headers", "Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization"));
     }
 }
 
