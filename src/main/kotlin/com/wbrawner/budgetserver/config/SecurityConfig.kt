@@ -2,7 +2,6 @@ package com.wbrawner.budgetserver.config
 
 import com.wbrawner.budgetserver.passwordresetrequest.PasswordResetRequestRepository
 import com.wbrawner.budgetserver.user.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -81,8 +80,5 @@ open class MethodSecurity : GlobalMethodSecurityConfiguration()
 open class CorsConfiguration : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
-                .allowedMethods("*")
-                .allowedHeaders("*")
-                .allowedOrigins("*")
     }
 }
