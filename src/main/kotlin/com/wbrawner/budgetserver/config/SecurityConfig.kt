@@ -5,6 +5,7 @@ import com.wbrawner.budgetserver.user.UserRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import org.springframework.core.env.get
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
@@ -26,7 +27,8 @@ open class SecurityConfig(
         private val datasource: DataSource,
         private val userRepository: UserRepository,
         private val passwordResetRequestRepository: PasswordResetRequestRepository,
-        private val userDetailsService: JdbcUserDetailsService
+        private val userDetailsService: JdbcUserDetailsService,
+        private val environment: Environment
 ) : WebSecurityConfigurerAdapter() {
 
     open val userDetailsManager: JdbcUserDetailsManager
@@ -64,7 +66,11 @@ open class SecurityConfig(
                 .and()
                 .cors()
                 .configurationSource {
-                    CorsConfiguration().applyPermitDefaultValues()
+                    with(CorsConfiguration()) {
+                        applyPermitDefaultValues()
+                        allowedOrigins = environment.get("twigs.cors.domains")?.split(",")
+                        this
+                    }
                 }
                 .and()
                 .csrf()
