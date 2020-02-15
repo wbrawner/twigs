@@ -15,9 +15,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.JdbcUserDetailsManager
-import org.springframework.web.cors.CorsConfiguration
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import org.springframework.web.filter.CorsFilter
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import javax.sql.DataSource
 
 
@@ -50,18 +50,6 @@ open class SecurityConfig(
         @Bean
         get() = BCryptPasswordEncoder()
 
-    @Bean
-    open fun corsFilter(): CorsFilter? {
-        val source = UrlBasedCorsConfigurationSource()
-        val config = CorsConfiguration()
-        config.allowCredentials = true
-        config.addAllowedOrigin("*")
-        config.addAllowedHeader("*")
-        config.addAllowedMethod("*")
-        source.registerCorsConfiguration("/**", config)
-        return CorsFilter(source)
-    }
-
     public override fun configure(auth: AuthenticationManagerBuilder?) {
         auth!!.authenticationProvider(authenticationProvider)
     }
@@ -85,3 +73,13 @@ open class SecurityConfig(
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 open class MethodSecurity : GlobalMethodSecurityConfiguration()
 
+@Configuration
+@EnableWebMvc
+open class CorsConfiguration : WebMvcConfigurer {
+    override fun addCorsMappings(registry: CorsRegistry) {
+        registry.addMapping("/**")
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .allowedOrigins("*")
+    }
+}
