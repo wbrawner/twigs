@@ -2,7 +2,6 @@ package com.wbrawner.budgetserver.config
 
 import com.wbrawner.budgetserver.passwordresetrequest.PasswordResetRequestRepository
 import com.wbrawner.budgetserver.user.UserRepository
-import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -52,7 +51,7 @@ open class SecurityConfig(
         get() = BCryptPasswordEncoder()
 
     @Bean
-    open fun corsFilter(): FilterRegistrationBean<*>? {
+    open fun corsFilter(): CorsFilter? {
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration()
         config.allowCredentials = true
@@ -60,9 +59,7 @@ open class SecurityConfig(
         config.addAllowedHeader("*")
         config.addAllowedMethod("*")
         source.registerCorsConfiguration("/**", config)
-        val bean: FilterRegistrationBean<*> = FilterRegistrationBean(CorsFilter(source))
-        bean.order = 0
-        return bean
+        return CorsFilter(source)
     }
 
     public override fun configure(auth: AuthenticationManagerBuilder?) {
