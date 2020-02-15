@@ -11,7 +11,9 @@ data class Category(
         val title: String = "",
         val description: String? = null,
         val amount: Long = 0,
-        @ManyToOne val budget: Budget,
+        @Column(nullable = false)
+        @ManyToOne
+        val budget: Budget? = null,
         @OneToMany(mappedBy = "category") val transactions: Set<Transaction> = emptySet(),
         val expense: Boolean? = true
 ) : Comparable<Category> {
@@ -31,7 +33,7 @@ data class CategoryResponse(
             category.title,
             category.description,
             category.amount,
-            category.budget.id!!,
+            category.budget!!.id!!,
             category.expense
     )
 }

@@ -16,7 +16,9 @@ data class Budget(
         @OneToMany(mappedBy = "budget") val transactions: Set<Transaction> = TreeSet(),
         @OneToMany(mappedBy = "budget") val categories: Set<Category> = TreeSet(),
         @ManyToMany val users: Set<User> = mutableSetOf(),
-        @ManyToOne val owner: User
+        @Column(nullable = false)
+        @ManyToOne
+        val owner: User? = null
 )
 
 data class NewBudgetRequest(val name: String, val description: String?, val userIds: Set<Long>)

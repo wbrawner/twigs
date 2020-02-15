@@ -15,8 +15,12 @@ data class Transaction(
         val amount: Long = 0,
         @ManyToOne val category: Category? = null,
         val expense: Boolean = true,
-        @ManyToOne val createdBy: User,
-        @ManyToOne val budget: Budget
+        @ManyToOne
+        @Column(nullable = false)
+        val createdBy: User? = null,
+        @ManyToOne
+        @Column(nullable = false)
+        val budget: Budget? = null
 ) : Comparable<Transaction> {
     override fun compareTo(other: Transaction): Int = this.date.compareTo(other.date)
 }
@@ -39,9 +43,9 @@ data class TransactionResponse(
             transaction.date.toString(),
             transaction.amount,
             transaction.expense,
-            transaction.budget.id!!,
+            transaction.budget!!.id!!,
             if (transaction.category != null) transaction.category.id!! else null,
-            transaction.createdBy.id!!
+            transaction.createdBy!!.id!!
     )
 }
 
