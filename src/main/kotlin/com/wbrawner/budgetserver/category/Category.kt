@@ -11,7 +11,7 @@ data class Category(
         val title: String = "",
         val description: String? = null,
         val amount: Long = 0,
-        @Column(nullable = false)
+        @JoinColumn(nullable = false)
         @ManyToOne
         val budget: Budget? = null,
         @OneToMany(mappedBy = "category") val transactions: Set<Transaction> = emptySet(),

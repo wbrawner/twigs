@@ -16,10 +16,10 @@ data class Transaction(
         @ManyToOne val category: Category? = null,
         val expense: Boolean = true,
         @ManyToOne
-        @Column(nullable = false)
+        @JoinColumn(nullable = false)
         val createdBy: User? = null,
         @ManyToOne
-        @Column(nullable = false)
+        @JoinColumn(nullable = false)
         val budget: Budget? = null
 ) : Comparable<Transaction> {
     override fun compareTo(other: Transaction): Int = this.date.compareTo(other.date)
