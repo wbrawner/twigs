@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.core.env.get
+import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
@@ -68,7 +69,10 @@ open class SecurityConfig(
                 .configurationSource {
                     with(CorsConfiguration()) {
                         applyPermitDefaultValues()
-                        allowedOrigins = environment.get("twigs.cors.domains")?.split(",")
+                        allowedOrigins = environment["twigs.cors.domains"]?.split(",") ?: listOf("*")
+                        allowedMethods = listOf(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)
+                                .map { it.name }
+                        allowCredentials = true
                         this
                     }
                 }
