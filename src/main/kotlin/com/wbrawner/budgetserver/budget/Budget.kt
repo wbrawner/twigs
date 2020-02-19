@@ -1,9 +1,10 @@
 package com.wbrawner.budgetserver.budget
 
 import com.wbrawner.budgetserver.category.Category
+import com.wbrawner.budgetserver.permission.UserPermission
+import com.wbrawner.budgetserver.permission.UserPermissionRequest
+import com.wbrawner.budgetserver.permission.UserPermissionResponse
 import com.wbrawner.budgetserver.transaction.Transaction
-import com.wbrawner.budgetserver.user.User
-import com.wbrawner.budgetserver.user.UserResponse
 import java.util.*
 import javax.persistence.*
 
@@ -13,20 +14,22 @@ data class Budget(
         val name: String = "",
         val description: String? = null,
         val currencyCode: String? = null,
-        @OneToMany(mappedBy = "budget") val transactions: Set<Transaction> = TreeSet(),
-        @OneToMany(mappedBy = "budget") val categories: Set<Category> = TreeSet(),
-        @ManyToMany val users: Set<User> = mutableSetOf(),
-        @JoinColumn(nullable = false)
-        @ManyToOne
-        val owner: User? = null
+        @OneToMany(mappedBy = "budget") val transactions: MutableSet<Transaction> = TreeSet(),
+        @OneToMany(mappedBy = "budget") val categories: MutableSet<Category> = TreeSet(),
+        @OneToMany(mappedBy = "budget") val users: MutableSet<UserPermission> = mutableSetOf()
 )
 
-data class NewBudgetRequest(val name: String, val description: String?, val userIds: Set<Long>)
+data class NewBudgetRequest(val name: String, val description: String?, val users: Set<UserPermissionRequest>)
 
-data class UpdateBudgetRequest(val name: String?, val description: String?, val userIds: Set<Long>?)
+data class UpdateBudgetRequest(val name: String?, val description: String?, val users: Set<UserPermissionRequest>?)
 
-data class BudgetResponse(val id: Long, val name: String, val description: String?, val users: List<UserResponse>) {
-    constructor(budget: Budget) : this(budget.id!!, budget.name, budget.description, budget.users.map { UserResponse(it) })
+data class BudgetResponse(val id: Long, val name: String, val description: String?, val users: List<UserPermissionResponse>) {
+    constructor(budget: Budget, users: List<UserPermission>) : this(
+            budget.id!!,
+            budget.name,
+            budget.description,
+            users.map { UserPermissionResponse(it) }
+    )
 }
 
 data class BudgetBalanceResponse(val id: Long, val balance: Long)

@@ -3,11 +3,11 @@ package com.wbrawner.budgetserver.user
 import com.wbrawner.budgetserver.ErrorResponse
 import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.permission.UserPermissionRepository
+import com.wbrawner.budgetserver.permission.UserPermissionResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
-import org.hibernate.Hibernate
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -26,16 +26,23 @@ open class UserController(
         private val budgetRepository: BudgetRepository,
         private val userRepository: UserRepository,
         private val passwordEncoder: PasswordEncoder,
+        private val userPermissionsRepository: UserPermissionRepository,
         private val authenticationProvider: DaoAuthenticationProvider
 ) {
 
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getUsers", nickname = "getUsers", tags = ["Users"])
-    open fun getUsers(budgetId: Long): ResponseEntity<List<UserResponse>> {
-        val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, budgetId).orElse(null)
+    open fun getUsers(budgetId: Long): ResponseEntity<List<UserPermissionResponse>> {
+        val userPermissions = budgetRepository.findById(budgetId)
+                .orElse(null)
+                ?.run {
+                    userPermissionsRepository.findAllByBudget(this, null)
+                }
                 ?: return ResponseEntity.notFound().build()
-        Hibernate.initialize(budget.users)
-        return ResponseEntity.ok(budget.users.map { UserResponse(it) })
+        if (userPermissions.none { it.user!!.id == getCurrentUser()!!.id }) {
+            return ResponseEntity.notFound().build()
+        }
+        return ResponseEntity.ok(userPermissions.map { UserPermissionResponse(it) })
     }
 
     @PostMapping("/login", produces = [MediaType.APPLICATION_JSON_VALUE])

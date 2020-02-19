@@ -5,14 +5,13 @@ import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.category.Category
 import com.wbrawner.budgetserver.category.CategoryRepository
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.permission.UserPermissionRepository
 import com.wbrawner.budgetserver.setToEndOfMonth
 import com.wbrawner.budgetserver.setToFirstOfMonth
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
-import org.hibernate.Hibernate
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
@@ -30,7 +29,8 @@ import javax.transaction.Transactional
 open class TransactionController(
         private val budgetRepository: BudgetRepository,
         private val categoryRepository: CategoryRepository,
-        private val transactionRepository: TransactionRepository
+        private val transactionRepository: TransactionRepository,
+        private val userPermissionsRepository: UserPermissionRepository
 ) {
     private val logger = LoggerFactory.getLogger(TransactionController::class.java)
 
@@ -46,11 +46,15 @@ open class TransactionController(
             @RequestParam sortBy: String?,
             @RequestParam sortOrder: Sort.Direction?
     ): ResponseEntity<List<TransactionResponse>> {
-        val budgets = if (budgetIds?.isNotEmpty() == true) {
-            budgetRepository.findAllById(budgetIds.toList())
+        val budgets = if (budgetIds != null) {
+            userPermissionsRepository.findAllByUser(
+                    user = getCurrentUser()!!,
+                    pageable = PageRequest.of(page ?: 0, count ?: 1000))
         } else {
-            budgetRepository.findAllByUsersContainsOrOwner(getCurrentUser()!!)
-        }.toList()
+            userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
+        }.mapNotNull {
+            it.budget
+        }
         val categories = if (categoryIds?.isNotEmpty() == true) {
             categoryRepository.findAllByBudgetInAndIdIn(budgets, categoryIds.toList())
         } else {
@@ -91,8 +95,11 @@ open class TransactionController(
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getTransaction", nickname = "getTransaction", tags = ["Transactions"])
     open fun getTransaction(@PathVariable id: Long): ResponseEntity<TransactionResponse> {
-        val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
+        val budgets = userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
+                .mapNotNull {
+                    it.budget
+                }
+        val transaction = transactionRepository.findAllByIdAndBudgetIn(id, budgets).firstOrNull()
                 ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
@@ -100,9 +107,10 @@ open class TransactionController(
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newTransaction", nickname = "newTransaction", tags = ["Transactions"])
     open fun newTransaction(@RequestBody request: NewTransactionRequest): ResponseEntity<Any> {
-        val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, request.budgetId).orElse(null)
+        val budget = userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser()!!, request.budgetId, null)
+                .firstOrNull()
+                ?.budget
                 ?: return ResponseEntity.badRequest().body(ErrorResponse("Invalid budget ID"))
-        Hibernate.initialize(budget.users)
         val category: Category? = request.categoryId?.let {
             categoryRepository.findByBudgetAndId(budget, request.categoryId).orElse(null)
         }
@@ -122,18 +130,23 @@ open class TransactionController(
     @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = ["Transactions"])
     open fun updateTransaction(@PathVariable id: Long, @RequestBody request: UpdateTransactionRequest): ResponseEntity<TransactionResponse> {
         var transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        var budget = budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction)
-                .orElse(null) ?: return ResponseEntity.notFound().build()
+        var budget = userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser()!!, transaction.budget!!.id!!, null)
+                .firstOrNull()
+                ?.budget
+                ?: return ResponseEntity.notFound().build()
         request.title?.let { transaction = transaction.copy(title = it) }
         request.description?.let { transaction = transaction.copy(description = it) }
         request.date?.let { transaction = transaction.copy(date = Instant.parse(it)) }
         request.amount?.let { transaction = transaction.copy(amount = it) }
         request.expense?.let { transaction = transaction.copy(expense = it) }
         request.budgetId?.let { budgetId ->
-            budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, budgetId).orElse(null)?.let {
-                budget = it
-                transaction = transaction.copy(budget = it, category = null)
-            }
+            userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser()!!, budgetId, null)
+                    .firstOrNull()
+                    ?.budget
+                    ?.let {
+                        budget = it
+                        transaction = transaction.copy(budget = it, category = null)
+                    }
         }
         request.categoryId?.let {
             categoryRepository.findByBudgetAndId(budget, it).orElse(null)?.let { category ->
@@ -148,7 +161,9 @@ open class TransactionController(
     open fun deleteTransaction(@PathVariable id: Long): ResponseEntity<Unit> {
         val transaction = transactionRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
         // Check that the transaction belongs to an budget that the user has access to before deleting it
-        budgetRepository.findByUsersContainsAndTransactionsContains(getCurrentUser()!!, transaction).orElse(null)
+        userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser()!!, transaction.budget!!.id!!, null)
+                .firstOrNull()
+                ?.budget
                 ?: return ResponseEntity.notFound().build()
         transactionRepository.delete(transaction)
         return ResponseEntity.ok().build()

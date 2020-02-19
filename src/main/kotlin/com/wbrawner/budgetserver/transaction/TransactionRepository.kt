@@ -10,6 +10,7 @@ import java.time.Instant
 import java.util.*
 
 interface TransactionRepository: PagingAndSortingRepository<Transaction, Long> {
+    fun findAllByIdAndBudgetIn(id: Long, budgets: List<Budget>): List<Transaction>
     fun findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
             budgets: List<Budget>,
             categories: List<Category>,

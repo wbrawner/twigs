@@ -3,11 +3,11 @@ package com.wbrawner.budgetserver.category
 import com.wbrawner.budgetserver.ErrorResponse
 import com.wbrawner.budgetserver.budget.BudgetRepository
 import com.wbrawner.budgetserver.getCurrentUser
+import com.wbrawner.budgetserver.permission.UserPermissionRepository
 import com.wbrawner.budgetserver.transaction.TransactionRepository
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
-import org.hibernate.Hibernate
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
@@ -23,22 +23,32 @@ import javax.transaction.Transactional
 open class CategoryController(
         private val budgetRepository: BudgetRepository,
         private val categoryRepository: CategoryRepository,
-        private val transactionRepository: TransactionRepository
+        private val transactionRepository: TransactionRepository,
+        private val userPermissionsRepository: UserPermissionRepository
 ) {
     @GetMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategories", nickname = "getCategories", tags = ["Categories"])
-    open fun getCategories(budgetId: Long? = null,
-                      isExpense: Boolean? = null,
-                      count: Int?,
-                      page: Int?,
-                      sortBy: String?,
-                      sortOrder: Sort.Direction?
+    open fun getCategories(
+            @RequestParam("budgetIds", required = false) budgetIds: List<Long>? = null,
+            @RequestParam("isExpense", required = false) isExpense: Boolean? = null,
+            @RequestParam("count", required = false) count: Int?,
+            @RequestParam("page", required = false) page: Int?,
+            @RequestParam("false", required = false) sortBy: String?,
+            @RequestParam("sortOrder", required = false) sortOrder: Sort.Direction?
     ): ResponseEntity<List<CategoryResponse>> {
-        val budgets = if (budgetId != null) {
-            budgetRepository.findAllById(listOf(budgetId))
-        } else {
-            budgetRepository.findAllByUsersContainsOrOwner(getCurrentUser()!!)
-        }.toList()
+        val budgets = (
+                budgetIds
+                        ?.let {
+                            userPermissionsRepository.findAllByUserAndBudget_IdIn(getCurrentUser()!!, it, null)
+                        }
+                        ?: userPermissionsRepository.findAllByUser(
+                                user = getCurrentUser()!!,
+                                pageable = PageRequest.of(page ?: 0, count ?: 1000)
+                        )
+                )
+                .mapNotNull {
+                    it.budget
+                }
         val pageRequest = PageRequest.of(
                 min(0, page?.minus(1) ?: 0),
                 count ?: 1000,
@@ -55,8 +65,11 @@ open class CategoryController(
     @GetMapping("/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategory", nickname = "getCategory", tags = ["Categories"])
     open fun getCategory(@PathVariable id: Long): ResponseEntity<CategoryResponse> {
-        val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
+        val budgets = userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
+                .mapNotNull { it.budget }
+
+        val category = categoryRepository.findByBudgetInAndId(budgets, id)
+                .orElse(null)
                 ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(CategoryResponse(category))
     }
@@ -64,8 +77,10 @@ open class CategoryController(
     @GetMapping("/{id}/balance", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "getCategoryBalance", nickname = "getCategoryBalance", tags = ["Categories"])
     open fun getCategoryBalance(@PathVariable id: Long): ResponseEntity<CategoryBalanceResponse> {
-        val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
+        val budgets = userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
+                .mapNotNull { it.budget }
+        val category = categoryRepository.findByBudgetInAndId(budgets, id)
+                .orElse(null)
                 ?: return ResponseEntity.notFound().build()
         val transactions = transactionRepository.sumBalanceByCategoryId(category.id!!)
         return ResponseEntity.ok(CategoryBalanceResponse(category.id, transactions))
@@ -74,9 +89,10 @@ open class CategoryController(
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newCategory", nickname = "newCategory", tags = ["Categories"])
     open fun newCategory(@RequestBody request: NewCategoryRequest): ResponseEntity<Any> {
-        val budget = budgetRepository.findByUsersContainsAndId(getCurrentUser()!!, request.budgetId).orElse(null)
+        val budget = userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser()!!, request.budgetId, null)
+                .firstOrNull()
+                ?.budget
                 ?: return ResponseEntity.badRequest().body(ErrorResponse("Invalid budget ID"))
-        Hibernate.initialize(budget.users)
         return ResponseEntity.ok(CategoryResponse(categoryRepository.save(Category(
                 title = request.title,
                 description = request.description,
@@ -88,8 +104,10 @@ open class CategoryController(
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateCategory", nickname = "updateCategory", tags = ["Categories"])
     open fun updateCategory(@PathVariable id: Long, @RequestBody request: UpdateCategoryRequest): ResponseEntity<CategoryResponse> {
-        var category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
+        val budgets = userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
+                .mapNotNull { it.budget }
+        var category = categoryRepository.findByBudgetInAndId(budgets, id)
+                .orElse(null)
                 ?: return ResponseEntity.notFound().build()
         request.title?.let { category = category.copy(title = it) }
         request.description?.let { category = category.copy(description = it) }
@@ -100,13 +118,17 @@ open class CategoryController(
     @DeleteMapping("/{id}", produces = [MediaType.TEXT_PLAIN_VALUE])
     @ApiOperation(value = "deleteCategory", nickname = "deleteCategory", tags = ["Categories"])
     open fun deleteCategory(@PathVariable id: Long): ResponseEntity<Unit> {
-        val category = categoryRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        val budget = budgetRepository.findByUsersContainsAndCategoriesContains(getCurrentUser()!!, category).orElse(null)
+        val budgets = userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
+                .mapNotNull { it.budget }
+        val category = categoryRepository.findByBudgetInAndId(budgets, id)
+                .orElse(null)
                 ?: return ResponseEntity.notFound().build()
+        val budget = budgets.first { it.id == category.budget!!.id }
         categoryRepository.delete(category)
-        transactionRepository.findAllByBudgetAndCategory(budget, category).forEach { transaction ->
-            transactionRepository.save(transaction.copy(category = null))
-        }
+        transactionRepository.findAllByBudgetAndCategory(budget, category)
+                .forEach { transaction ->
+                    transactionRepository.save(transaction.copy(category = null))
+                }
         return ResponseEntity.ok().build()
     }
 }

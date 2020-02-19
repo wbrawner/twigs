@@ -36,6 +36,7 @@ data class User(
     override fun isAccountNonLocked(): Boolean = !isLocked
 }
 
+
 data class UserResponse(val id: Long, val username: String, val email: String) {
     constructor(user: User) : this(user.id!!, user.name, user.email)
 }
