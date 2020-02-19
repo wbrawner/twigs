@@ -112,6 +112,7 @@ open class CategoryController(
         request.title?.let { category = category.copy(title = it) }
         request.description?.let { category = category.copy(description = it) }
         request.amount?.let { category = category.copy(amount = it) }
+        request.expense?.let { category = category.copy(expense = it) }
         return ResponseEntity.ok(CategoryResponse(categoryRepository.save(category)))
     }
 
