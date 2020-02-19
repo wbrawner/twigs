@@ -70,8 +70,13 @@ open class SecurityConfig(
                     with(CorsConfiguration()) {
                         applyPermitDefaultValues()
                         allowedOrigins = environment["twigs.cors.domains"]?.split(",") ?: listOf("*")
-                        allowedMethods = listOf(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)
-                                .map { it.name }
+                        allowedMethods = listOf(
+                                HttpMethod.GET,
+                                HttpMethod.POST,
+                                HttpMethod.PUT,
+                                HttpMethod.DELETE,
+                                HttpMethod.OPTIONS
+                        ).map { it.name }
                         allowCredentials = true
                         this
                     }
