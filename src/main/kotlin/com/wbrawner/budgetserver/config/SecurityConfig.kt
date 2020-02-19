@@ -63,8 +63,6 @@ open class SecurityConfig(
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic()
-                .and()
                 .cors()
                 .configurationSource {
                     with(CorsConfiguration()) {
