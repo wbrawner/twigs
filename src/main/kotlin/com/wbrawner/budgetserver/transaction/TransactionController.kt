@@ -47,8 +47,9 @@ open class TransactionController(
             @RequestParam sortOrder: Sort.Direction?
     ): ResponseEntity<List<TransactionResponse>> {
         val budgets = if (budgetIds != null) {
-            userPermissionsRepository.findAllByUser(
+            userPermissionsRepository.findAllByUserAndBudget_IdIn(
                     user = getCurrentUser()!!,
+                    budgetIds = budgetIds.toList(),
                     pageable = PageRequest.of(page ?: 0, count ?: 1000))
         } else {
             userPermissionsRepository.findAllByUser(getCurrentUser()!!, null)
