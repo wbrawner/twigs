@@ -125,11 +125,11 @@ open class CategoryController(
                 .orElse(null)
                 ?: return ResponseEntity.notFound().build()
         val budget = budgets.first { it.id == category.budget!!.id }
-        categoryRepository.delete(category)
         transactionRepository.findAllByBudgetAndCategory(budget, category)
                 .forEach { transaction ->
                     transactionRepository.save(transaction.copy(category = null))
                 }
+        categoryRepository.delete(category)
         return ResponseEntity.ok().build()
     }
 }
