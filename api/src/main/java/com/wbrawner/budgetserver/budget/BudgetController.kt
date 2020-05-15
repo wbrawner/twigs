@@ -20,7 +20,7 @@ import javax.transaction.Transactional
 @RequestMapping("/budgets")
 @Api(value = "Budgets", tags = ["Budgets"], authorizations = [Authorization("basic")])
 @Transactional
-open class BudgetController(
+open class BudgetControllerKt(
         private val budgetRepository: BudgetRepository,
         private val transactionRepository: TransactionRepository,
         private val userRepository: UserRepository,
@@ -60,8 +60,8 @@ open class BudgetController(
 
     @PostMapping("/new", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "newBudget", nickname = "newBudget", tags = ["Budgets"])
-    open fun newBudget(@RequestBody request: NewBudgetRequest): ResponseEntity<BudgetResponse> {
-        val budget = budgetRepository.save(Budget(name = request.name, description = request.description))
+    open fun newBudget(@RequestBody request: BudgetRequest): ResponseEntity<BudgetResponse> {
+        val budget = budgetRepository.save(Budget(request.name, request.description))
         val users = request.users
                 .mapNotNull {
                     userRepository.findById(it.user).orElse(null)?.let { user ->
@@ -78,21 +78,21 @@ open class BudgetController(
                     )
             )
         }
-        return ResponseEntity.ok(BudgetResponse(budget, users.toList()))
+        return ResponseEntity.ok(BudgetResponse(budget, users.toMutableList()))
     }
 
     @PutMapping("/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ApiOperation(value = "updateBudget", nickname = "updateBudget", tags = ["Budgets"])
-    open fun updateBudget(@PathVariable id: Long, request: UpdateBudgetRequest): ResponseEntity<BudgetResponse> {
+    open fun updateBudget(@PathVariable id: Long, request: BudgetRequest): ResponseEntity<BudgetResponse> {
         var budget = userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser()!!, id, null)
                 .firstOrNull()
                 ?.budget
                 ?: return ResponseEntity.notFound().build()
         request.name?.let {
-            budget = budget.copy(name = it)
+            budget.name = it
         }
         request.description?.let {
-            budget = budget.copy(description = request.description)
+            budget.description = it
         }
         val users = request.users?.mapNotNull { req ->
             userRepository.findById(req.user).orElse(null)?.let {
