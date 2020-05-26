@@ -9,7 +9,6 @@ import com.wbrawner.budgetserver.user.UserRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -160,6 +159,10 @@ public class BudgetController {
             return ResponseEntity.notFound().build();
         }
 
+        if (userPermission.getPermission().isNotAtLeast(Permission.MANAGE)) {
+            return ResponseEntity.status(403).build();
+        }
+
         var budget = userPermission.getBudget();
         if (budget == null) {
             return ResponseEntity.notFound().build();
@@ -173,30 +176,48 @@ public class BudgetController {
             budget.setDescription(request.description);
         }
 
+        var users = new ArrayList<UserPermission>();
         if (!request.getUsers().isEmpty()) {
             request.getUsers().forEach(userPermissionRequest -> {
-                var requestedUser = userRepository.findById(userPermissionRequest.getUser()).orElse(null);
-                if (requestedUser != null) {
-                    userPermissionsRepository.save(new UserPermission(budget, requestedUser, userPermissionRequest.getPermission()));
-                }
+                userRepository.findById(userPermissionRequest.getUser()).ifPresent(requestedUser ->
+                        users.add(userPermissionsRepository.save(
+                                new UserPermission(
+                                        budget,
+                                        requestedUser,
+                                        userPermissionRequest.getPermission()
+                                )
+                        ))
+                );
             });
+        } else {
+            users.addAll(userPermissionsRepository.findAllByBudget(budget, null));
         }
-        userPermissionsRepository.findAllByUserAndBudget(getCurrentUser() !!, budget, null)
-        return ResponseEntity.ok(BudgetResponse(budgetRepository.save(budget), users))
+
+        return ResponseEntity.ok(new BudgetResponse(budgetRepository.save(budget), users));
     }
 
     @DeleteMapping(value = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     @ApiOperation(value = "deleteBudget", nickname = "deleteBudget", tags = {"Budgets"})
-    open fun
+    public ResponseEntity<Void> deleteBudget(@PathVariable long id) {
+        var user = getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
 
-    deleteBudget(@PathVariable id:Long):ResponseEntity<Unit>
+        var userPermission = userPermissionsRepository.findAllByUserAndBudget_Id(user, id, null).get(0);
+        if (userPermission == null) {
+            return ResponseEntity.notFound().build();
+        }
 
-    {
-        val budget = userPermissionsRepository.findAllByUserAndBudget_Id(getCurrentUser() !!, id, null)
-                .firstOrNull()
-            ?.budget
-            ?:return ResponseEntity.notFound().build()
-        budgetRepository.delete(budget)
-        return ResponseEntity.ok().build()
+        if (userPermission.getPermission().isNotAtLeast(Permission.MANAGE)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        var budget = userPermission.getBudget();
+        if (budget == null) {
+            return ResponseEntity.notFound().build();
+        }
+        budgetRepository.delete(budget);
+        return ResponseEntity.noContent().build();
     }
 }

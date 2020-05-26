@@ -31,12 +31,6 @@ data class UserPermissionKey(
         var userId: Long? = null
 ) : Serializable
 
-enum class Permission {
-    READ,
-    WRITE,
-    OWNER
-}
-
 data class UserPermissionResponse(
         val user: UserResponse,
         val permission: Permission
