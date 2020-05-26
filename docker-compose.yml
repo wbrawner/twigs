@@ -1,0 +1,30 @@
+version: "3.3"
+
+services:
+    twigs:
+        build: .
+        ports:
+            - "8080:8080"
+        depends_on:
+            - db
+        environment:
+            SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/budget
+            SPRING_JPA_HIBERNATE_DDL-AUTO: update
+            SERVER_TOMCAT_MAX-THREADS: 5
+        networks:
+            - twigs
+
+    db:
+        image: mysql:5
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+            MYSQL_DATABASE: budget
+            MYSQL_USER: budget
+            MYSQL_PASSWORD: budget
+        networks:
+            - twigs
+
+networks:
+    twigs:
