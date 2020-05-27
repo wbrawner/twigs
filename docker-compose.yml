@@ -11,6 +11,7 @@ services:
             SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/budget
             SPRING_JPA_HIBERNATE_DDL-AUTO: update
             SERVER_TOMCAT_MAX-THREADS: 5
+            TWIGS_CORS_DOMAINS: "http://localhost:4200"
         networks:
             - twigs
 
