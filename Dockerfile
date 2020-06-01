@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk as builder
+FROM openjdk:14-jdk as builder
 MAINTAINER William Brawner <me@wbrawner.com>
 
 RUN groupadd --system --gid 1000 gradle \
@@ -6,9 +6,9 @@ RUN groupadd --system --gid 1000 gradle \
 
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN /home/gradle/src/gradlew bootJar
+RUN /home/gradle/src/gradlew --console=plain --no-daemon bootJar
 
-FROM openjdk:11-jdk-slim
+FROM openjdk:14-jdk-slim
 EXPOSE 8080
-COPY --from=builder /home/gradle/src/build/libs/budget-server-*.jar budget-api.jar
-ENTRYPOINT ["/usr/local/openjdk-11/bin/java", "-Xmx256M", "-jar", "/budget-api.jar"]
+COPY --from=builder /home/gradle/src/api/build/libs/api.jar twigs-api.jar
+CMD /usr/java/openjdk-14/bin/java $JVM_ARGS -jar /twigs-api.jar
