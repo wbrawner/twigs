@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.wbrawner.budgetserver.Utils.getCurrentUser;
 import static com.wbrawner.budgetserver.Utils.getFirstOfMonth;
-import static com.wbrawner.budgetserver.UtilsKt.getCurrentUser;
 
 @RestController
 @RequestMapping(value = "/budgets")
@@ -81,7 +82,7 @@ public class BudgetController {
             return ResponseEntity.status(401).build();
         }
 
-        var userPermission = userPermissionsRepository.findAllByUserAndBudget_Id(user, id, null).get(0);
+        var userPermission = userPermissionsRepository.findByUserAndBudget_Id(user, id).orElse(null);
         if (userPermission == null) {
             return ResponseEntity.notFound().build();
         }
@@ -99,10 +100,10 @@ public class BudgetController {
     public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(@PathVariable long id) {
         var user = getCurrentUser();
         if (user == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        var userPermission = userPermissionsRepository.findAllByUserAndBudget_Id(user, id, null).get(0);
+        var userPermission = userPermissionsRepository.findByUserAndBudget_Id(user, id).orElse(null);
         if (userPermission == null) {
             return ResponseEntity.notFound().build();
         }
@@ -115,7 +116,7 @@ public class BudgetController {
         return ResponseEntity.ok(new BudgetBalanceResponse(budget.getId(), balance));
     }
 
-    @PostMapping(value = "/new", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "newBudget", nickname = "newBudget", tags = {"Budgets"})
     public ResponseEntity<BudgetResponse> newBudget(@RequestBody BudgetRequest request) {
         final var budget = budgetRepository.save(new Budget(request.name, request.description));
@@ -148,19 +149,19 @@ public class BudgetController {
 
     @PutMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "updateBudget", nickname = "updateBudget", tags = {"Budgets"})
-    public ResponseEntity<BudgetResponse> updateBudget(@PathVariable long id, BudgetRequest request) {
+    public ResponseEntity<BudgetResponse> updateBudget(@PathVariable long id, @RequestBody BudgetRequest request) {
         var user = getCurrentUser();
         if (user == null) {
             return ResponseEntity.status(401).build();
         }
 
-        var userPermission = userPermissionsRepository.findAllByUserAndBudget_Id(user, id, null).get(0);
+        var userPermission = userPermissionsRepository.findByUserAndBudget_Id(user, id).orElse(null);
         if (userPermission == null) {
             return ResponseEntity.notFound().build();
         }
 
         if (userPermission.getPermission().isNotAtLeast(Permission.MANAGE)) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         var budget = userPermission.getBudget();
@@ -178,17 +179,16 @@ public class BudgetController {
 
         var users = new ArrayList<UserPermission>();
         if (!request.getUsers().isEmpty()) {
-            request.getUsers().forEach(userPermissionRequest -> {
-                userRepository.findById(userPermissionRequest.getUser()).ifPresent(requestedUser ->
-                        users.add(userPermissionsRepository.save(
-                                new UserPermission(
-                                        budget,
-                                        requestedUser,
-                                        userPermissionRequest.getPermission()
-                                )
-                        ))
-                );
-            });
+            request.getUsers().forEach(userPermissionRequest ->
+                    userRepository.findById(userPermissionRequest.getUser()).ifPresent(requestedUser ->
+                            users.add(userPermissionsRepository.save(
+                                    new UserPermission(
+                                            budget,
+                                            requestedUser,
+                                            userPermissionRequest.getPermission()
+                                    )
+                            ))
+                    ));
         } else {
             users.addAll(userPermissionsRepository.findAllByBudget(budget, null));
         }
@@ -204,7 +204,7 @@ public class BudgetController {
             return ResponseEntity.status(401).build();
         }
 
-        var userPermission = userPermissionsRepository.findAllByUserAndBudget_Id(user, id, null).get(0);
+        var userPermission = userPermissionsRepository.findByUserAndBudget_Id(user, id).orElse(null);
         if (userPermission == null) {
             return ResponseEntity.notFound().build();
         }
@@ -218,6 +218,6 @@ public class BudgetController {
             return ResponseEntity.notFound().build();
         }
         budgetRepository.delete(budget);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,11 +1,14 @@
 package com.wbrawner.budgetserver;
 
+import com.wbrawner.budgetserver.user.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 public final class Utils {
-    private static int[] CALENDAR_FIELDS = new int[]{
+    private static final int[] CALENDAR_FIELDS = new int[]{
             Calendar.MILLISECOND,
             Calendar.SECOND,
             Calendar.MINUTE,
@@ -19,5 +22,22 @@ public final class Utils {
             calendar.set(field, calendar.getActualMinimum(field));
         }
         return calendar.getTime();
+    }
+
+    public static Date getEndOfMonth() {
+        GregorianCalendar calendar = new GregorianCalendar();
+        for (int field : CALENDAR_FIELDS) {
+            calendar.set(field, calendar.getActualMaximum(field));
+        }
+        return calendar.getTime();
+    }
+
+    public static User getCurrentUser() {
+        Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user instanceof User) {
+            return (User) user;
+        }
+
+        return null;
     }
 }
