@@ -10,12 +10,23 @@ public class CategoryResponse {
     private final long budgetId;
     private final boolean expense;
 
+    public CategoryResponse(Category category, int month, int year) {
+        this(
+                Objects.requireNonNull(category.getId()),
+                category.getTitle(),
+                category.getDescription(),
+                category.getAmount(month, year),
+                Objects.requireNonNull(category.getBudget()).getId(),
+                category.isExpense()
+        );
+    }
+
     public CategoryResponse(Category category) {
         this(
                 Objects.requireNonNull(category.getId()),
                 category.getTitle(),
                 category.getDescription(),
-                category.getAmount(),
+                category.getMostRecentAmount(),
                 Objects.requireNonNull(category.getBudget()).getId(),
                 category.isExpense()
         );

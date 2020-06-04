@@ -3,14 +3,19 @@ package com.wbrawner.budgetserver.category;
 public class UpdateCategoryRequest {
     private final String title;
     private final String description;
-    private final Long amount;
+    private final CategoryAmountRequest amount;
     private final Boolean expense;
 
     public UpdateCategoryRequest() {
         this(null, null, null, null);
     }
 
-    public UpdateCategoryRequest(String title, String description, Long amount, Boolean expense) {
+    public UpdateCategoryRequest(
+            String title,
+            String description,
+            CategoryAmountRequest amount,
+            Boolean expense
+    ) {
         this.title = title;
         this.description = description;
         this.amount = amount;
@@ -25,7 +30,7 @@ public class UpdateCategoryRequest {
         return description;
     }
 
-    public Long getAmount() {
+    public CategoryAmountRequest getAmount() {
         return amount;
     }
 
