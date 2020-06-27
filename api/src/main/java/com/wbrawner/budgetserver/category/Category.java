@@ -14,7 +14,6 @@ public class Category implements Comparable<Category> {
     private final Long id = null;
     private String title;
     private String description;
-    @JoinColumn(nullable = false)
     @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
     private final Set<CategoryAmount> amounts = new HashSet<>();
     @JoinColumn(nullable = false)
