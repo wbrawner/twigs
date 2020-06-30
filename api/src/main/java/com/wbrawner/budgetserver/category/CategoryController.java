@@ -8,6 +8,9 @@ import com.wbrawner.budgetserver.transaction.TransactionRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -44,6 +47,7 @@ class CategoryController {
     ResponseEntity<List<CategoryResponse>> getCategories(
             @RequestParam(name = "budgetIds", required = false) List<Long> budgetIds,
             @RequestParam(name = "isExpense", required = false) Boolean isExpense,
+            @RequestParam(name = "includeArchived", required = false) Boolean includeArchived,
             @RequestParam(name = "count", required = false) Integer count,
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "false", required = false) String sortBy,
@@ -69,13 +73,8 @@ class CategoryController {
                 sortOrder != null ? sortOrder : Sort.Direction.ASC,
                 sortBy != null ? sortBy : "title"
         );
-        List<Category> categories;
-        if (isExpense == null) {
-            categories = categoryRepository.findAllByBudgetIn(budgets, pageRequest);
-        } else {
-            categories = categoryRepository.findAllByBudgetInAndExpense(budgets, isExpense, pageRequest);
-        }
-
+        Boolean archived = includeArchived == null || includeArchived == false ? false : null;
+        List<Category> categories = categoryRepository.findAllByBudgetIn(budgets, isExpense, archived, pageRequest);
         return ResponseEntity.ok(
                 categories.stream()
                         .map(CategoryResponse::new)
@@ -152,6 +151,9 @@ class CategoryController {
         }
         if (request.getExpense() != null) {
             category.setExpense(request.getExpense());
+        }
+        if (request.getArchived() != null) {
+            category.setArchived(request.getArchived());
         }
         return ResponseEntity.ok(new CategoryResponse(categoryRepository.save(category)));
     }

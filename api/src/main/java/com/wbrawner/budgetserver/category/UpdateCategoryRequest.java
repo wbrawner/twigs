@@ -5,16 +5,18 @@ public class UpdateCategoryRequest {
     private final String description;
     private final Long amount;
     private final Boolean expense;
+    private final Boolean archived;
 
     public UpdateCategoryRequest() {
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
-    public UpdateCategoryRequest(String title, String description, Long amount, Boolean expense) {
+    public UpdateCategoryRequest(String title, String description, Long amount, Boolean expense, Boolean archived) {
         this.title = title;
         this.description = description;
         this.amount = amount;
         this.expense = expense;
+        this.archived = archived;
     }
 
     public String getTitle() {
@@ -31,5 +33,9 @@ public class UpdateCategoryRequest {
 
     public Boolean getExpense() {
         return expense;
+    }
+
+    public Boolean getArchived() {
+        return archived;
     }
 }

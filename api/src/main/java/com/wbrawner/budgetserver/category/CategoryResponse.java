@@ -9,6 +9,7 @@ public class CategoryResponse {
     private final long amount;
     private final long budgetId;
     private final boolean expense;
+    private final boolean archived;
 
     public CategoryResponse(Category category) {
         this(
@@ -17,17 +18,19 @@ public class CategoryResponse {
                 category.getDescription(),
                 category.getAmount(),
                 Objects.requireNonNull(category.getBudget()).getId(),
-                category.isExpense()
+                category.isExpense(),
+                category.isArchived()
         );
     }
 
-    public CategoryResponse(long id, String title, String description, long amount, long budgetId, boolean expense) {
+    public CategoryResponse(long id, String title, String description, long amount, long budgetId, boolean expense, boolean archived) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.amount = amount;
         this.budgetId = budgetId;
         this.expense = expense;
+        this.archived = archived;
     }
 
     public long getId() {
@@ -52,5 +55,9 @@ public class CategoryResponse {
 
     public boolean isExpense() {
         return expense;
+    }
+
+    public boolean isArchived() {
+        return archived;
     }
 }

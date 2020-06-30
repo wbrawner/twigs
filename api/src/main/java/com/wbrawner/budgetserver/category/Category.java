@@ -16,6 +16,8 @@ public class Category implements Comparable<Category> {
     @ManyToOne
     private Budget budget;
     private boolean expense;
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean archived;
 
     public Category() {
         this(null, null, 0L, null, true);
@@ -82,5 +84,13 @@ public class Category implements Comparable<Category> {
 
     public void setExpense(boolean expense) {
         this.expense = expense;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }

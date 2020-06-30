@@ -74,7 +74,7 @@ public class TransactionController {
         if (categoryIds != null && !categoryIds.isEmpty()) {
             categories = categoryRepository.findAllByBudgetInAndIdIn(budgets, categoryIds, null);
         } else {
-            categories = categoryRepository.findAllByBudgetIn(budgets, null);
+            categories = categoryRepository.findAllByBudgetIn(budgets, null, null, null);
         }
         var pageRequest = PageRequest.of(
                 Math.min(0, page != null ? page - 1 : 0),
