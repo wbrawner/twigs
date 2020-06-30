@@ -99,6 +99,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                     .map(Enum::name)
                                     .collect(Collectors.toList())
                     );
+                    corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 })
                 .and()
