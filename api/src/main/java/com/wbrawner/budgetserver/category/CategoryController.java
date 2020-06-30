@@ -41,21 +41,14 @@ class CategoryController {
 
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getCategories", nickname = "getCategories", tags = {"Categories"})
-    ResponseEntity<Object> getCategories(
+    ResponseEntity<List<CategoryResponse>> getCategories(
             @RequestParam(name = "budgetIds", required = false) List<Long> budgetIds,
             @RequestParam(name = "isExpense", required = false) Boolean isExpense,
-            @RequestParam(name = "month", required = false) Integer month,
-            @RequestParam(name = "year", required = false) Integer year,
             @RequestParam(name = "count", required = false) Integer count,
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "false", required = false) String sortBy,
             @RequestParam(name = "sortOrder", required = false) Sort.Direction sortOrder
     ) {
-        if ((month == null && year != null) || (month != null && year == null)) {
-            return ResponseEntity.badRequest()
-                    .body(new ErrorResponse("month and year must be provided together or not at all."));
-        }
-
         List<UserPermission> userPermissions;
         if (budgetIds != null && !budgetIds.isEmpty()) {
             userPermissions = userPermissionsRepository.findAllByUserAndBudget_IdIn(
@@ -76,7 +69,6 @@ class CategoryController {
                 sortOrder != null ? sortOrder : Sort.Direction.ASC,
                 sortBy != null ? sortBy : "title"
         );
-
         List<Category> categories;
         if (isExpense == null) {
             categories = categoryRepository.findAllByBudgetIn(budgets, pageRequest);
@@ -86,13 +78,7 @@ class CategoryController {
 
         return ResponseEntity.ok(
                 categories.stream()
-                        .map(category -> {
-                            if (month != null) {
-                                return new CategoryResponse(category, month, year);
-                            } else {
-                                return new CategoryResponse(category);
-                            }
-                        })
+                        .map(CategoryResponse::new)
                         .collect(Collectors.toList())
         );
     }
@@ -136,14 +122,13 @@ class CategoryController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         var budget = userResponse.getBudget();
-        var category = new Category(
+        return ResponseEntity.ok(new CategoryResponse(categoryRepository.save(new Category(
                 request.getTitle(),
                 request.getDescription(),
+                request.getAmount(),
                 budget,
                 request.getExpense()
-        );
-        category.setAmount(request.getAmount());
-        return ResponseEntity.ok(new CategoryResponse(categoryRepository.save(category)));
+        ))));
     }
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})

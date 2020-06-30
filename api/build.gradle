@@ -27,10 +27,6 @@ jar {
     description = "twigs-server"
 }
 
-test {
-    useJUnitPlatform()
-}
-
 mainClassName = "com.wbrawner.budgetserver.BudgetServerApplication"
 
 sourceCompatibility = 14
