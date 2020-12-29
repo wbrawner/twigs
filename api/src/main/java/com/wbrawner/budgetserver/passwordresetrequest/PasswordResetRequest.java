@@ -7,31 +7,30 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import static com.wbrawner.budgetserver.Utils.randomId;
+
 @Entity
 public class PasswordResetRequest {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private final Long id;
+    private final String id = randomId();
     @ManyToOne
     private final User user;
     private final Calendar date;
     private final String token;
 
     public PasswordResetRequest() {
-        this(null, null);
+        this(null);
     }
 
-    public PasswordResetRequest(Long id, User user) {
-        this(id, user, new GregorianCalendar(), UUID.randomUUID().toString().replace("-", ""));
+    public PasswordResetRequest(User user) {
+        this(user, new GregorianCalendar(), randomId());
     }
 
     public PasswordResetRequest(
-            Long id,
             User user,
             Calendar date,
             String token
     ) {
-        this.id = id;
         this.user = user;
         this.date = date;
         this.token = token;

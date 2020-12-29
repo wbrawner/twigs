@@ -5,15 +5,15 @@ class NewTransactionRequest {
     private final String description;
     private final String date;
     private final Long amount;
-    private final Long categoryId;
+    private final String categoryId;
     private final Boolean expense;
-    private final Long budgetId;
+    private final String budgetId;
 
     NewTransactionRequest() {
         this(null, null, null, null, null, null, null);
     }
 
-    NewTransactionRequest(String title, String description, String date, Long amount, Long categoryId, Boolean expense, Long budgetId) {
+    NewTransactionRequest(String title, String description, String date, Long amount, String categoryId, Boolean expense, String budgetId) {
         this.title = title;
         this.description = description;
         this.date = date;
@@ -39,7 +39,7 @@ class NewTransactionRequest {
         return amount;
     }
 
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
@@ -47,7 +47,7 @@ class NewTransactionRequest {
         return expense;
     }
 
-    public Long getBudgetId() {
+    public String getBudgetId() {
         return budgetId;
     }
 }

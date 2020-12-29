@@ -4,14 +4,14 @@ public class NewCategoryRequest {
     private final String title;
     private final String description;
     private final Long amount;
-    private final Long budgetId;
+    private final String budgetId;
     private final Boolean expense;
 
     public NewCategoryRequest() {
         this(null, null, null, null, null);
     }
 
-    public NewCategoryRequest(String title, String description, Long amount, Long budgetId, Boolean expense) {
+    public NewCategoryRequest(String title, String description, Long amount, String budgetId, Boolean expense) {
         this.title = title;
         this.description = description;
         this.amount = amount;
@@ -31,7 +31,7 @@ public class NewCategoryRequest {
         return amount;
     }
 
-    public Long getBudgetId() {
+    public String getBudgetId() {
         return budgetId;
     }
 

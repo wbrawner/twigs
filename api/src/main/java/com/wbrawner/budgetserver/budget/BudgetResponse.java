@@ -9,12 +9,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BudgetResponse {
-    public final long id;
+    public final String id;
     public final String name;
     public final String description;
     private final List<UserPermissionResponse> users;
 
-    public BudgetResponse(long id, String name, String description, List<UserPermissionResponse> users) {
+    public BudgetResponse(String id, String name, String description, List<UserPermissionResponse> users) {
         this.id = id;
         this.name = name;
         this.description = description;

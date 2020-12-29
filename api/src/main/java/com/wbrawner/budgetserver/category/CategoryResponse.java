@@ -3,11 +3,11 @@ package com.wbrawner.budgetserver.category;
 import java.util.Objects;
 
 public class CategoryResponse {
-    private final long id;
+    private final String id;
     private final String title;
     private final String description;
     private final long amount;
-    private final long budgetId;
+    private final String budgetId;
     private final boolean expense;
     private final boolean archived;
 
@@ -23,7 +23,7 @@ public class CategoryResponse {
         );
     }
 
-    public CategoryResponse(long id, String title, String description, long amount, long budgetId, boolean expense, boolean archived) {
+    public CategoryResponse(String id, String title, String description, long amount, String budgetId, boolean expense, boolean archived) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -33,7 +33,7 @@ public class CategoryResponse {
         this.archived = archived;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
@@ -49,7 +49,7 @@ public class CategoryResponse {
         return amount;
     }
 
-    public long getBudgetId() {
+    public String getBudgetId() {
         return budgetId;
     }
 

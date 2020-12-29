@@ -1,7 +1,7 @@
 package com.wbrawner.budgetserver.user;
 
 public class UserResponse {
-    private final long id;
+    private final String id;
     private final String username;
     private final String email;
 
@@ -9,13 +9,13 @@ public class UserResponse {
         this(user.getId(), user.getUsername(), user.getEmail());
     }
 
-    public UserResponse(long id, String username, String email) {
+    public UserResponse(String id, String username, String email) {
         this.id = id;
         this.username = username;
         this.email = email;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 

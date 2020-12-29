@@ -102,7 +102,7 @@ public class UserController {
 
     @GetMapping(path = "/{id}")
     @ApiOperation(value = "getUser", nickname = "getUser", tags = {"Users"})
-    ResponseEntity<UserResponse> getUser(@PathVariable Long id) {
+    ResponseEntity<UserResponse> getUser(@PathVariable String id) {
         var user = userRepository.findById(id).orElse(null);
         if (user == null) {
             return ResponseEntity.notFound().build();
@@ -152,7 +152,7 @@ public class UserController {
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     @ApiOperation(value = "deleteUser", nickname = "deleteUser", tags = {"Users"})
-    ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    ResponseEntity<Void> deleteUser(@PathVariable String id) {
         if (!getCurrentUser().getId().equals(id)) return ResponseEntity.status(403).build();
         userRepository.deleteById(id);
         return ResponseEntity.ok().build();

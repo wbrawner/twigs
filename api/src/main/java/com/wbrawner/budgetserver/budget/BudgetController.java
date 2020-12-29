@@ -77,7 +77,7 @@ public class BudgetController {
 
     @GetMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getBudget", nickname = "getBudget", tags = {"Budgets"})
-    public ResponseEntity<BudgetResponse> getBudget(@PathVariable long id) {
+    public ResponseEntity<BudgetResponse> getBudget(@PathVariable String id) {
         return getBudgetWithPermission(id, Permission.READ, (budget) ->
                 ResponseEntity.ok(new BudgetResponse(budget, userPermissionsRepository.findAllByBudget(budget, null)))
         );
@@ -85,7 +85,7 @@ public class BudgetController {
 
     @GetMapping(value = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getBudgetBalance", nickname = "getBudgetBalance", tags = {"Budgets"})
-    public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(@PathVariable long id) {
+    public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(@PathVariable String id) {
         return getBudgetWithPermission(id, Permission.READ, (budget) -> {
             var balance = transactionRepository.sumBalanceByBudgetId(budget.getId(), getFirstOfMonth());
             return ResponseEntity.ok(new BudgetBalanceResponse(budget.getId(), balance));
@@ -125,7 +125,7 @@ public class BudgetController {
 
     @PutMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "updateBudget", nickname = "updateBudget", tags = {"Budgets"})
-    public ResponseEntity<BudgetResponse> updateBudget(@PathVariable long id, @RequestBody BudgetRequest request) {
+    public ResponseEntity<BudgetResponse> updateBudget(@PathVariable String id, @RequestBody BudgetRequest request) {
         return getBudgetWithPermission(id, Permission.MANAGE, (budget) -> {
             if (request.name != null) {
                 budget.setName(request.name);
@@ -157,7 +157,7 @@ public class BudgetController {
 
     @DeleteMapping(value = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     @ApiOperation(value = "deleteBudget", nickname = "deleteBudget", tags = {"Budgets"})
-    public ResponseEntity<Void> deleteBudget(@PathVariable long id) {
+    public ResponseEntity<Void> deleteBudget(@PathVariable String id) {
         return getBudgetWithPermission(id, Permission.MANAGE, (budget) -> {
             budgetRepository.delete(budget);
             return ResponseEntity.ok().build();
@@ -165,7 +165,7 @@ public class BudgetController {
     }
 
     private <T> ResponseEntity<T> getBudgetWithPermission(
-            long budgetId,
+            String budgetId,
             Permission permission,
             Function<Budget, ResponseEntity<T>> callback
     ) {

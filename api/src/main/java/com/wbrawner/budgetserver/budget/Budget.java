@@ -8,11 +8,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static com.wbrawner.budgetserver.Utils.randomId;
+
 @Entity
 public class Budget {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private String id = randomId();
     private String name;
     private String description;
     private String currencyCode;
@@ -35,11 +36,11 @@ public class Budget {
         this.currencyCode = currencyCode;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

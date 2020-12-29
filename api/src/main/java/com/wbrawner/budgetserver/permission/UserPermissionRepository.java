@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserPermissionRepository extends PagingAndSortingRepository<UserPermission, UserPermissionKey> {
-    Optional<UserPermission> findByUserAndBudget_Id(User user, Long budgetId);
+    Optional<UserPermission> findByUserAndBudget_Id(User user, String budgetId);
 
     List<UserPermission> findAllByUser(User user, Pageable pageable);
 
@@ -17,5 +17,5 @@ public interface UserPermissionRepository extends PagingAndSortingRepository<Use
 
     List<UserPermission> findAllByUserAndBudget(User user, Budget budget, Pageable pageable);
 
-    List<UserPermission> findAllByUserAndBudget_IdIn(User user, List<Long> budgetIds, Pageable pageable);
+    List<UserPermission> findAllByUserAndBudget_IdIn(User user, List<String> budgetIds, Pageable pageable);
 }

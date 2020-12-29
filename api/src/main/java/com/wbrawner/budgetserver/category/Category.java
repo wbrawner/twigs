@@ -3,12 +3,14 @@ package com.wbrawner.budgetserver.category;
 import com.wbrawner.budgetserver.budget.Budget;
 
 import javax.persistence.*;
+import java.util.UUID;
+
+import static com.wbrawner.budgetserver.Utils.randomId;
 
 @Entity
 public class Category implements Comparable<Category> {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private final Long id = null;
+    private final String id = randomId();
     private String title;
     private String description;
     private long amount;
@@ -42,7 +44,7 @@ public class Category implements Comparable<Category> {
         return title.compareTo(other.title);
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 

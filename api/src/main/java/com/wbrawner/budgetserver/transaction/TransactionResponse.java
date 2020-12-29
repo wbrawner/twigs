@@ -1,25 +1,25 @@
 package com.wbrawner.budgetserver.transaction;
 
 class TransactionResponse {
-    private final Long id;
+    private final String id;
     private final String title;
     private final String description;
     private final String date;
     private final Long amount;
     private final Boolean expense;
-    private final Long budgetId;
-    private final Long categoryId;
-    private final Long createdBy;
+    private final String budgetId;
+    private final String categoryId;
+    private final String createdBy;
 
-    TransactionResponse(Long id,
+    TransactionResponse(String id,
                         String title,
                         String description,
                         String date,
                         Long amount,
                         Boolean expense,
-                        Long budgetId,
-                        Long categoryId,
-                        Long createdBy) {
+                        String budgetId,
+                        String categoryId,
+                        String createdBy) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -45,7 +45,7 @@ class TransactionResponse {
         );
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
@@ -69,15 +69,15 @@ class TransactionResponse {
         return expense;
     }
 
-    public Long getBudgetId() {
+    public String getBudgetId() {
         return budgetId;
     }
 
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public Long getCreatedBy() {
+    public String getCreatedBy() {
         return createdBy;
     }
 }

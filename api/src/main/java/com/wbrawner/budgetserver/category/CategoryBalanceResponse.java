@@ -1,15 +1,15 @@
 package com.wbrawner.budgetserver.category;
 
 public class CategoryBalanceResponse {
-    private final long id;
+    private final String id;
     private final long balance;
 
-    public CategoryBalanceResponse(long id, long balance) {
+    public CategoryBalanceResponse(String id, long balance) {
         this.id = id;
         this.balance = balance;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 

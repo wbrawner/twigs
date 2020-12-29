@@ -5,16 +5,16 @@ class UpdateTransactionRequest {
     private final String description;
     private final String date;
     private final Long amount;
-    private final Long categoryId;
+    private final String categoryId;
     private final Boolean expense;
-    private final Long budgetId;
-    private final Long createdBy;
+    private final String budgetId;
+    private final String createdBy;
 
     UpdateTransactionRequest() {
         this(null, null, null, null, null, null, null, null);
     }
 
-    UpdateTransactionRequest(String title, String description, String date, Long amount, Long categoryId, Boolean expense, Long budgetId, Long createdBy) {
+    UpdateTransactionRequest(String title, String description, String date, Long amount, String categoryId, Boolean expense, String budgetId, String createdBy) {
         this.title = title;
         this.description = description;
         this.date = date;
@@ -41,7 +41,7 @@ class UpdateTransactionRequest {
         return amount;
     }
 
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
@@ -49,11 +49,11 @@ class UpdateTransactionRequest {
         return expense;
     }
 
-    public Long getBudgetId() {
+    public String getBudgetId() {
         return budgetId;
     }
 
-    public Long getCreatedBy() {
+    public String getCreatedBy() {
         return createdBy;
     }
 }

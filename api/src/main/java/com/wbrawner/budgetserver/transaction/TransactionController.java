@@ -47,8 +47,8 @@ public class TransactionController {
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getTransactions", nickname = "getTransactions", tags = {"Transactions"})
     public ResponseEntity<List<TransactionResponse>> getTransactions(
-            @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
-            @RequestParam(value = "budgetIds", required = false) List<Long> budgetIds,
+            @RequestParam(value = "categoryIds", required = false) List<String> categoryIds,
+            @RequestParam(value = "budgetIds", required = false) List<String> budgetIds,
             @RequestParam(value = "from", required = false) String from,
             @RequestParam(value = "to", required = false) String to,
             @RequestParam(value = "count", required = false) Integer count,
@@ -113,7 +113,7 @@ public class TransactionController {
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getTransaction", nickname = "getTransaction", tags = {"Transactions"})
-    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable Long id) {
+    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
                 .map(UserPermission::getBudget)
@@ -153,7 +153,7 @@ public class TransactionController {
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = {"Transactions"})
-    public ResponseEntity<Object> updateTransaction(@PathVariable Long id, @RequestBody UpdateTransactionRequest request) {
+    public ResponseEntity<Object> updateTransaction(@PathVariable String id, @RequestBody UpdateTransactionRequest request) {
         var transaction = transactionRepository.findById(id).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();
         var userPermission = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), transaction.getBudget().getId()).orElse(null);
@@ -199,7 +199,7 @@ public class TransactionController {
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     @ApiOperation(value = "deleteTransaction", nickname = "deleteTransaction", tags = {"Transactions"})
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
         var transaction = transactionRepository.findById(id).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();
         // Check that the transaction belongs to an budget that the user has access to before deleting it

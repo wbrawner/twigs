@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 public final class Utils {
     private static final int[] CALENDAR_FIELDS = new int[]{
@@ -39,5 +40,9 @@ public final class Utils {
         }
 
         return null;
+    }
+
+    public static String randomId() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 }

@@ -5,14 +5,14 @@ import java.io.Serializable;
 
 @Embeddable
 public class UserPermissionKey implements Serializable {
-    private final Long budgetId;
-    private final Long userId;
+    private final String budgetId;
+    private final String userId;
 
     public UserPermissionKey() {
-        this(0, 0);
+        this(null, null);
     }
 
-    public UserPermissionKey(long budgetId, long userId) {
+    public UserPermissionKey(String budgetId, String userId) {
         this.budgetId = budgetId;
         this.userId = userId;
     }

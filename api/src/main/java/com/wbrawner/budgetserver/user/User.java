@@ -9,11 +9,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static com.wbrawner.budgetserver.Utils.randomId;
+
 @Entity
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private final Long id = null;
+    private final String id = randomId();
     @Transient
     private final List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("USER"));
     private String username;
@@ -30,7 +31,7 @@ public class User implements UserDetails {
         this.email = email;
     }
 
-    public Long getId() {
+    public String getId() {
         // This shouldn't ever need to be set manually, only through Hibernate
         //noinspection ConstantConditions
         return id;

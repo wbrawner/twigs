@@ -7,11 +7,12 @@ import com.wbrawner.budgetserver.user.User;
 import javax.persistence.*;
 import java.time.Instant;
 
+import static com.wbrawner.budgetserver.Utils.randomId;
+
 @Entity
 public class Transaction implements Comparable<Transaction> {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private final Long id = null;
+    private final String id = randomId();
     @ManyToOne
     @JoinColumn(nullable = false)
     private final User createdBy;
@@ -48,7 +49,7 @@ public class Transaction implements Comparable<Transaction> {
         this.budget = budget;
     }
 
-    public Long getId() {
+    public String getId() {
         // This should only be set from Hibernate so it shouldn't actually be null ever
         //noinspection ConstantConditions
         return id;

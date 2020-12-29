@@ -45,7 +45,7 @@ class CategoryController {
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getCategories", nickname = "getCategories", tags = {"Categories"})
     ResponseEntity<List<CategoryResponse>> getCategories(
-            @RequestParam(name = "budgetIds", required = false) List<Long> budgetIds,
+            @RequestParam(name = "budgetIds", required = false) List<String> budgetIds,
             @RequestParam(name = "isExpense", required = false) Boolean isExpense,
             @RequestParam(name = "includeArchived", required = false) Boolean includeArchived,
             @RequestParam(name = "count", required = false) Integer count,
@@ -84,7 +84,7 @@ class CategoryController {
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getCategory", nickname = "getCategory", tags = {"Categories"})
-    ResponseEntity<CategoryResponse> getCategory(@PathVariable Long id) {
+    ResponseEntity<CategoryResponse> getCategory(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
                 .map(UserPermission::getBudget)
@@ -96,7 +96,7 @@ class CategoryController {
 
     @GetMapping(path = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getCategoryBalance", nickname = "getCategoryBalance", tags = {"Categories"})
-    ResponseEntity<CategoryBalanceResponse> getCategoryBalance(@PathVariable Long id) {
+    ResponseEntity<CategoryBalanceResponse> getCategoryBalance(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
                 .map(UserPermission::getBudget)
@@ -132,7 +132,7 @@ class CategoryController {
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "updateCategory", nickname = "updateCategory", tags = {"Categories"})
-    ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @RequestBody UpdateCategoryRequest request) {
+    ResponseEntity<CategoryResponse> updateCategory(@PathVariable String id, @RequestBody UpdateCategoryRequest request) {
         var category = categoryRepository.findById(id).orElse(null);
         if (category == null) return ResponseEntity.notFound().build();
         var userPermission = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), category.getBudget().getId()).orElse(null);
@@ -160,7 +160,7 @@ class CategoryController {
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     @ApiOperation(value = "deleteCategory", nickname = "deleteCategory", tags = {"Categories"})
-    ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    ResponseEntity<Void> deleteCategory(@PathVariable String id) {
         var category = categoryRepository.findById(id).orElse(null);
         if (category == null) return ResponseEntity.notFound().build();
         var userPermission = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), category.getBudget().getId()).orElse(null);
