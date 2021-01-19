@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
 
+import static com.wbrawner.budgetserver.Utils.twoWeeksFromNow;
+
 public class TokenAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserSessionRepository userSessionRepository;
     private final UserRepository userRepository;
@@ -40,6 +42,12 @@ public class TokenAuthenticationProvider extends DaoAuthenticationProvider {
             if (user.isEmpty()) {
                 throw new InternalAuthenticationServiceException("Failed to find user for token");
             }
+            new Thread(() -> {
+                // Update the session on a background thread to avoid holding up the request longer than necessary
+                var updatedSession = session.get();
+                updatedSession.setExpiration(twoWeeksFromNow());
+                userSessionRepository.save(updatedSession);
+            }).start();
             return new SessionAuthenticationToken(user.get(), authentication.getCredentials(), authentication.getAuthorities());
         } else {
             return super.authenticate(authentication);
