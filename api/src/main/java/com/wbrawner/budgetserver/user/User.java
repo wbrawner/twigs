@@ -1,10 +1,13 @@
 package com.wbrawner.budgetserver.user;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +34,7 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    @NonNull
     public String getId() {
         // This shouldn't ever need to be set manually, only through Hibernate
         //noinspection ConstantConditions

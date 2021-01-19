@@ -1,6 +1,7 @@
 package com.wbrawner.budgetserver.config;
 
 import com.wbrawner.budgetserver.passwordresetrequest.PasswordResetRequestRepository;
+import com.wbrawner.budgetserver.session.UserSessionRepository;
 import com.wbrawner.budgetserver.user.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
@@ -28,6 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final Environment env;
     private final DataSource datasource;
+    private final UserSessionRepository userSessionRepository;
     private final UserRepository userRepository;
     private final PasswordResetRequestRepository passwordResetRequestRepository;
     private final JdbcUserDetailsService userDetailsService;
@@ -35,12 +38,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public SecurityConfig(Environment env,
                           DataSource datasource,
+                          UserSessionRepository userSessionRepository,
                           UserRepository userRepository,
                           PasswordResetRequestRepository passwordResetRequestRepository,
                           JdbcUserDetailsService userDetailsService,
                           Environment environment) {
         this.env = env;
         this.datasource = datasource;
+        this.userSessionRepository = userSessionRepository;
         this.userRepository = userRepository;
         this.passwordResetRequestRepository = passwordResetRequestRepository;
         this.userDetailsService = userDetailsService;
@@ -56,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public DaoAuthenticationProvider getAuthenticationProvider() {
-        var authProvider = new DaoAuthenticationProvider();
+        var authProvider = new TokenAuthenticationProvider(userSessionRepository, userRepository);
         authProvider.setPasswordEncoder(getPasswordEncoder());
         authProvider.setUserDetailsService(userDetailsService);
         return authProvider;
@@ -81,6 +86,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .httpBasic()
+                .authenticationEntryPoint(new SilentAuthenticationEntryPoint())
                 .and()
                 .cors()
                 .configurationSource(request -> {
@@ -104,7 +110,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 })
                 .and()
                 .csrf()
-                .disable();
+                .disable()
+                .addFilter(new TokenAuthenticationFilter(authenticationManager()))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 }
 

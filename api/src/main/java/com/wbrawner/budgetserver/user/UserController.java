@@ -4,6 +4,9 @@ import com.wbrawner.budgetserver.ErrorResponse;
 import com.wbrawner.budgetserver.budget.BudgetRepository;
 import com.wbrawner.budgetserver.permission.UserPermissionRepository;
 import com.wbrawner.budgetserver.permission.UserPermissionResponse;
+import com.wbrawner.budgetserver.session.Session;
+import com.wbrawner.budgetserver.session.SessionResponse;
+import com.wbrawner.budgetserver.session.UserSessionRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.wbrawner.budgetserver.Utils.getCurrentUser;
@@ -33,16 +37,19 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserPermissionRepository userPermissionsRepository;
+    private final UserSessionRepository userSessionRepository;
     private final DaoAuthenticationProvider authenticationProvider;
 
     @Autowired
     public UserController(BudgetRepository budgetRepository,
                           UserRepository userRepository,
+                          UserSessionRepository userSessionRepository,
                           PasswordEncoder passwordEncoder,
                           UserPermissionRepository userPermissionsRepository,
                           DaoAuthenticationProvider authenticationProvider) {
         this.budgetRepository = budgetRepository;
         this.userRepository = userRepository;
+        this.userSessionRepository = userSessionRepository;
         this.passwordEncoder = passwordEncoder;
         this.userPermissionsRepository = userPermissionsRepository;
         this.authenticationProvider = authenticationProvider;
@@ -51,7 +58,7 @@ public class UserController {
 
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getUsers", nickname = "getUsers", tags = {"Users"})
-    ResponseEntity<List<UserPermissionResponse>> getUsers(Long budgetId) {
+    ResponseEntity<List<UserPermissionResponse>> getUsers(String budgetId) {
         var budget = budgetRepository.findById(budgetId).orElse(null);
         if (budget == null) {
             return ResponseEntity.notFound().build();
@@ -69,7 +76,7 @@ public class UserController {
 
     @PostMapping(path = "/login", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "login", nickname = "login", tags = {"Users"})
-    ResponseEntity<UserResponse> login(@RequestBody LoginRequest request) {
+    ResponseEntity<SessionResponse> login(@RequestBody LoginRequest request) {
         var authReq = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
         Authentication auth;
         try {
@@ -78,7 +85,9 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         SecurityContextHolder.getContext().setAuthentication(auth);
-        return ResponseEntity.ok(new UserResponse(getCurrentUser()));
+        var user = Objects.requireNonNull(getCurrentUser());
+        var session = userSessionRepository.save(new Session(user.getId()));
+        return ResponseEntity.ok(new SessionResponse(session));
     }
 
     @GetMapping(path = "/me", produces = {MediaType.APPLICATION_JSON_VALUE})

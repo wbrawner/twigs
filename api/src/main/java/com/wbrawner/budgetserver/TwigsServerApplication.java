@@ -2,10 +2,12 @@ package com.wbrawner.budgetserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-public class BudgetServerApplication {
+@EnableScheduling
+public class TwigsServerApplication {
     public static void main(String[] args) {
-        SpringApplication.run(BudgetServerApplication.class, args);
+        SpringApplication.run(TwigsServerApplication.class, args);
     }
 }
