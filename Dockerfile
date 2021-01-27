@@ -11,4 +11,5 @@ RUN /home/gradle/src/gradlew --console=plain --no-daemon bootJar
 FROM openjdk:14-jdk-slim
 EXPOSE 8080
 COPY --from=builder /home/gradle/src/api/build/libs/api.jar twigs-api.jar
-CMD /usr/java/openjdk-14/bin/java $JVM_ARGS -jar /twigs-api.jar
+CMD /usr/local/openjdk-14/bin/java $JVM_ARGS -jar /twigs-api.jar
+
