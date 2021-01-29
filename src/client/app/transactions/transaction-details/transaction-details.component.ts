@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Transaction } from '../transaction';
-import { TWIGS_SERVICE, TwigsService } from 'src/app/shared/twigs.service';
+import { TWIGS_SERVICE, TwigsService } from 'src/client/app/shared/twigs.service';
 
 @Component({
   selector: 'app-transaction-details',

@@ -1,13 +1,13 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { Budget } from '../budget';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppComponent } from 'src/app/app.component';
-import { Transaction } from 'src/app/transactions/transaction';
-import { Category } from 'src/app/categories/category';
+import { AppComponent } from 'src/client/app/app.component';
+import { Transaction } from 'src/client/app/transactions/transaction';
+import { Category } from 'src/client/app/categories/category';
 import { Observable } from 'rxjs';
 import { Label } from 'ng2-charts';
 import { ChartDataSets } from 'chart.js';
-import { TWIGS_SERVICE, TwigsService } from 'src/app/shared/twigs.service';
+import { TWIGS_SERVICE, TwigsService } from 'src/client/app/shared/twigs.service';
 import { Actionable } from '../../shared/actionable';
 
 @Component({

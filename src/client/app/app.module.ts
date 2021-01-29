@@ -36,7 +36,7 @@ import { EditProfileComponent } from './users/edit-profile/edit-profile.componen
 import { UserComponent } from './users/user.component';
 import { NewBudgetComponent } from './budgets/new-budget/new-budget.component';
 import { BudgetDetailsComponent } from './budgets/budget-details/budget-details.component';
-import { environment } from 'src/environments/environment';
+import { environment } from 'src/client/environments/environment';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CurrencyMaskModule, CurrencyMaskConfig, CURRENCY_MASK_CONFIG } from 'ng2-currency-mask';
 import { ServiceWorkerModule } from '@angular/service-worker';

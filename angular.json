@@ -5,7 +5,7 @@
   "projects": {
     "twigs": {
       "root": "",
-      "sourceRoot": "src",
+      "sourceRoot": "src/client",
       "projectType": "application",
       "prefix": "app",
       "schematics": {},
@@ -14,22 +14,22 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/twigs",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.app.json",
+            "index": "src/client/index.html",
+            "main": "src/client/main.ts",
+            "polyfills": "src/client/polyfills.ts",
+            "tsConfig": "src/client/tsconfig.app.json",
             "assets": [
-              "src/browserconfig.xml",
-              "src/favicon-16x16.png",
-              "src/favicon-32x32.png",
-              "src/favicon-96x96.png",
-              "src/favicon.ico",
-              "src/assets",
-              "src/manifest.json"
+              "src/client/browserconfig.xml",
+              "src/client/favicon-16x16.png",
+              "src/client/favicon-32x32.png",
+              "src/client/favicon-96x96.png",
+              "src/client/favicon.ico",
+              "src/client/assets",
+              "src/client/manifest.json"
             ],
             "styles": [
-              "src/styles.css",
-              "src/styles.scss"
+              "src/client/styles.css",
+              "src/client/styles.scss"
             ],
             "scripts": [],
             "vendorChunk": true,
@@ -49,8 +49,8 @@
               ],
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "replace": "src/client/environments/environment.ts",
+                  "with": "src/client/environments/environment.prod.ts"
                 }
               ],
               "optimization": true,
@@ -71,8 +71,8 @@
               ],
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.codeserver.ts"
+                  "replace": "src/client/environments/environment.ts",
+                  "with": "src/client/environments/environment.codeserver.ts"
                 }
               ]
             }
@@ -102,18 +102,18 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.spec.json",
-            "karmaConfig": "src/karma.conf.js",
+            "main": "src/client/test.ts",
+            "polyfills": "src/client/polyfills.ts",
+            "tsConfig": "src/client/tsconfig.spec.json",
+            "karmaConfig": "src/client/karma.conf.js",
             "styles": [
-              "src/styles.css"
+              "src/client/styles.css"
             ],
             "scripts": [],
             "assets": [
-              "src/favicon.ico",
-              "src/assets",
-              "src/manifest.json"
+              "src/client/favicon.ico",
+              "src/client/assets",
+              "src/client/manifest.json"
             ]
           }
         },
@@ -121,8 +121,8 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
+              "src/client/tsconfig.app.json",
+              "src/client/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

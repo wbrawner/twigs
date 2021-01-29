@@ -1,9 +1,9 @@
 import { Component, OnInit, Input, OnChanges, OnDestroy, Inject, SimpleChanges } from '@angular/core';
 import { Transaction } from '../transaction';
 import { TransactionType } from '../transaction.type';
-import { Category } from 'src/app/categories/category';
-import { AppComponent } from 'src/app/app.component';
-import { TWIGS_SERVICE, TwigsService } from 'src/app/shared/twigs.service';
+import { Category } from 'src/client/app/categories/category';
+import { AppComponent } from 'src/client/app/app.component';
+import { TWIGS_SERVICE, TwigsService } from 'src/client/app/shared/twigs.service';
 import { MatRadioChange } from '@angular/material/radio';
 
 @Component({

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, OnDestroy, Inject } from '@angular/core';
 import { Category } from '../category';
-import { AppComponent } from 'src/app/app.component';
-import { TWIGS_SERVICE, TwigsService } from 'src/app/shared/twigs.service';
+import { AppComponent } from 'src/client/app/app.component';
+import { TWIGS_SERVICE, TwigsService } from 'src/client/app/shared/twigs.service';
 
 @Component({
   selector: 'app-category-form',

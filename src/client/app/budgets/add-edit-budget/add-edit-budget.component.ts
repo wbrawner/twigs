@@ -1,8 +1,8 @@
 import { Component, OnInit, Input, Inject, OnDestroy } from '@angular/core';
 import { Budget } from '../budget';
-import { AppComponent } from 'src/app/app.component';
-import { User, UserPermission, Permission } from 'src/app/users/user';
-import { TWIGS_SERVICE, TwigsService } from 'src/app/shared/twigs.service';
+import { AppComponent } from 'src/client/app/app.component';
+import { User, UserPermission, Permission } from 'src/client/app/users/user';
+import { TWIGS_SERVICE, TwigsService } from 'src/client/app/shared/twigs.service';
 
 @Component({
     selector: 'app-add-edit-budget',

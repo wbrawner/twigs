@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Inject, ChangeDetectorRef } from '@angular/core';
 import { TwigsService, TWIGS_SERVICE } from '../../shared/twigs.service';
 import { User } from '../user';
-import { AppComponent } from 'src/app/app.component';
+import { AppComponent } from 'src/client/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
