@@ -70,11 +70,9 @@ public class TransactionController {
                 .map(UserPermission::getBudget)
                 .collect(Collectors.toList());
 
-        List<Category> categories;
+        List<Category> categories = null;
         if (categoryIds != null && !categoryIds.isEmpty()) {
             categories = categoryRepository.findAllByBudgetInAndIdIn(budgets, categoryIds, null);
-        } else {
-            categories = categoryRepository.findAllByBudgetIn(budgets, null, null, null);
         }
         var pageRequest = PageRequest.of(
                 Math.min(0, page != null ? page - 1 : 0),
@@ -98,13 +96,19 @@ public class TransactionController {
                 logger.error("Failed to parse '" + to + "' to Instant for 'to' parameter", e);
             toInstant = getEndOfMonth().toInstant();
         }
-        var transactions = transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
+        var query = categories == null ? transactionRepository.findAllByBudgetInAndDateGreaterThanAndDateLessThan(
+                budgets,
+                fromInstant,
+                toInstant,
+                pageRequest
+        ) : transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
                 budgets,
                 categories,
                 fromInstant,
                 toInstant,
                 pageRequest
-        )
+        );
+        var transactions = query
                 .stream()
                 .map(TransactionResponse::new)
                 .collect(Collectors.toList());

@@ -22,13 +22,20 @@ public interface TransactionRepository extends PagingAndSortingRepository<Transa
             Pageable pageable
     );
 
+    List<Transaction> findAllByBudgetInAndDateGreaterThanAndDateLessThan(
+            List<Budget> budgets,
+            Instant start,
+            Instant end,
+            Pageable pageable
+    );
+
     List<Transaction> findAllByBudgetAndCategory(Budget budget, Category category);
 
     @Query(
             nativeQuery = true,
-            value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE Budget_id = :BudgetId AND expense = 0 AND date > :start), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE Budget_id = :BudgetId AND expense = 1 AND date > :date), 0));"
+            value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE Budget_id = :BudgetId AND expense = 0 AND date >= :from AND date <= :to), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE Budget_id = :BudgetId AND expense = 1 AND date >= :from AND date <= :to), 0));"
     )
-    Long sumBalanceByBudgetId(String BudgetId, Date start);
+    Long sumBalanceByBudgetId(String BudgetId, Instant from, Instant to);
 
     @Query(
             nativeQuery = true,

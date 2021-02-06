@@ -9,6 +9,8 @@ import com.wbrawner.budgetserver.user.UserRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,13 +18,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.wbrawner.budgetserver.Utils.getCurrentUser;
-import static com.wbrawner.budgetserver.Utils.getFirstOfMonth;
+import static com.wbrawner.budgetserver.Utils.*;
 
 @RestController
 @RequestMapping(value = "/budgets")
@@ -33,6 +35,7 @@ public class BudgetController {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final UserPermissionRepository userPermissionsRepository;
+    private final Logger logger = LoggerFactory.getLogger(BudgetController.class);
 
     public BudgetController(
             BudgetRepository budgetRepository,
@@ -85,9 +88,29 @@ public class BudgetController {
 
     @GetMapping(value = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
     @ApiOperation(value = "getBudgetBalance", nickname = "getBudgetBalance", tags = {"Budgets"})
-    public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(@PathVariable String id) {
+    public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(
+            @PathVariable String id,
+            @RequestParam(value = "from", required = false) String from,
+            @RequestParam(value = "from", required = false) String to
+    ) {
         return getBudgetWithPermission(id, Permission.READ, (budget) -> {
-            var balance = transactionRepository.sumBalanceByBudgetId(budget.getId(), getFirstOfMonth());
+            Instant fromInstant;
+            try {
+                fromInstant = Instant.parse(from);
+            } catch (Exception e) {
+                if (!(e instanceof NullPointerException))
+                    logger.error("Failed to parse '" + from + "' to Instant for 'from' parameter", e);
+                fromInstant = Instant.ofEpochSecond(0);
+            }
+            Instant toInstant;
+            try {
+                toInstant = Instant.parse(to);
+            } catch (Exception e) {
+                if (!(e instanceof NullPointerException))
+                    logger.error("Failed to parse '" + to + "' to Instant for 'to' parameter", e);
+                toInstant = Instant.now();
+            }
+            var balance = transactionRepository.sumBalanceByBudgetId(budget.getId(), fromInstant, toInstant);
             return ResponseEntity.ok(new BudgetBalanceResponse(budget.getId(), balance));
         });
     }
