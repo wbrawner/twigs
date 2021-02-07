@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.wbrawner.budgetserver.Utils.*;
+import static com.wbrawner.budgetserver.Utils.getCurrentUser;
 
 @RestController
 @RequestMapping(value = "/budgets")
@@ -91,7 +91,7 @@ public class BudgetController {
     public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(
             @PathVariable String id,
             @RequestParam(value = "from", required = false) String from,
-            @RequestParam(value = "from", required = false) String to
+            @RequestParam(value = "to", required = false) String to
     ) {
         return getBudgetWithPermission(id, Permission.READ, (budget) -> {
             Instant fromInstant;
