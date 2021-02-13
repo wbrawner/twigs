@@ -16,11 +16,6 @@ app.use(express.json());
 
 app.use(express.static(__dirname + '/public'));
 
-// app.get('/', (req, res) => {
-//     console.log('hit: /');
-//     res.send('test');
-// })
-
 app.use('/api/budgets', budgetRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/permissions', permissionsRouter);

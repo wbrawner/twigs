@@ -1,4 +1,4 @@
-import { randomId } from '../utils';
+import { randomId, twoWeeksFromNow } from '../utils';
 
 export class User {
     id: string = randomId();
@@ -17,12 +17,6 @@ export class User {
         this.email = email;
         this.password = password;
     }
-}
-
-function twoWeeksFromNow(): Date {
-    const date = new Date();
-    date.setDate(date.getDate() + 14);
-    return date;
 }
 
 export class Session {

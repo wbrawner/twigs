@@ -42,7 +42,7 @@ export class AppComponent implements OnInit {
     ]
     let auth = this.storage.getItem('Authorization');
     let savedUser = JSON.parse(this.storage.getItem('user')) as User;
-    if (auth && auth.length == 255) {
+    if (auth) {
       if (savedUser) {
         this.user.next(savedUser);
       }
