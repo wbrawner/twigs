@@ -5,7 +5,8 @@ import * as migrations from './migrations';
 export function db(dataDir: string): sqlite3.Database {
     const dbPath = path.join(dataDir, "twigs.db");
     console.log(`Initializing database at ${dbPath}`)
-    const db = new sqlite3.Database(dbPath, (err?: Error) => {
+    const sqlite3verbose = sqlite3.verbose();
+    const db = new sqlite3verbose.Database(dbPath, (err?: Error) => {
         if (err != null) {
             console.error("Failed to open db");
             console.error(err);

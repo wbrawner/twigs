@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/twigs",
+            "outputPath": "dist/public",
             "index": "src/client/index.html",
             "main": "src/client/main.ts",
             "polyfills": "src/client/polyfills.ts",

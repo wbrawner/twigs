@@ -3,7 +3,7 @@ import { router as budgetRouter } from './budget/controller'
 import { router as categoryRouter } from './categories/controller'
 import { router as permissionsRouter } from './permissions/controller'
 import { router as transactionRouter } from './transactions/controller'
-import { router as userRouter } from './users/controller'
+import { userRouter } from './users'
 import { db as _db } from './db';
 
 const port = process.env.PORT || 3000;
@@ -11,6 +11,8 @@ const app = express();
 
 const dataDir = process.env.TWIGS_DATA || __dirname;
 const db = _db(dataDir);
+
+app.use(express.json());
 
 app.use(express.static(__dirname + '/public'));
 
@@ -23,7 +25,7 @@ app.use('/api/budgets', budgetRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/permissions', permissionsRouter);
 app.use('/api/transactions', transactionRouter);
-app.use('/api/users', userRouter);
+app.use('/api/users', userRouter(db));
 
 app.get('/*', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
