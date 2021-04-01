@@ -6,9 +6,6 @@ import com.wbrawner.budgetserver.permission.UserPermissionRepository;
 import com.wbrawner.budgetserver.transaction.TransactionRepository;
 import com.wbrawner.budgetserver.user.User;
 import com.wbrawner.budgetserver.user.UserRepository;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +25,6 @@ import static com.wbrawner.budgetserver.Utils.getCurrentUser;
 
 @RestController
 @RequestMapping(value = "/budgets")
-@Api(value = "Budgets", tags = {"Budgets"}, authorizations = {@Authorization(value = "basic")})
 @Transactional
 public class BudgetController {
     private final BudgetRepository budgetRepository;
@@ -50,7 +46,6 @@ public class BudgetController {
     }
 
     @GetMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getBudgets", nickname = "getBudgets", tags = {"Budgets"})
     public ResponseEntity<List<BudgetResponse>> getBudgets(Integer page, Integer count) {
         User user = getCurrentUser();
         if (user == null) {
@@ -79,7 +74,6 @@ public class BudgetController {
     }
 
     @GetMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getBudget", nickname = "getBudget", tags = {"Budgets"})
     public ResponseEntity<BudgetResponse> getBudget(@PathVariable String id) {
         return getBudgetWithPermission(id, Permission.READ, (budget) ->
                 ResponseEntity.ok(new BudgetResponse(budget, userPermissionsRepository.findAllByBudget(budget, null)))
@@ -87,7 +81,6 @@ public class BudgetController {
     }
 
     @GetMapping(value = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getBudgetBalance", nickname = "getBudgetBalance", tags = {"Budgets"})
     public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(
             @PathVariable String id,
             @RequestParam(value = "from", required = false) String from,
@@ -116,7 +109,6 @@ public class BudgetController {
     }
 
     @PostMapping(value = "", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "newBudget", nickname = "newBudget", tags = {"Budgets"})
     public ResponseEntity<BudgetResponse> newBudget(@RequestBody BudgetRequest request) {
         final var budget = budgetRepository.save(new Budget(request.name, request.description));
         var users = request.getUsers()
@@ -147,7 +139,6 @@ public class BudgetController {
     }
 
     @PutMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "updateBudget", nickname = "updateBudget", tags = {"Budgets"})
     public ResponseEntity<BudgetResponse> updateBudget(@PathVariable String id, @RequestBody BudgetRequest request) {
         return getBudgetWithPermission(id, Permission.MANAGE, (budget) -> {
             if (request.name != null) {
@@ -179,7 +170,6 @@ public class BudgetController {
     }
 
     @DeleteMapping(value = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-    @ApiOperation(value = "deleteBudget", nickname = "deleteBudget", tags = {"Budgets"})
     public ResponseEntity<Void> deleteBudget(@PathVariable String id) {
         return getBudgetWithPermission(id, Permission.MANAGE, (budget) -> {
             budgetRepository.delete(budget);

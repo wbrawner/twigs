@@ -6,9 +6,6 @@ import com.wbrawner.budgetserver.category.CategoryRepository;
 import com.wbrawner.budgetserver.permission.Permission;
 import com.wbrawner.budgetserver.permission.UserPermission;
 import com.wbrawner.budgetserver.permission.UserPermissionRepository;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +24,6 @@ import static com.wbrawner.budgetserver.Utils.*;
 
 @RestController
 @RequestMapping(path = "/transactions")
-@Api(value = "Transactions", tags = {"Transactions"}, authorizations = {@Authorization("basic")})
 @Transactional
 public class TransactionController {
     private final CategoryRepository categoryRepository;
@@ -45,7 +41,6 @@ public class TransactionController {
     }
 
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getTransactions", nickname = "getTransactions", tags = {"Transactions"})
     public ResponseEntity<List<TransactionResponse>> getTransactions(
             @RequestParam(value = "categoryIds", required = false) List<String> categoryIds,
             @RequestParam(value = "budgetIds", required = false) List<String> budgetIds,
@@ -116,7 +111,6 @@ public class TransactionController {
     }
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getTransaction", nickname = "getTransaction", tags = {"Transactions"})
     public ResponseEntity<TransactionResponse> getTransaction(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
@@ -128,7 +122,6 @@ public class TransactionController {
     }
 
     @PostMapping(path = "", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "newTransaction", nickname = "newTransaction", tags = {"Transactions"})
     public ResponseEntity<Object> newTransaction(@RequestBody NewTransactionRequest request) {
         var userResponse = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), request.getBudgetId())
                 .orElse(null);
@@ -156,7 +149,6 @@ public class TransactionController {
     }
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "updateTransaction", nickname = "updateTransaction", tags = {"Transactions"})
     public ResponseEntity<Object> updateTransaction(@PathVariable String id, @RequestBody UpdateTransactionRequest request) {
         var transaction = transactionRepository.findById(id).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();
@@ -202,7 +194,6 @@ public class TransactionController {
     }
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-    @ApiOperation(value = "deleteTransaction", nickname = "deleteTransaction", tags = {"Transactions"})
     public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
         var transaction = transactionRepository.findById(id).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();

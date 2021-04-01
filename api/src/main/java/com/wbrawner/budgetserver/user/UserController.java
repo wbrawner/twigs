@@ -7,9 +7,6 @@ import com.wbrawner.budgetserver.permission.UserPermissionResponse;
 import com.wbrawner.budgetserver.session.Session;
 import com.wbrawner.budgetserver.session.SessionResponse;
 import com.wbrawner.budgetserver.session.UserSessionRepository;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +27,6 @@ import static com.wbrawner.budgetserver.Utils.getCurrentUser;
 
 @RestController
 @RequestMapping("/users")
-@Api(value = "Users", tags = {"Users"}, authorizations = {@Authorization("basic")})
 @Transactional
 public class UserController {
     private final BudgetRepository budgetRepository;
@@ -57,7 +53,6 @@ public class UserController {
 
 
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getUsers", nickname = "getUsers", tags = {"Users"})
     ResponseEntity<List<UserPermissionResponse>> getUsers(String budgetId) {
         var budget = budgetRepository.findById(budgetId).orElse(null);
         if (budget == null) {
@@ -75,7 +70,6 @@ public class UserController {
     }
 
     @PostMapping(path = "/login", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "login", nickname = "login", tags = {"Users"})
     ResponseEntity<SessionResponse> login(@RequestBody LoginRequest request) {
         var authReq = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
         Authentication auth;
@@ -91,7 +85,6 @@ public class UserController {
     }
 
     @GetMapping(path = "/me", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getProfile", nickname = "getProfile", tags = {"Users"})
     ResponseEntity<UserResponse> getProfile() {
         var user = getCurrentUser();
         if (user == null) return ResponseEntity.status(401).build();
@@ -99,7 +92,6 @@ public class UserController {
     }
 
     @GetMapping(path = "/search", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "searchUsers", nickname = "searchUsers", tags = {"Users"})
     ResponseEntity<List<UserResponse>> searchUsers(String query) {
         return ResponseEntity.ok(
                 userRepository.findByUsernameContains(query)
@@ -110,7 +102,6 @@ public class UserController {
     }
 
     @GetMapping(path = "/{id}")
-    @ApiOperation(value = "getUser", nickname = "getUser", tags = {"Users"})
     ResponseEntity<UserResponse> getUser(@PathVariable String id) {
         var user = userRepository.findById(id).orElse(null);
         if (user == null) {
@@ -120,7 +111,6 @@ public class UserController {
     }
 
     @PostMapping(path = "", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "newUser", nickname = "newUser", tags = {"Users"})
     ResponseEntity<Object> newUser(@RequestBody NewUserRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent())
             return ResponseEntity.badRequest().body(new ErrorResponse("Username taken"));
@@ -136,7 +126,6 @@ public class UserController {
     }
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "updateUser", nickname = "updateUser", tags = {"Users"})
     ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody UpdateUserRequest request) {
         if (!getCurrentUser().getId().equals(id)) return ResponseEntity.status(403).build();
         var user = userRepository.findById(getCurrentUser().getId()).orElse(null);
@@ -160,7 +149,6 @@ public class UserController {
     }
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-    @ApiOperation(value = "deleteUser", nickname = "deleteUser", tags = {"Users"})
     ResponseEntity<Void> deleteUser(@PathVariable String id) {
         if (!getCurrentUser().getId().equals(id)) return ResponseEntity.status(403).build();
         userRepository.deleteById(id);

@@ -5,12 +5,6 @@ import com.wbrawner.budgetserver.permission.Permission;
 import com.wbrawner.budgetserver.permission.UserPermission;
 import com.wbrawner.budgetserver.permission.UserPermissionRepository;
 import com.wbrawner.budgetserver.transaction.TransactionRepository;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
-
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -27,7 +21,6 @@ import static com.wbrawner.budgetserver.Utils.getFirstOfMonth;
 
 @RestController
 @RequestMapping(path = "/categories")
-@Api(value = "Categories", tags = {"Categories"}, authorizations = {@Authorization("basic")})
 @Transactional
 class CategoryController {
     private final CategoryRepository categoryRepository;
@@ -43,7 +36,6 @@ class CategoryController {
     }
 
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getCategories", nickname = "getCategories", tags = {"Categories"})
     ResponseEntity<List<CategoryResponse>> getCategories(
             @RequestParam(name = "budgetIds", required = false) List<String> budgetIds,
             @RequestParam(name = "isExpense", required = false) Boolean isExpense,
@@ -83,7 +75,6 @@ class CategoryController {
     }
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getCategory", nickname = "getCategory", tags = {"Categories"})
     ResponseEntity<CategoryResponse> getCategory(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
@@ -95,7 +86,6 @@ class CategoryController {
     }
 
     @GetMapping(path = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "getCategoryBalance", nickname = "getCategoryBalance", tags = {"Categories"})
     ResponseEntity<CategoryBalanceResponse> getCategoryBalance(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
@@ -110,7 +100,6 @@ class CategoryController {
     }
 
     @PostMapping(path = "", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "newCategory", nickname = "newCategory", tags = {"Categories"})
     ResponseEntity<Object> newCategory(@RequestBody NewCategoryRequest request) {
         var userResponse = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), request.getBudgetId())
                 .orElse(null);
@@ -131,7 +120,6 @@ class CategoryController {
     }
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @ApiOperation(value = "updateCategory", nickname = "updateCategory", tags = {"Categories"})
     ResponseEntity<CategoryResponse> updateCategory(@PathVariable String id, @RequestBody UpdateCategoryRequest request) {
         var category = categoryRepository.findById(id).orElse(null);
         if (category == null) return ResponseEntity.notFound().build();
@@ -159,7 +147,6 @@ class CategoryController {
     }
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-    @ApiOperation(value = "deleteCategory", nickname = "deleteCategory", tags = {"Categories"})
     ResponseEntity<Void> deleteCategory(@PathVariable String id) {
         var category = categoryRepository.findById(id).orElse(null);
         if (category == null) return ResponseEntity.notFound().build();
