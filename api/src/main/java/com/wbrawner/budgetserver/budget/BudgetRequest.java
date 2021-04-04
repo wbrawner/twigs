@@ -2,7 +2,6 @@ package com.wbrawner.budgetserver.budget;
 
 import com.wbrawner.budgetserver.permission.UserPermissionRequest;
 
-import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +22,6 @@ public class BudgetRequest {
         this.users.addAll(users);
     }
 
-    @NotNull
     public Set<UserPermissionRequest> getUsers() {
         return Set.copyOf(users);
     }

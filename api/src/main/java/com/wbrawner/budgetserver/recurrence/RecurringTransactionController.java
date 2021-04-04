@@ -1,4 +1,4 @@
-package com.wbrawner.budgetserver.transaction;
+package com.wbrawner.budgetserver.recurrence;
 
 import com.wbrawner.budgetserver.ErrorResponse;
 import com.wbrawner.budgetserver.category.Category;
@@ -8,121 +8,71 @@ import com.wbrawner.budgetserver.permission.UserPermission;
 import com.wbrawner.budgetserver.permission.UserPermissionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
-import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.wbrawner.budgetserver.Utils.*;
+import static com.wbrawner.budgetserver.Utils.getCurrentUser;
 
 @RestController
-@RequestMapping(path = "/transactions")
+@RequestMapping(path = "/recurrence")
 @Transactional
-public class TransactionController {
+public class RecurringTransactionController {
     private final CategoryRepository categoryRepository;
-    private final TransactionRepository transactionRepository;
+    private final RecurringTransactionRepository recurringTransactionRepository;
     private final UserPermissionRepository userPermissionsRepository;
 
-    private final Logger logger = LoggerFactory.getLogger(TransactionController.class);
+    private final Logger logger = LoggerFactory.getLogger(RecurringTransactionController.class);
 
-    public TransactionController(CategoryRepository categoryRepository,
-                                 TransactionRepository transactionRepository,
-                                 UserPermissionRepository userPermissionsRepository) {
+    public RecurringTransactionController(
+            CategoryRepository categoryRepository,
+            RecurringTransactionRepository recurringTransactionRepository,
+            UserPermissionRepository userPermissionsRepository
+    ) {
         this.categoryRepository = categoryRepository;
-        this.transactionRepository = transactionRepository;
+        this.recurringTransactionRepository = recurringTransactionRepository;
         this.userPermissionsRepository = userPermissionsRepository;
     }
 
     @GetMapping(path = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<List<TransactionResponse>> getTransactions(
-            @RequestParam(value = "categoryIds", required = false) List<String> categoryIds,
-            @RequestParam(value = "budgetIds", required = false) List<String> budgetIds,
-            @RequestParam(value = "from", required = false) String from,
-            @RequestParam(value = "to", required = false) String to,
-            @RequestParam(value = "count", required = false) Integer count,
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "sortBy", required = false) String sortBy,
-            @RequestParam(value = "sortOrder", required = false) Sort.Direction sortOrder
+    public ResponseEntity<List<RecurringTransactionResponse>> getRecurringTransactions(
+            @RequestParam("budgetId") String budgetId
     ) {
-        List<UserPermission> userPermissions;
-        if (budgetIds != null && !budgetIds.isEmpty()) {
-            userPermissions = userPermissionsRepository.findAllByUserAndBudget_IdIn(
-                    getCurrentUser(),
-                    budgetIds,
-                    PageRequest.of(page != null ? page : 0, count != null ? count : 1000)
-            );
-        } else {
-            userPermissions = userPermissionsRepository.findAllByUser(getCurrentUser(), null);
-        }
-        var budgets = userPermissions.stream()
-                .map(UserPermission::getBudget)
-                .collect(Collectors.toList());
-
-        List<Category> categories = null;
-        if (categoryIds != null && !categoryIds.isEmpty()) {
-            categories = categoryRepository.findAllByBudgetInAndIdIn(budgets, categoryIds, null);
-        }
-        var pageRequest = PageRequest.of(
-                Math.min(0, page != null ? page - 1 : 0),
-                count != null ? count : 1000,
-                sortOrder != null ? sortOrder : Sort.Direction.DESC,
-                sortBy != null ? sortBy : "date"
+        List<UserPermission> userPermissions = userPermissionsRepository.findAllByUserAndBudget_IdIn(
+                getCurrentUser(),
+                Collections.singletonList(budgetId),
+                null
         );
-        Instant fromInstant;
-        try {
-            fromInstant = Instant.parse(from);
-        } catch (Exception e) {
-            if (!(e instanceof NullPointerException))
-                logger.error("Failed to parse '" + from + "' to Instant for 'from' parameter", e);
-            fromInstant = getFirstOfMonth().toInstant();
+        if (userPermissions.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Instant toInstant;
-        try {
-            toInstant = Instant.parse(to);
-        } catch (Exception e) {
-            if (!(e instanceof NullPointerException))
-                logger.error("Failed to parse '" + to + "' to Instant for 'to' parameter", e);
-            toInstant = getEndOfMonth().toInstant();
-        }
-        var query = categories == null ? transactionRepository.findAllByBudgetInAndDateGreaterThanAndDateLessThan(
-                budgets,
-                fromInstant,
-                toInstant,
-                pageRequest
-        ) : transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
-                budgets,
-                categories,
-                fromInstant,
-                toInstant,
-                pageRequest
-        );
-        var transactions = query
+        var budget = userPermissions.get(0).getBudget();
+        var transactions = recurringTransactionRepository.findAllByBudget(budget)
                 .stream()
-                .map(TransactionResponse::new)
+                .map(RecurringTransactionResponse::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(transactions);
     }
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable String id) {
+    public ResponseEntity<RecurringTransactionResponse> getRecurringTransaction(@PathVariable String id) {
         var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
                 .stream()
                 .map(UserPermission::getBudget)
                 .collect(Collectors.toList());
-        var transaction = transactionRepository.findByIdAndBudgetIn(id, budgets).orElse(null);
+        var transaction = recurringTransactionRepository.findByIdAndBudgetIn(id, budgets).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(new TransactionResponse(transaction));
+        return ResponseEntity.ok(new RecurringTransactionResponse(transaction));
     }
 
     @PostMapping(path = "", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Object> newTransaction(@RequestBody NewTransactionRequest request) {
+    public ResponseEntity<Object> newTransaction(@RequestBody RecurringTransactionRequest request) {
         var userResponse = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), request.getBudgetId())
                 .orElse(null);
         if (userResponse == null) {
@@ -136,22 +86,24 @@ public class TransactionController {
         if (request.getCategoryId() != null) {
             category = categoryRepository.findByBudgetAndId(budget, request.getCategoryId()).orElse(null);
         }
-        return ResponseEntity.ok(new TransactionResponse(transactionRepository.save(new Transaction(
+        return ResponseEntity.ok(new RecurringTransactionResponse(recurringTransactionRepository.save(new RecurringTransaction(
                 request.getTitle(),
                 request.getDescription(),
-                Instant.parse(request.getDate()),
+                request.getFrequencyUnit(),
+                request.getFrequencyValue(),
+                request.getTimeZone(),
+                request.getTime(),
                 request.getAmount(),
                 category,
                 request.getExpense(),
                 getCurrentUser(),
-                budget,
-                null
+                budget
         ))));
     }
 
     @PutMapping(path = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Object> updateTransaction(@PathVariable String id, @RequestBody UpdateTransactionRequest request) {
-        var transaction = transactionRepository.findById(id).orElse(null);
+    public ResponseEntity<Object> updateTransaction(@PathVariable String id, @RequestBody RecurringTransactionRequest request) {
+        var transaction = recurringTransactionRepository.findById(id).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();
         var userPermission = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), transaction.getBudget().getId()).orElse(null);
         if (userPermission == null) return ResponseEntity.notFound().build();
@@ -164,14 +116,20 @@ public class TransactionController {
         if (request.getDescription() != null) {
             transaction.setDescription(request.getDescription());
         }
-        if (request.getDate() != null) {
-            transaction.setDate(Instant.parse(request.getDate()));
+        if (request.getTimeZone() != null) {
+            transaction.setTimeZone(request.getTimeZone());
         }
         if (request.getAmount() != null) {
             transaction.setAmount(request.getAmount());
         }
         if (request.getExpense() != null) {
             transaction.setExpense(request.getExpense());
+        }
+        if (request.getTime() != null) {
+            transaction.setTimeOfDayInSeconds(request.getTime());
+        }
+        if (request.getFrequencyUnit() != null && request.getFrequencyValue() != null) {
+            transaction.setFrequency(request.getFrequencyUnit(), request.getFrequencyValue());
         }
         if (request.getBudgetId() != null) {
             var newUserPermission = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), request.getBudgetId()).orElse(null);
@@ -191,12 +149,12 @@ public class TransactionController {
             }
             transaction.setCategory(category);
         }
-        return ResponseEntity.ok(new TransactionResponse(transactionRepository.save(transaction)));
+        return ResponseEntity.ok(new RecurringTransactionResponse(recurringTransactionRepository.save(transaction)));
     }
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
-        var transaction = transactionRepository.findById(id).orElse(null);
+        var transaction = recurringTransactionRepository.findById(id).orElse(null);
         if (transaction == null) return ResponseEntity.notFound().build();
         // Check that the transaction belongs to an budget that the user has access to before deleting it
         var userPermission = userPermissionsRepository.findByUserAndBudget_Id(getCurrentUser(), transaction.getBudget().getId()).orElse(null);
@@ -204,7 +162,7 @@ public class TransactionController {
         if (userPermission.getPermission().isNotAtLeast(Permission.WRITE)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        transactionRepository.delete(transaction);
+        recurringTransactionRepository.delete(transaction);
         return ResponseEntity.ok().build();
     }
 }

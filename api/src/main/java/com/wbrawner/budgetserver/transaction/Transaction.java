@@ -2,9 +2,13 @@ package com.wbrawner.budgetserver.transaction;
 
 import com.wbrawner.budgetserver.budget.Budget;
 import com.wbrawner.budgetserver.category.Category;
+import com.wbrawner.budgetserver.recurrence.RecurringTransaction;
 import com.wbrawner.budgetserver.user.User;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.time.Instant;
 
 import static com.wbrawner.budgetserver.Utils.randomId;
@@ -26,19 +30,24 @@ public class Transaction implements Comparable<Transaction> {
     @ManyToOne
     @JoinColumn(nullable = false)
     private Budget budget;
+    @ManyToOne
+    private RecurringTransaction recurrence;
 
     public Transaction() {
-        this(null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null);
     }
 
-    public Transaction(String title,
-                       String description,
-                       Instant date,
-                       Long amount,
-                       Category category,
-                       Boolean expense,
-                       User createdBy,
-                       Budget budget) {
+    public Transaction(
+            String title,
+            String description,
+            Instant date,
+            Long amount,
+            Category category,
+            Boolean expense,
+            User createdBy,
+            Budget budget,
+            RecurringTransaction recurrence
+    ) {
         this.title = title;
         this.description = description;
         this.date = date;
@@ -47,11 +56,10 @@ public class Transaction implements Comparable<Transaction> {
         this.expense = expense;
         this.createdBy = createdBy;
         this.budget = budget;
+        this.recurrence = recurrence;
     }
 
     public String getId() {
-        // This should only be set from Hibernate so it shouldn't actually be null ever
-        //noinspection ConstantConditions
         return id;
     }
 
@@ -113,6 +121,14 @@ public class Transaction implements Comparable<Transaction> {
 
     public void setBudget(Budget budget) {
         this.budget = budget;
+    }
+
+    public RecurringTransaction getRecurrence() {
+        return this.recurrence;
+    }
+
+    public void setRecurrence(RecurringTransaction recurrence) {
+        this.recurrence = recurrence;
     }
 
     @Override
