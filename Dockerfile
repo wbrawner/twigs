@@ -8,8 +8,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN /home/gradle/src/gradlew --console=plain --no-daemon bootJar
 
-FROM openjdk:14-jdk-slim
+FROM adoptopenjdk:openj9
 EXPOSE 8080
 COPY --from=builder /home/gradle/src/api/build/libs/api.jar twigs-api.jar
-CMD /usr/local/openjdk-14/bin/java $JVM_ARGS -jar /twigs-api.jar
-
+CMD /opt/java/openjdk/bin/java $JVM_ARGS -jar /twigs-api.jar
