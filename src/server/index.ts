@@ -1,5 +1,5 @@
 import express from 'express';
-import { router as budgetRouter } from './budget/controller'
+import budgetRouter from './budget/controller'
 import { router as categoryRouter } from './categories/controller'
 import { router as permissionsRouter } from './permissions/controller'
 import { router as transactionRouter } from './transactions/controller'
@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use(express.static(__dirname + '/public'));
 
-app.use('/api/budgets', budgetRouter);
+app.use('/api/budgets', budgetRouter(db));
 app.use('/api/categories', categoryRouter);
 app.use('/api/permissions', permissionsRouter);
 app.use('/api/transactions', transactionRouter);

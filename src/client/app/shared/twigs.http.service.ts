@@ -114,12 +114,7 @@ export class TwigsHttpService implements TwigsService {
       'id': id,
       'name': name,
       'description': description,
-      'users': users.map(userPermission => {
-        return {
-          user: userPermission.user.id,
-          permission: Permission[userPermission.permission]
-        };
-      })
+      'users': users
     };
     return this.http.post<Budget>(this.apiUrl + '/budgets', params, this.options)
       .pipe(map(budget => {
@@ -136,12 +131,7 @@ export class TwigsHttpService implements TwigsService {
     const params = {
       'name': budget.name,
       'description': budget.description,
-      'users': budget.users.map(userPermission => {
-        return {
-          user: userPermission.user.id,
-          permission: Permission[userPermission.permission]
-        };
-      })
+      'users': budget.users
     };
     return this.http.put<Budget>(`${this.apiUrl}/budgets/${id}`, params, this.options)
       .pipe(map(budget => {

@@ -3,6 +3,7 @@ import { Budget } from '../budget';
 import { AppComponent } from 'src/client/app/app.component';
 import { User, UserPermission, Permission } from 'src/client/app/users/user';
 import { TWIGS_SERVICE, TwigsService } from 'src/client/app/shared/twigs.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-add-edit-budget',
@@ -20,6 +21,7 @@ export class AddEditBudgetComponent {
     constructor(
         private app: AppComponent,
         @Inject(TWIGS_SERVICE) private twigsService: TwigsService,
+        private router: Router
     ) {
         this.app.setTitle(this.title)
         this.app.setBackEnabled(true);
@@ -51,7 +53,7 @@ export class AddEditBudgetComponent {
         this.isLoading = true;
         this.twigsService.deleteBudget(this.budget.id)
             .subscribe(() => {
-                this.app.goBack();
+                this.router.navigateByUrl('/budgets');
             });
     }
 

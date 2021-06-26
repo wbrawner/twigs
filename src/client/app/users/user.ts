@@ -18,11 +18,13 @@ export class AuthToken {
 }
 
 export class UserPermission {
-  user: User;
+  id: string;
+  username: string;
   permission: Permission;
 
   constructor(user: User, permission: Permission) {
-    this.user = user;
+    this.id = user.id;
+    this.username = user.username;
     this.permission = permission;
   }
 }

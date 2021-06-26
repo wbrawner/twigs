@@ -5,7 +5,7 @@ import { TWIGS_SERVICE, TwigsService } from './shared/twigs.service';
 import { SwUpdate } from '@angular/service-worker';
 import { first, filter, map } from 'rxjs/operators';
 import { interval, concat, BehaviorSubject } from 'rxjs';
-import { Router, ActivationEnd, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { Actionable, isActionable } from './shared/actionable';
 
 @Component({
