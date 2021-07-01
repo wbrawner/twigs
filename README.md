@@ -4,15 +4,15 @@ This is the backend application that powers the [Android](../../../twigs-android
 
 ## Prerequisites
 
-- JDK 14 or newer
+- Go 1.16 or newer
 - PostgreSQL 13 or newer
 - (optional) Docker
 
 ## Running
 
-Prior to running the app, make sure you have a PostgreSQL server running, with a database and user ready to go. To avoid the hassle of figuring out how to get it installed locally, using Docker is recommended, and a sample `docker-compose.yml` file is included in the root of the repository. If you already have a PostgreSQL server running, you can run the app from the command line with gradle:
+Prior to running the app, make sure you have a PostgreSQL server running, with a database and user ready to go. To avoid the hassle of figuring out how to get it installed locally, using Docker is recommended, and a sample `docker-compose.yml` file is included in the root of the repository. If you already have a PostgreSQL server running, you can run the app from the command line:
 
-    ./gradlew run
+    go run twigs.go
 
 ## Configuration
 
@@ -30,7 +30,5 @@ Environment Variable|Default Value|Note
 
 ## Building
 
-Building the app is also handled with gradle:
-
-    ./gradlew shadowJar
+    go build
 
