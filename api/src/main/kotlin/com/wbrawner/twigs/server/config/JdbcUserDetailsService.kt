@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.server.config
 
-import com.wbrawner.budgetserver.user.UserRepository
+import com.wbrawner.twigs.server.user.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService

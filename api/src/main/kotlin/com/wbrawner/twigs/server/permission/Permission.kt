@@ -1,8 +1,8 @@
 package com.wbrawner.twigs.server.permission
 
-import com.wbrawner.budgetserver.budget.Budget
-import com.wbrawner.budgetserver.user.User
-import com.wbrawner.budgetserver.user.UserResponse
+import com.wbrawner.twigs.server.budget.Budget
+import com.wbrawner.twigs.server.user.User
+import com.wbrawner.twigs.server.user.UserResponse
 import java.io.Serializable
 import javax.persistence.*
 

@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.server.user
 
-import com.wbrawner.budgetserver.randomString
+import com.wbrawner.twigs.server.randomString
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails

@@ -1,10 +1,10 @@
 package com.wbrawner.twigs.server
 
-import com.wbrawner.budgetserver.budget.Budget
-import com.wbrawner.budgetserver.permission.Permission
-import com.wbrawner.budgetserver.permission.UserPermissionRepository
-import com.wbrawner.budgetserver.transaction.TransactionRepository
-import com.wbrawner.budgetserver.user.User
+import com.wbrawner.twigs.server.budget.Budget
+import com.wbrawner.twigs.server.permission.Permission
+import com.wbrawner.twigs.server.permission.UserPermissionRepository
+import com.wbrawner.twigs.server.transaction.TransactionRepository
+import com.wbrawner.twigs.server.user.User
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder

@@ -1,7 +1,7 @@
 package com.wbrawner.twigs.server.passwordresetrequest
 
-import com.wbrawner.budgetserver.randomString
-import com.wbrawner.budgetserver.user.User
+import com.wbrawner.twigs.server.randomString
+import com.wbrawner.twigs.server.user.User
 import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id

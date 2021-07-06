@@ -1,11 +1,11 @@
 package com.wbrawner.twigs.server.budget
 
-import com.wbrawner.budgetserver.category.Category
-import com.wbrawner.budgetserver.permission.UserPermission
-import com.wbrawner.budgetserver.permission.UserPermissionRequest
-import com.wbrawner.budgetserver.permission.UserPermissionResponse
-import com.wbrawner.budgetserver.randomString
-import com.wbrawner.budgetserver.transaction.Transaction
+import com.wbrawner.twigs.server.category.Category
+import com.wbrawner.twigs.server.permission.UserPermission
+import com.wbrawner.twigs.server.permission.UserPermissionRequest
+import com.wbrawner.twigs.server.permission.UserPermissionResponse
+import com.wbrawner.twigs.server.randomString
+import com.wbrawner.twigs.server.transaction.Transaction
 import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id

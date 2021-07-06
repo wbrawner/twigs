@@ -1,8 +1,8 @@
 package com.wbrawner.twigs.server.config
 
-import com.wbrawner.budgetserver.session.UserSessionRepository
-import com.wbrawner.budgetserver.twoWeeksFromNow
-import com.wbrawner.budgetserver.user.UserRepository
+import com.wbrawner.twigs.server.session.UserSessionRepository
+import com.wbrawner.twigs.server.twoWeeksFromNow
+import com.wbrawner.twigs.server.user.UserRepository
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

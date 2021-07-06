@@ -1,9 +1,9 @@
 package com.wbrawner.twigs.server.transaction
 
-import com.wbrawner.budgetserver.budget.Budget
-import com.wbrawner.budgetserver.category.Category
-import com.wbrawner.budgetserver.randomString
-import com.wbrawner.budgetserver.user.User
+import com.wbrawner.twigs.server.budget.Budget
+import com.wbrawner.twigs.server.category.Category
+import com.wbrawner.twigs.server.randomString
+import com.wbrawner.twigs.server.user.User
 import java.time.Instant
 import javax.persistence.Entity
 import javax.persistence.Id

@@ -1,14 +1,14 @@
 package com.wbrawner.twigs.server.user
 
-import com.wbrawner.budgetserver.ErrorResponse
-import com.wbrawner.budgetserver.budget.BudgetRepository
-import com.wbrawner.budgetserver.currentUser
-import com.wbrawner.budgetserver.permission.UserPermission
-import com.wbrawner.budgetserver.permission.UserPermissionRepository
-import com.wbrawner.budgetserver.permission.UserPermissionResponse
-import com.wbrawner.budgetserver.session.Session
-import com.wbrawner.budgetserver.session.SessionResponse
-import com.wbrawner.budgetserver.session.UserSessionRepository
+import com.wbrawner.twigs.server.ErrorResponse
+import com.wbrawner.twigs.server.budget.BudgetRepository
+import com.wbrawner.twigs.server.currentUser
+import com.wbrawner.twigs.server.permission.UserPermission
+import com.wbrawner.twigs.server.permission.UserPermissionRepository
+import com.wbrawner.twigs.server.permission.UserPermissionResponse
+import com.wbrawner.twigs.server.session.Session
+import com.wbrawner.twigs.server.session.SessionResponse
+import com.wbrawner.twigs.server.session.UserSessionRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

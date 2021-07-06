@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.server.category
 
-import com.wbrawner.budgetserver.budget.Budget
+import com.wbrawner.twigs.server.budget.Budget
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository

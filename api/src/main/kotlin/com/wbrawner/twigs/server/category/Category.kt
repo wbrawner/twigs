@@ -1,7 +1,7 @@
 package com.wbrawner.twigs.server.category
 
-import com.wbrawner.budgetserver.budget.Budget
-import com.wbrawner.budgetserver.randomString
+import com.wbrawner.twigs.server.budget.Budget
+import com.wbrawner.twigs.server.randomString
 import javax.persistence.*
 
 @Entity

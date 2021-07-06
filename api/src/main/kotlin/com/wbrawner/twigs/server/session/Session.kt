@@ -1,7 +1,7 @@
 package com.wbrawner.twigs.server.session
 
-import com.wbrawner.budgetserver.randomString
-import com.wbrawner.budgetserver.twoWeeksFromNow
+import com.wbrawner.twigs.server.randomString
+import com.wbrawner.twigs.server.twoWeeksFromNow
 import javax.persistence.Entity
 import javax.persistence.Id
 

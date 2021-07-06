@@ -1,8 +1,8 @@
 package com.wbrawner.twigs.server.config
 
-import com.wbrawner.budgetserver.passwordresetrequest.PasswordResetRequestRepository
-import com.wbrawner.budgetserver.session.UserSessionRepository
-import com.wbrawner.budgetserver.user.UserRepository
+import com.wbrawner.twigs.server.passwordresetrequest.PasswordResetRequestRepository
+import com.wbrawner.twigs.server.session.UserSessionRepository
+import com.wbrawner.twigs.server.user.UserRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment

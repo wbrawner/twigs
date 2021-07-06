@@ -1,13 +1,13 @@
 package com.wbrawner.twigs.server.budget
 
-import com.wbrawner.budgetserver.currentUser
-import com.wbrawner.budgetserver.permission.Permission
-import com.wbrawner.budgetserver.permission.UserPermission
-import com.wbrawner.budgetserver.permission.UserPermissionRepository
-import com.wbrawner.budgetserver.permission.UserPermissionRequest
-import com.wbrawner.budgetserver.transaction.TransactionRepository
-import com.wbrawner.budgetserver.user.User
-import com.wbrawner.budgetserver.user.UserRepository
+import com.wbrawner.twigs.server.currentUser
+import com.wbrawner.twigs.server.permission.Permission
+import com.wbrawner.twigs.server.permission.UserPermission
+import com.wbrawner.twigs.server.permission.UserPermissionRepository
+import com.wbrawner.twigs.server.permission.UserPermissionRequest
+import com.wbrawner.twigs.server.transaction.TransactionRepository
+import com.wbrawner.twigs.server.user.User
+import com.wbrawner.twigs.server.user.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
