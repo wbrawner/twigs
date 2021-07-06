@@ -2,7 +2,7 @@ import java.net.URI
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    val kotlinVersion: String by extra("1.5.10")
+    val kotlinVersion: String by extra("1.5.20")
     repositories {
         mavenLocal()
         mavenCentral()
@@ -26,7 +26,7 @@ allprojects {
         mavenLocal()
         mavenCentral()
         maven {
-            url = URI("http://repo.maven.apache.org/maven2")
+            url = URI("https://repo.maven.apache.org/maven2")
         }
     }
     group = "com.wbrawner"

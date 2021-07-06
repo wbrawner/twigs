@@ -12,7 +12,7 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven {
-        url = URI("http://repo.maven.apache.org/maven2")
+        url = URI("https://repo.maven.apache.org/maven2")
     }
 }
 
