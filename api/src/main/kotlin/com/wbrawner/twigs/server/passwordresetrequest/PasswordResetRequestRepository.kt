@@ -1,0 +1,5 @@
+package com.wbrawner.twigs.server.passwordresetrequest
+
+import org.springframework.data.repository.PagingAndSortingRepository
+
+interface PasswordResetRequestRepository : PagingAndSortingRepository<PasswordResetRequest, Long>

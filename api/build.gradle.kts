@@ -32,7 +32,7 @@ dependencies {
 
 description = "twigs-server"
 
-val twigsMain = "com.wbrawner.budgetserver.TwigsServerApplication"
+val twigsMain = "com.wbrawner.twigs.server.TwigsServerApplication"
 
 tasks.bootJar {
     mainClassName = twigsMain
