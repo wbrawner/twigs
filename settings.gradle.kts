@@ -1,2 +1,2 @@
 rootProject.name = "twigs"
-include(":api")
+include(":app")
