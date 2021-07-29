@@ -18,7 +18,7 @@ repositories {
 }
 
 val kotlinVersion: String by rootProject.extra
-val ktorVersion = "1.6.1"
+val ktorVersion: String by rootProject.extra
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")

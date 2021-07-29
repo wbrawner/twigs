@@ -1,8 +1,9 @@
-import java.net.URI
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URI
 
 buildscript {
     val kotlinVersion: String by extra("1.5.20")
+    val ktorVersion: String by extra("1.6.1")
     repositories {
         mavenLocal()
         mavenCentral()
@@ -18,7 +19,7 @@ buildscript {
 
 plugins {
     java
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.20"
 }
 
 allprojects {
