@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.server.transaction
 
-import com.wbrawner.twigs.server.ErrorResponse
+import com.wbrawner.twigs.ErrorResponse
 import com.wbrawner.twigs.server.category.Category
 import com.wbrawner.twigs.server.category.CategoryRepository
 import com.wbrawner.twigs.server.currentUser

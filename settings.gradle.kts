@@ -1,2 +1,3 @@
 rootProject.name = "twigs"
-include(":app")
+include("core", "api", "app")
+include("storage")

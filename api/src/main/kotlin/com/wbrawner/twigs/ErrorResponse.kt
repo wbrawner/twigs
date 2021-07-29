@@ -1,3 +1,3 @@
-package com.wbrawner.twigs.server
+package com.wbrawner.twigs
 
 data class ErrorResponse(val message: String)

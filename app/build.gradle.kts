@@ -21,6 +21,9 @@ val kotlinVersion: String by rootProject.extra
 val ktorVersion: String by rootProject.extra
 
 dependencies {
+    implementation(project(":api"))
+    implementation(project(":core"))
+    implementation(project(":storage"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")

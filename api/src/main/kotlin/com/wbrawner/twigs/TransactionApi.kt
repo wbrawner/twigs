@@ -1,28 +1,6 @@
-package com.wbrawner.twigs.server.transaction
+package com.wbrawner.twigs
 
-import com.wbrawner.twigs.server.budget.Budget
-import com.wbrawner.twigs.server.category.Category
-import com.wbrawner.twigs.server.randomString
-import com.wbrawner.twigs.server.user.User
-import java.time.Instant
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-
-@Entity
-data class Transaction(
-    @Id
-    val id: String = randomString(),
-    var title: String? = null,
-    var description: String? = null,
-    var date: Instant? = null,
-    var amount: Long? = null,
-    @field:ManyToOne var category: Category? = null,
-    var expense: Boolean? = null,
-    @field:JoinColumn(nullable = false) @field:ManyToOne val createdBy: User? = null,
-    @field:JoinColumn(nullable = false) @field:ManyToOne var budget: Budget? = null
-)
+import com.wbrawner.twigs.model.Transaction
 
 data class NewTransactionRequest(
     val title: String,

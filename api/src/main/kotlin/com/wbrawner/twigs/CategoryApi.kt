@@ -1,23 +1,6 @@
-package com.wbrawner.twigs.server.category
+package com.wbrawner.twigs
 
-import com.wbrawner.twigs.server.budget.Budget
-import com.wbrawner.twigs.server.randomString
-import javax.persistence.*
-
-@Entity
-data class Category(
-    @Id
-    val id: String = randomString(),
-    var title: String= "",
-    var description: String? = null,
-    var amount: Long = 0L,
-    @field:ManyToOne
-    @field:JoinColumn(nullable = false)
-    var budget: Budget? = null,
-    var expense: Boolean = true,
-    @field:Column(nullable = false, columnDefinition = "boolean default false")
-    var archived: Boolean = false
-)
+import com.wbrawner.twigs.model.Category
 
 data class NewCategoryRequest(
     val title: String,

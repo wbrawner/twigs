@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.server.category
 
-import com.wbrawner.twigs.server.ErrorResponse
+import com.wbrawner.twigs.ErrorResponse
 import com.wbrawner.twigs.server.currentUser
 import com.wbrawner.twigs.server.firstOfMonth
 import com.wbrawner.twigs.server.permission.Permission

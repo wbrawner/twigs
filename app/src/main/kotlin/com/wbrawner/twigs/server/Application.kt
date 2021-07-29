@@ -1,15 +1,13 @@
 package com.wbrawner.twigs.server
 
+import com.wbrawner.twigs.budgetRoutes
 import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.auth.*
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
-fun Application.module(testing: Boolean = false) {
-    routing {
-        get("/") {
-            call.respondText("Hello, world!")
-        }
-    }
+fun Application.module(budgetReposi) {
+
+    install(Authentication)
+    budgetRoutes()
 }
