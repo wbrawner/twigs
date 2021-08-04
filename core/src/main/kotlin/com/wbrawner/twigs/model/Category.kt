@@ -7,7 +7,7 @@ data class Category(
     var title: String = "",
     var description: String? = null,
     var amount: Long = 0L,
-    var budget: Budget? = null,
+    var budgetId: String? = null,
     var expense: Boolean = true,
     var archived: Boolean = false
 )

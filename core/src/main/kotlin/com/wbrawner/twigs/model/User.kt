@@ -30,6 +30,10 @@ enum class Permission {
      */
     OWNER;
 
+    fun isAtLeast(wanted: Permission): Boolean {
+        return ordinal >= wanted.ordinal
+    }
+
     fun isNotAtLeast(wanted: Permission): Boolean {
         return ordinal < wanted.ordinal
     }

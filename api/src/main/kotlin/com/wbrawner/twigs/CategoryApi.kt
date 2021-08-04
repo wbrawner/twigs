@@ -2,18 +2,11 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Category
 
-data class NewCategoryRequest(
-    val title: String,
-    val description: String? = null,
-    val amount: Long,
-    val budgetId: String,
-    val expense: Boolean
-)
-
-data class UpdateCategoryRequest(
+data class CategoryRequest(
     val title: String? = null,
     val description: String? = null,
     val amount: Long? = null,
+    val budgetId: String? = null,
     val expense: Boolean? = null,
     val archived: Boolean? = null
 )
