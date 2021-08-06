@@ -2,25 +2,18 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.User
+import com.wbrawner.twigs.storage.Session
 import java.util.*
 
-data class NewUserRequest(
-    val username: String,
-    val password: String,
-    val email: String? = null
-)
-
-data class UpdateUserRequest(
+data class UserRequest(
     val username: String? = null,
     val password: String? = null,
     val email: String? = null
 )
 
-data class LoginRequest(val username: String? = null, val password: String? = null)
+data class LoginRequest(val username: String, val password: String)
 
-data class UserResponse(val id: String, val username: String, val email: String?) {
-    constructor(user: User) : this(user.id, user.name, user.email)
-}
+data class UserResponse(val id: String, val username: String, val email: String?)
 
 data class UserPermissionRequest(
     val user: String,
@@ -29,9 +22,7 @@ data class UserPermissionRequest(
 
 data class UserPermissionResponse(val user: String, val permission: Permission?)
 
-data class SessionResponse(val token: String, val expiration: String) {
-    constructor(session: Session) : this(session.token, session.expiration.toInstant().toString())
-}
+data class SessionResponse(val token: String, val expiration: String)
 
 data class PasswordResetRequest(
     val userId: Long,
@@ -39,3 +30,7 @@ data class PasswordResetRequest(
     private val date: Calendar = GregorianCalendar(),
     private val token: String = randomString()
 )
+
+fun User.asResponse(): UserResponse = UserResponse(id, name, email)
+
+fun Session.asResponse(): SessionResponse = SessionResponse(token, expiration.toInstant().toString())

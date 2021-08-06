@@ -41,3 +41,6 @@ fun randomString(length: Int = 32): String {
     }
     return id.toString()
 }
+
+// TODO: Use bcrypt to hash strings
+fun String.hash(): String = this

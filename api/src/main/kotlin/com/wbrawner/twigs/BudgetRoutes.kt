@@ -5,35 +5,18 @@ import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.UserPermission
 import com.wbrawner.twigs.storage.BudgetRepository
 import com.wbrawner.twigs.storage.PermissionRepository
+import com.wbrawner.twigs.storage.Session
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.util.pipeline.*
 
 fun Application.budgetRoutes(
     budgetRepository: BudgetRepository,
     permissionRepository: PermissionRepository
 ) {
-    suspend fun PipelineContext<Unit, ApplicationCall>.budgetWithPermission(
-        budgetId: String,
-        permission: Permission,
-        block: suspend (Budget) -> Unit
-    ) {
-        val session = call.principal<Session>()!!
-        val userPermission = permissionRepository.findAll(
-            userId = session.userId,
-            budgetIds = listOf(budgetId)
-        ).firstOrNull()
-        if (userPermission?.permission?.isNotAtLeast(permission) != true) {
-            call.respond(HttpStatusCode.Forbidden)
-            return
-        }
-        block(budgetRepository.findAllByIds(listOf(budgetId)).first())
-    }
-
     routing {
         route("/api/budgets") {
             authenticate(optional = false) {
@@ -47,7 +30,7 @@ fun Application.budgetRoutes(
                 }
 
                 get("/{id}") {
-                    budgetWithPermission(budgetId = call.parameters["id"]!!, Permission.READ) { budget ->
+                    budgetWithPermission(budgetRepository, permissionRepository, call.parameters["id"]!!, Permission.READ) { budget ->
                         val users = permissionRepository.findAll(budgetIds = listOf(budget.id))
                         call.respond(BudgetResponse(budget, users))
                     }
@@ -57,7 +40,7 @@ fun Application.budgetRoutes(
                     val session = call.principal<Session>()!!
                     val request = call.receive<BudgetRequest>()
                     if (request.name.isNullOrBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, "Name cannot be empty or null")
+                        errorResponse(HttpStatusCode.BadRequest, "Name cannot be empty or null")
                         return@post
                     }
                     val budget = budgetRepository.save(
@@ -90,7 +73,7 @@ fun Application.budgetRoutes(
                 }
 
                 put("/{id}") {
-                    budgetWithPermission(call.parameters["id"]!!, Permission.MANAGE) { budget ->
+                    budgetWithPermission(budgetRepository, permissionRepository, call.parameters["id"]!!, Permission.MANAGE) { budget ->
                         val request = call.receive<BudgetRequest>()
                         val name = request.name ?: budget.name
                         val description = request.description ?: budget.description
@@ -112,7 +95,7 @@ fun Application.budgetRoutes(
                 }
 
                 delete("/{id}") {
-                    budgetWithPermission(budgetId = call.parameters["id"]!!, Permission.OWNER) { budget ->
+                    budgetWithPermission(budgetRepository, permissionRepository, budgetId = call.parameters["id"]!!, Permission.OWNER) { budget ->
                         budgetRepository.delete(budget)
                         call.respond(HttpStatusCode.NoContent)
                     }

@@ -25,7 +25,7 @@ data class CategoryResponse(
         category.title,
         category.description,
         category.amount,
-        category.budget!!.id,
+        category.budgetId!!,
         category.expense,
         category.archived
     )

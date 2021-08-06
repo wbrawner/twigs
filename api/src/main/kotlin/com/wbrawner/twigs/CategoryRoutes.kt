@@ -4,13 +4,13 @@ import com.wbrawner.twigs.model.Category
 import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.storage.CategoryRepository
 import com.wbrawner.twigs.storage.PermissionRepository
+import com.wbrawner.twigs.storage.Session
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.util.pipeline.*
 
 fun Application.categoryRoutes(
     categoryRepository: CategoryRepository,
@@ -45,11 +45,11 @@ fun Application.categoryRoutes(
                     val session = call.principal<Session>()!!
                     val request = call.receive<CategoryRequest>()
                     if (request.title.isNullOrBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, ErrorResponse("Title cannot be null or empty"))
+                        errorResponse(HttpStatusCode.BadRequest, "Title cannot be null or empty")
                         return@post
                     }
                     if (request.budgetId.isNullOrBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, ErrorResponse("Budget ID cannot be null or empty"))
+                        errorResponse(HttpStatusCode.BadRequest, "Budget ID cannot be null or empty")
                         return@post
                     }
                     requireBudgetWithPermission(
@@ -111,7 +111,7 @@ fun Application.categoryRoutes(
                     val category = categoryRepository.findAll(ids = call.parameters.getAll("id"))
                         .firstOrNull()
                         ?: run {
-                            call.respond(HttpStatusCode.NotFound)
+                            errorResponse(HttpStatusCode.NotFound)
                             return@delete
                         }
                     requireBudgetWithPermission(
@@ -126,23 +126,5 @@ fun Application.categoryRoutes(
                 }
             }
         }
-    }
-}
-
-suspend inline fun PipelineContext<Unit, ApplicationCall>.requireBudgetWithPermission(
-    permissionRepository: PermissionRepository,
-    userId: String,
-    budgetId: String,
-    permission: Permission,
-    otherwise: () -> Unit
-) {
-    permissionRepository.findAll(
-        userId = userId,
-        budgetIds = listOf(budgetId)
-    ).firstOrNull {
-        it.permission.isAtLeast(permission)
-    } ?: run {
-        call.respond(HttpStatusCode.Forbidden, "Insufficient permissions on budget $budgetId")
-        otherwise()
     }
 }
