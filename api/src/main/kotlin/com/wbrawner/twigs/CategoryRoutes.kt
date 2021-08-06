@@ -41,7 +41,7 @@ fun Application.categoryRoutes(
                     ).map { CategoryResponse(it) })
                 }
 
-                post("/{id}") {
+                post("/") {
                     val session = call.principal<Session>()!!
                     val request = call.receive<CategoryRequest>()
                     if (request.title.isNullOrBlank()) {

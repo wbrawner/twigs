@@ -11,4 +11,3 @@ data class Session(
     val token: String = randomString(255),
     var expiration: Date = twoWeeksFromNow
 ) : Principal
-

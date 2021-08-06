@@ -36,7 +36,7 @@ fun Application.budgetRoutes(
                     }
                 }
 
-                post("/{id}") {
+                post("/") {
                     val session = call.principal<Session>()!!
                     val request = call.receive<BudgetRequest>()
                     if (request.name.isNullOrBlank()) {

@@ -11,7 +11,7 @@ private val CALENDAR_FIELDS = intArrayOf(
 )
 
 val firstOfMonth: Date
-    get() = GregorianCalendar().run {
+    get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
         for (calField in CALENDAR_FIELDS) {
             set(calField, getActualMinimum(calField))
         }
@@ -19,7 +19,7 @@ val firstOfMonth: Date
     }
 
 val endOfMonth: Date
-    get() = GregorianCalendar().run {
+    get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
         for (calField in CALENDAR_FIELDS) {
             set(calField, getActualMaximum(calField))
         }
@@ -27,7 +27,7 @@ val endOfMonth: Date
     }
 
 val twoWeeksFromNow: Date
-    get() = GregorianCalendar().run {
+    get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
         add(Calendar.DATE, 14)
         time
     }

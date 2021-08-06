@@ -10,6 +10,7 @@ import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.util.pipeline.*
+import java.time.Instant
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.requireBudgetWithPermission(
     permissionRepository: PermissionRepository,
@@ -56,3 +57,5 @@ suspend inline fun PipelineContext<Unit, ApplicationCall>.errorResponse(
         call.respond(httpStatusCode, ErrorResponse(message))
     }?: call.respond(httpStatusCode)
 }
+
+fun String.toInstant(): Instant = Instant.parse(this)

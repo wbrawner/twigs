@@ -2,17 +2,7 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Transaction
 
-data class NewTransactionRequest(
-    val title: String,
-    val description: String? = null,
-    val date: String,
-    val amount: Long,
-    val categoryId: String? = null,
-    val expense: Boolean,
-    val budgetId: String
-)
-
-data class UpdateTransactionRequest(
+data class TransactionRequest(
     val title: String? = null,
     val description: String? = null,
     val date: String? = null,
@@ -20,7 +10,6 @@ data class UpdateTransactionRequest(
     val categoryId: String? = null,
     val expense: Boolean? = null,
     val budgetId: String? = null,
-    val createdBy: String? = null
 )
 
 data class TransactionResponse(
@@ -33,16 +22,18 @@ data class TransactionResponse(
     val budgetId: String,
     val categoryId: String?,
     val createdBy: String
-) {
-    constructor(transaction: Transaction) : this(
-        transaction.id,
-        transaction.title,
-        transaction.description,
-        transaction.date.toString(),
-        transaction.amount,
-        transaction.expense,
-        transaction.budget!!.id,
-        transaction.category?.id,
-        transaction.createdBy!!.id
-    )
-}
+)
+
+data class BalanceResponse(val balance: Long)
+
+fun Transaction.asResponse(): TransactionResponse = TransactionResponse(
+    id = id,
+    title = title,
+    description = description,
+    date = date.toString(),
+    amount = amount,
+    expense = expense,
+    budgetId = budgetId,
+    categoryId = categoryId,
+    createdBy = createdBy
+)

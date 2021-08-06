@@ -9,8 +9,8 @@ data class Transaction(
     val description: String? = null,
     val date: Instant? = null,
     val amount: Long? = null,
-    val category: Category? = null,
+    val categoryId: String? = null,
     val expense: Boolean? = null,
-    val createdBy: User? = null,
-    val budget: Budget? = null
+    val createdBy: String,
+    val budgetId: String
 )

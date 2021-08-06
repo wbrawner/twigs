@@ -1,10 +1,8 @@
 package com.wbrawner.twigs.server
 
-import com.wbrawner.twigs.budgetRoutes
-import com.wbrawner.twigs.categoryRoutes
+import com.wbrawner.twigs.*
+import com.wbrawner.twigs.model.Transaction
 import com.wbrawner.twigs.storage.*
-import com.wbrawner.twigs.twoWeeksFromNow
-import com.wbrawner.twigs.userRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.sessions.*
@@ -23,6 +21,7 @@ fun Application.module(
     categoryRepository: CategoryRepository,
     permissionRepository: PermissionRepository,
     sessionRepository: SessionRepository,
+    transactionRepository: TransactionRepository,
     userRepository: UserRepository
 ) {
     install(Sessions) {
@@ -43,6 +42,7 @@ fun Application.module(
     }
     budgetRoutes(budgetRepository, permissionRepository)
     categoryRoutes(categoryRepository, permissionRepository)
+    transactionRoutes(transactionRepository, permissionRepository)
     userRoutes(permissionRepository, sessionRepository, userRepository)
     launch {
         while (currentCoroutineContext().isActive) {
