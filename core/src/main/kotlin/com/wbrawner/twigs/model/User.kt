@@ -1,13 +1,15 @@
 package com.wbrawner.twigs.model
 
+import com.wbrawner.twigs.Identifiable
 import com.wbrawner.twigs.randomString
+import io.ktor.auth.*
 
 data class User(
-    val id: String = randomString(),
+    override val id: String = randomString(),
     val name: String = "",
     val password: String = "",
     val email: String? = null
-)
+) : Principal, Identifiable
 
 enum class Permission {
     /**
@@ -32,10 +34,6 @@ enum class Permission {
 
     fun isAtLeast(wanted: Permission): Boolean {
         return ordinal >= wanted.ordinal
-    }
-
-    fun isNotAtLeast(wanted: Permission): Boolean {
-        return ordinal < wanted.ordinal
     }
 }
 

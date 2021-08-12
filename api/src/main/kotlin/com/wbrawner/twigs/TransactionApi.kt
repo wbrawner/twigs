@@ -1,7 +1,9 @@
 package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Transaction
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class TransactionRequest(
     val title: String? = null,
     val description: String? = null,
@@ -12,6 +14,7 @@ data class TransactionRequest(
     val budgetId: String? = null,
 )
 
+@Serializable
 data class TransactionResponse(
     val id: String,
     val title: String?,
@@ -24,6 +27,7 @@ data class TransactionResponse(
     val createdBy: String
 )
 
+@Serializable
 data class BalanceResponse(val balance: Long)
 
 fun Transaction.asResponse(): TransactionResponse = TransactionResponse(

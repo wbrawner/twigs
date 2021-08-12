@@ -20,17 +20,18 @@ fun Application.transactionRoutes(
     routing {
         route("/api/transactions") {
             authenticate(optional = false) {
-                get("/") {
+                get {
                     val session = call.principal<Session>()!!
-                    call.respond(transactionRepository.findAll(
-                        budgetIds = permissionRepository.findAll(
-                            budgetIds = call.request.queryParameters.getAll("budgetIds"),
-                            userId = session.userId
-                        ).map { it.budgetId },
-                        categoryIds = call.request.queryParameters.getAll("categoryIds"),
-                        from = call.request.queryParameters["from"]?.let { Instant.parse(it) },
-                        to = call.request.queryParameters["to"]?.let { Instant.parse(it) },
-                        expense = call.request.queryParameters["expense"]?.toBoolean(),
+                    call.respond(
+                        transactionRepository.findAll(
+                            budgetIds = permissionRepository.findAll(
+                                budgetIds = call.request.queryParameters.getAll("budgetIds"),
+                                userId = session.userId
+                            ).map { it.budgetId },
+                            categoryIds = call.request.queryParameters.getAll("categoryIds"),
+                            from = call.request.queryParameters["from"]?.let { Instant.parse(it) },
+                            to = call.request.queryParameters["to"]?.let { Instant.parse(it) },
+                            expense = call.request.queryParameters["expense"]?.toBoolean(),
                     ).map { it.asResponse() })
                 }
 
@@ -53,11 +54,14 @@ fun Application.transactionRoutes(
                 get("/sum") {
                     val categoryId = call.request.queryParameters["categoryId"]
                     val budgetId = call.request.queryParameters["budgetId"]
-                    val from = call.request.queryParameters["from"]?.toInstant() ?: firstOfMonth.toInstant()
-                    val to = call.request.queryParameters["to"]?.toInstant() ?: endOfMonth.toInstant()
+                    val from = call.request.queryParameters["from"]?.toInstant() ?: firstOfMonth
+                    val to = call.request.queryParameters["to"]?.toInstant() ?: endOfMonth
                     val balance = if (!categoryId.isNullOrBlank()) {
                         if (!budgetId.isNullOrBlank()) {
-                            errorResponse(HttpStatusCode.BadRequest, "budgetId and categoryId cannot be provided together")
+                            errorResponse(
+                                HttpStatusCode.BadRequest,
+                                "budgetId and categoryId cannot be provided together"
+                            )
                             return@get
                         }
                         transactionRepository.sumByCategory(categoryId, from, to)
@@ -70,7 +74,7 @@ fun Application.transactionRoutes(
                     call.respond(BalanceResponse(balance))
                 }
 
-                post("/") {
+                post {
                     val session = call.principal<Session>()!!
                     val request = call.receive<TransactionRequest>()
                     if (request.title.isNullOrBlank()) {

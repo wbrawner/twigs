@@ -42,11 +42,11 @@ suspend fun PipelineContext<Unit, ApplicationCall>.budgetWithPermission(
         userId = session.userId,
         budgetIds = listOf(budgetId)
     ).firstOrNull()
-    if (userPermission?.permission?.isNotAtLeast(permission) != true) {
+    if (userPermission?.permission?.isAtLeast(permission) != true) {
         errorResponse(HttpStatusCode.Forbidden)
         return
     }
-    block(budgetRepository.findAllByIds(listOf(budgetId)).first())
+    block(budgetRepository.findAll(ids = listOf(budgetId)).first())
 }
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.errorResponse(

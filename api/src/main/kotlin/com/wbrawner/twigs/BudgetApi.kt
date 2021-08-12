@@ -2,14 +2,17 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Budget
 import com.wbrawner.twigs.model.UserPermission
+import kotlinx.serialization.Serializable
 import java.util.*
 
+@Serializable
 data class BudgetRequest(
     val name: String? = null,
     val description: String? = null,
     val users: Set<UserPermissionRequest>? = null
 )
 
+@Serializable
 data class BudgetResponse(
     val id: String,
     val name: String?,
@@ -28,5 +31,3 @@ data class BudgetResponse(
         }
     )
 }
-
-data class BudgetBalanceResponse(val id: String, val balance: Long)

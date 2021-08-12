@@ -19,29 +19,37 @@ fun Application.categoryRoutes(
     routing {
         route("/api/categories") {
             authenticate(optional = false) {
-                get("/") {
+                get {
                     val session = call.principal<Session>()!!
+                    val budgetIds = permissionRepository.findAll(
+                        budgetIds = call.request.queryParameters.getAll("budgetIds"),
+                        userId = session.userId
+                    ).map { it.budgetId }
+                    if (budgetIds.isEmpty()) {
+                        call.respond(emptyList<CategoryResponse>())
+                        return@get
+                    }
                     call.respond(categoryRepository.findAll(
-                        budgetIds = permissionRepository.findAll(
-                            budgetIds = call.request.queryParameters.getAll("budgetIds"),
-                            userId = session.userId
-                        ).map { it.budgetId },
+                        budgetIds = budgetIds,
                         expense = call.request.queryParameters["expense"]?.toBoolean(),
                         archived = call.request.queryParameters["archived"]?.toBoolean()
-                    ).map { CategoryResponse(it) })
+                    ).map { it.asResponse() })
                 }
 
                 get("/{id}") {
                     val session = call.principal<Session>()!!
+                    val budgetIds = permissionRepository.findAll(userId = session.userId).map { it.budgetId }
+                    if (budgetIds.isEmpty()) {
+                        errorResponse()
+                        return@get
+                    }
                     call.respond(categoryRepository.findAll(
                         ids = call.parameters.getAll("id"),
-                        budgetIds = permissionRepository.findAll(
-                            userId = session.userId
-                        ).map { it.budgetId }
-                    ).map { CategoryResponse(it) })
+                        budgetIds = budgetIds
+                    ).map { it.asResponse() })
                 }
 
-                post("/") {
+                post {
                     val session = call.principal<Session>()!!
                     val request = call.receive<CategoryRequest>()
                     if (request.title.isNullOrBlank()) {
@@ -61,16 +69,15 @@ fun Application.categoryRoutes(
                         return@post
                     }
                     call.respond(
-                        CategoryResponse(
-                            categoryRepository.save(
-                                Category(
-                                    title = request.title,
-                                    description = request.description,
-                                    amount = request.amount ?: 0L,
-                                    expense = request.expense ?: true,
-                                )
+                        categoryRepository.save(
+                            Category(
+                                title = request.title,
+                                description = request.description,
+                                amount = request.amount ?: 0L,
+                                expense = request.expense ?: true,
+                                budgetId = request.budgetId
                             )
-                        )
+                        ).asResponse()
                     )
                 }
 
@@ -86,23 +93,21 @@ fun Application.categoryRoutes(
                     requireBudgetWithPermission(
                         permissionRepository,
                         session.userId,
-                        category.budgetId!!,
+                        category.budgetId,
                         Permission.WRITE
                     ) {
                         return@put
                     }
                     call.respond(
-                        CategoryResponse(
-                            categoryRepository.save(
-                                Category(
-                                    title = request.title ?: category.title,
-                                    description = request.description ?: category.description,
-                                    amount = request.amount ?: category.amount,
-                                    expense = request.expense ?: category.expense,
-                                    archived = request.archived ?: category.archived
-                                )
+                        categoryRepository.save(
+                            category.copy(
+                                title = request.title ?: category.title,
+                                description = request.description ?: category.description,
+                                amount = request.amount ?: category.amount,
+                                expense = request.expense ?: category.expense,
+                                archived = request.archived ?: category.archived,
                             )
-                        )
+                        ).asResponse()
                     )
                 }
 
@@ -117,7 +122,7 @@ fun Application.categoryRoutes(
                     requireBudgetWithPermission(
                         permissionRepository,
                         session.userId,
-                        category.budgetId!!,
+                        category.budgetId,
                         Permission.WRITE
                     ) {
                         return@delete

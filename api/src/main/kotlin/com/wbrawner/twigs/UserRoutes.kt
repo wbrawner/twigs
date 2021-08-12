@@ -11,7 +11,6 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.sessions.*
 
 fun Application.userRoutes(
     permissionRepository: PermissionRepository,
@@ -23,15 +22,15 @@ fun Application.userRoutes(
             post("/login") {
                 val request = call.receive<LoginRequest>()
                 val user =
-                    userRepository.find(name = request.username, password = request.password.hash()).firstOrNull()
-                        ?: userRepository.find(email = request.username, password = request.password.hash())
+                    userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
+                        .firstOrNull()
+                        ?: userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
                             .firstOrNull()
                         ?: run {
                             errorResponse(HttpStatusCode.Unauthorized, "Invalid credentials")
                             return@post
                         }
                 val session = sessionRepository.save(Session(userId = user.id))
-                call.sessions.set(session)
                 call.respond(session.asResponse())
             }
 
@@ -49,7 +48,7 @@ fun Application.userRoutes(
                     userRepository.save(
                         User(
                             name = request.username,
-                            password = request.password,
+                            password = request.password.hash(),
                             email = request.email
                         )
                     ).asResponse()
@@ -57,10 +56,10 @@ fun Application.userRoutes(
             }
 
             authenticate(optional = false) {
-                get("/") {
+                get {
                     val query = call.request.queryParameters.getAll("query")
                     if (query?.firstOrNull()?.isNotBlank() == true) {
-                        call.respond(userRepository.findAll(nameLike = query.first()).map{ it.asResponse() })
+                        call.respond(userRepository.findAll(nameLike = query.first()).map { it.asResponse() })
                         return@get
                     }
                     permissionRepository.findAll(
@@ -76,10 +75,11 @@ fun Application.userRoutes(
                     userRepository.findAll(ids = call.parameters.getAll("id"))
                         .firstOrNull()
                         ?.asResponse()
+                        ?.let { call.respond(it) }
                         ?: errorResponse(HttpStatusCode.NotFound)
                 }
 
-                post("/") {
+                post {
                     val request = call.receive<UserRequest>()
                     if (request.username.isNullOrBlank()) {
                         errorResponse(HttpStatusCode.BadRequest, "Username must not be null or blank")
@@ -126,11 +126,16 @@ fun Application.userRoutes(
                 delete("/{id}") {
                     val session = call.principal<Session>()!!
                     // TODO: Add some kind of admin denotation to allow admins to delete other users
-                    if (call.parameters["id"] != session.userId) {
+                    val user = userRepository.findAll(call.parameters.getAll("íd")!!).firstOrNull()
+                    if (user == null) {
+                        errorResponse()
+                        return@delete
+                    }
+                    if (user.id != session.userId) {
                         errorResponse(HttpStatusCode.Forbidden)
                         return@delete
                     }
-                    userRepository.deleteById(session.userId)
+                    userRepository.delete(user)
                     call.respond(HttpStatusCode.NoContent)
                 }
             }

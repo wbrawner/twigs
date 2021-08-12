@@ -1,10 +1,16 @@
 package com.wbrawner.twigs.server
 
 import com.wbrawner.twigs.*
-import com.wbrawner.twigs.model.Transaction
+import com.wbrawner.twigs.db.*
 import com.wbrawner.twigs.storage.*
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.*
 import io.ktor.auth.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.serialization.*
 import io.ktor.sessions.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -15,8 +21,36 @@ import kotlin.time.ExperimentalTime
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
+private const val DATABASE_VERSION = 1
+
 @ExperimentalTime
-fun Application.module(
+fun Application.module() {
+    val dbHost = environment.config.propertyOrNull("ktor.database.host")?.getString() ?: "localhost"
+    val dbPort = environment.config.propertyOrNull("ktor.database.port")?.getString() ?: "5432"
+    val dbName = environment.config.propertyOrNull("ktor.database.name")?.getString() ?: "twigs"
+    val dbUser = environment.config.propertyOrNull("ktor.database.user")?.getString() ?: "twigs"
+    val dbPass = environment.config.propertyOrNull("ktor.database.password")?.getString() ?: "twigs"
+    val jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?stringtype=unspecified"
+    HikariDataSource(HikariConfig().apply {
+        setJdbcUrl(jdbcUrl)
+        username = dbUser
+        password = dbPass
+    }).also {
+        moduleWithDependencies(
+            metadataRepository = MetadataRepository(it),
+            budgetRepository = JdbcBudgetRepository(it),
+            categoryRepository = JdbcCategoryRepository(it),
+            permissionRepository = JdbcPermissionRepository(it),
+            sessionRepository = JdbcSessionRepository(it),
+            transactionRepository = JdbcTransactionRepository(it),
+            userRepository = JdbcUserRepository(it)
+        )
+    }
+}
+
+@ExperimentalTime
+fun Application.moduleWithDependencies(
+    metadataRepository: MetadataRepository,
     budgetRepository: BudgetRepository,
     categoryRepository: CategoryRepository,
     permissionRepository: PermissionRepository,
@@ -24,27 +58,57 @@ fun Application.module(
     transactionRepository: TransactionRepository,
     userRepository: UserRepository
 ) {
-    install(Sessions) {
-        header<String>("Authorization")
-    }
+    install(CallLogging)
     install(Authentication) {
-        session<String> {
-            validate { token ->
-                val session = sessionRepository.findAll(token).firstOrNull()
-                    ?: return@validate null
-                return@validate if (twoWeeksFromNow.after(session.expiration)) {
-                    session
+        session<Session> {
+            challenge {
+                call.respond(HttpStatusCode.Unauthorized)
+            }
+            validate { session ->
+                environment.log.info("Validating session")
+                val storedSession = sessionRepository.findAll(session.token)
+                    .firstOrNull()
+                if (storedSession == null) {
+                    environment.log.info("Did not find session!")
+                    return@validate null
+                } else {
+                    environment.log.info("Found session!")
+                }
+                return@validate if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
+                    sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
                 } else {
                     null
                 }
             }
         }
     }
+    install(Sessions) {
+        header<Session>("Authorization") {
+            serializer = object : SessionSerializer<Session> {
+                override fun deserialize(text: String): Session {
+                    environment.log.info("Deserializing session!")
+                    return Session(token = text.substringAfter("Bearer "))
+                }
+
+                override fun serialize(session: Session): String = session.token
+            }
+        }
+    }
+    install(ContentNegotiation) {
+        json()
+    }
     budgetRoutes(budgetRepository, permissionRepository)
     categoryRoutes(categoryRepository, permissionRepository)
     transactionRoutes(transactionRepository, permissionRepository)
     userRoutes(permissionRepository, sessionRepository, userRepository)
     launch {
+        val metadata = (metadataRepository.findAll().firstOrNull() ?: DatabaseMetadata())
+        var version = metadata.version
+        while (currentCoroutineContext().isActive && version++ < DATABASE_VERSION) {
+            metadataRepository.runMigration(version)
+            metadataRepository.save(metadata.copy(version = version))
+        }
+        salt = metadata.salt
         while (currentCoroutineContext().isActive) {
             delay(Duration.hours(24))
             sessionRepository.deleteExpired()

@@ -1,13 +1,14 @@
 package com.wbrawner.twigs.model
 
+import com.wbrawner.twigs.Identifiable
 import com.wbrawner.twigs.randomString
 
 data class Category(
-    val id: String = randomString(),
-    var title: String = "",
-    var description: String? = null,
-    var amount: Long = 0L,
-    var budgetId: String? = null,
-    var expense: Boolean = true,
-    var archived: Boolean = false
-)
+    override val id: String = randomString(),
+    val title: String,
+    val amount: Long,
+    val budgetId: String,
+    val description: String? = null,
+    val expense: Boolean = true,
+    val archived: Boolean = false
+) : Identifiable

@@ -1,5 +1,7 @@
 package com.wbrawner.twigs
 
+import at.favre.lib.crypto.bcrypt.BCrypt
+import java.time.Instant
 import java.util.*
 
 private val CALENDAR_FIELDS = intArrayOf(
@@ -10,26 +12,26 @@ private val CALENDAR_FIELDS = intArrayOf(
         Calendar.DATE
 )
 
-val firstOfMonth: Date
+val firstOfMonth: Instant
     get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
         for (calField in CALENDAR_FIELDS) {
             set(calField, getActualMinimum(calField))
         }
-        time
+        toInstant()
     }
 
-val endOfMonth: Date
+val endOfMonth: Instant
     get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
         for (calField in CALENDAR_FIELDS) {
             set(calField, getActualMaximum(calField))
         }
-        time
+        toInstant()
     }
 
-val twoWeeksFromNow: Date
+val twoWeeksFromNow: Instant
     get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
         add(Calendar.DATE, 14)
-        time
+        toInstant()
     }
 
 private const val CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -42,5 +44,5 @@ fun randomString(length: Int = 32): String {
     return id.toString()
 }
 
-// TODO: Use bcrypt to hash strings
-fun String.hash(): String = this
+lateinit var salt: String
+fun String.hash(): String = String(BCrypt.withDefaults().hash(10, salt.toByteArray(), this.toByteArray()))

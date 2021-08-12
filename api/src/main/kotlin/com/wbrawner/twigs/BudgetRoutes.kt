@@ -20,10 +20,14 @@ fun Application.budgetRoutes(
     routing {
         route("/api/budgets") {
             authenticate(optional = false) {
-                get("/") {
+                get {
                     val session = call.principal<Session>()!!
                     val budgetIds = permissionRepository.findAll(userId = session.userId).map { it.budgetId }
-                    val budgets = budgetRepository.findAllByIds(budgetIds).map {
+                    if (budgetIds.isEmpty()) {
+                        call.respond(emptyList<BudgetResponse>())
+                        return@get
+                    }
+                    val budgets = budgetRepository.findAll(ids = budgetIds).map {
                         BudgetResponse(it, permissionRepository.findAll(budgetIds = listOf(it.id)))
                     }
                     call.respond(budgets)
@@ -36,7 +40,7 @@ fun Application.budgetRoutes(
                     }
                 }
 
-                post("/") {
+                post {
                     val session = call.principal<Session>()!!
                     val request = call.receive<BudgetRequest>()
                     if (request.name.isNullOrBlank()) {

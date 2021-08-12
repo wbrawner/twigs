@@ -4,8 +4,8 @@ import com.wbrawner.twigs.model.Category
 
 interface CategoryRepository : Repository<Category> {
     fun findAll(
+        budgetIds: List<String>,
         ids: List<String>? = null,
-        budgetIds: List<String>? = null,
         expense: Boolean? = null,
         archived: Boolean? = null
     ): List<Category>

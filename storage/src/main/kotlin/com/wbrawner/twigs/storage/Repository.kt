@@ -6,8 +6,7 @@ package com.wbrawner.twigs.storage
  * @param T The type of the object supported by this repository
  */
 interface Repository<T> {
-    suspend fun findAll(): List<T>
-    suspend fun findAllByIds(id: List<String>): List<T>
+    suspend fun findAll(ids: List<String>? = null): List<T>
     suspend fun save(item: T): T
     suspend fun delete(item: T): Boolean
 }

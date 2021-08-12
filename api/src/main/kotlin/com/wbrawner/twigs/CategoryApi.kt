@@ -1,7 +1,9 @@
 package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Category
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class CategoryRequest(
     val title: String? = null,
     val description: String? = null,
@@ -11,24 +13,23 @@ data class CategoryRequest(
     val archived: Boolean? = null
 )
 
+@Serializable
 data class CategoryResponse(
     val id: String,
     val title: String,
     val description: String?,
     val amount: Long,
     val budgetId: String,
-    val isExpense: Boolean,
-    val isArchived: Boolean
-) {
-    constructor(category: Category) : this(
-        category.id,
-        category.title,
-        category.description,
-        category.amount,
-        category.budgetId!!,
-        category.expense,
-        category.archived
-    )
-}
+    val expense: Boolean,
+    val archived: Boolean
+)
 
-data class CategoryBalanceResponse(val id: String, val balance: Long)
+fun Category.asResponse(): CategoryResponse = CategoryResponse(
+    id,
+    title,
+    description,
+    amount,
+    budgetId,
+    expense,
+    archived
+)
