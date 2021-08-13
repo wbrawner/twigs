@@ -126,7 +126,7 @@ fun Application.userRoutes(
                 delete("/{id}") {
                     val session = call.principal<Session>()!!
                     // TODO: Add some kind of admin denotation to allow admins to delete other users
-                    val user = userRepository.findAll(call.parameters.getAll("íd")!!).firstOrNull()
+                    val user = userRepository.findAll(call.parameters.entries().first().value).firstOrNull()
                     if (user == null) {
                         errorResponse()
                         return@delete

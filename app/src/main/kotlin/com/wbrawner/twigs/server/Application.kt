@@ -16,6 +16,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -95,7 +96,15 @@ fun Application.moduleWithDependencies(
         }
     }
     install(ContentNegotiation) {
-        json()
+        json(json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+            isLenient = true
+            allowSpecialFloatingPointValues = true
+            allowStructuredMapKeys = true
+            prettyPrint = false
+            useArrayPolymorphism = true
+        })
     }
     budgetRoutes(budgetRepository, permissionRepository)
     categoryRoutes(categoryRepository, permissionRepository)
