@@ -102,7 +102,7 @@ abstract class JdbcRepository<Entity, Fields : Enum<Fields>>(protected val dataS
                 is String -> setString(index + 1, param)
                 is Enum<*> -> setString(index + 1, param.name)
                 null -> setNull(index + 1, NULL)
-                else -> throw Error("Unhandled parameter type: ${param?.javaClass?.name}")
+                else -> throw Error("Unhandled parameter type: ${param.javaClass.name}")
             }
         }
     }

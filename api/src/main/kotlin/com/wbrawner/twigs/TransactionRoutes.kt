@@ -158,7 +158,12 @@ fun Application.transactionRoutes(
                     ) {
                         return@delete
                     }
-                    transactionRepository.delete(transaction)
+                    val response = if (transactionRepository.delete(transaction)) {
+                        HttpStatusCode.NoContent
+                    } else {
+                        HttpStatusCode.InternalServerError
+                    }
+                    call.respond(response)
                 }
             }
         }

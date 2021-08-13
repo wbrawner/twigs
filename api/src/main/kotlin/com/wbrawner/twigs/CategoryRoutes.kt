@@ -43,10 +43,14 @@ fun Application.categoryRoutes(
                         errorResponse()
                         return@get
                     }
-                    call.respond(categoryRepository.findAll(
+                    categoryRepository.findAll(
                         ids = call.parameters.getAll("id"),
                         budgetIds = budgetIds
-                    ).map { it.asResponse() })
+                    )
+                        .map { it.asResponse() }
+                        .firstOrNull()?.let {
+                            call.respond(it)
+                        } ?: errorResponse()
                 }
 
                 post {
@@ -113,7 +117,8 @@ fun Application.categoryRoutes(
 
                 delete("/{id}") {
                     val session = call.principal<Session>()!!
-                    val category = categoryRepository.findAll(ids = call.parameters.getAll("id"))
+                    val categoryId = call.parameters.entries().first().value
+                    val category = categoryRepository.findAll(ids = categoryId)
                         .firstOrNull()
                         ?: run {
                             errorResponse(HttpStatusCode.NotFound)
@@ -128,6 +133,7 @@ fun Application.categoryRoutes(
                         return@delete
                     }
                     categoryRepository.delete(category)
+                    call.respond(HttpStatusCode.NoContent)
                 }
             }
         }

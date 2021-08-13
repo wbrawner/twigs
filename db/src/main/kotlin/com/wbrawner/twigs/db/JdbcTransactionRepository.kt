@@ -21,10 +21,8 @@ class JdbcTransactionRepository(dataSource: DataSource) :
         to: Instant?
     ): List<Transaction> = dataSource.connection.use { conn ->
         val sql = StringBuilder("SELECT * FROM $tableName")
-        val params = mutableListOf<Any?>(budgetIds)
-
+        val params = mutableListOf<Any?>()
         fun queryWord(): String = if (params.isEmpty()) " WHERE" else " AND"
-
         ids?.let {
             sql.append("${queryWord()} $ID IN (${it.questionMarks()})")
             params.addAll(it)
@@ -49,6 +47,7 @@ class JdbcTransactionRepository(dataSource: DataSource) :
             sql.append("${queryWord()} ${Fields.DATE.name.lowercase()} <= ?")
             params.add(it)
         }
+        sql.append(" ORDER BY ${Fields.DATE.name.lowercase()} DESC")
         conn.executeQuery(sql.toString(), params)
     }
 
@@ -75,7 +74,10 @@ class JdbcTransactionRepository(dataSource: DataSource) :
             conn.prepareStatement("SELECT (${sql.toString().coalesce()}) - (${sql.toString().coalesce()})")
                 .setParameters(params + false + params + true)
                 .executeQuery()
-                .getLong(1)
+                .run {
+                    next()
+                    getLong(1)
+                }
         }
 
     private fun String.coalesce(): String = "COALESCE(($this), 0)"
@@ -84,7 +86,7 @@ class JdbcTransactionRepository(dataSource: DataSource) :
         id = getString(ID),
         title = getString(Fields.TITLE.name.lowercase()),
         description = getString(Fields.DESCRIPTION.name.lowercase()),
-        date = Instant.parse(getString(Fields.DATE.name.lowercase())),
+        date = getInstant(Fields.DATE.name.lowercase()),
         amount = getLong(Fields.AMOUNT.name.lowercase()),
         expense = getBoolean(Fields.EXPENSE.name.lowercase()),
         createdBy = getString(Fields.CREATED_BY.name.lowercase()),
