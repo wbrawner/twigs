@@ -128,7 +128,7 @@ fun Application.transactionRoutes(
                     }
                     call.respond(
                         transactionRepository.save(
-                            Transaction(
+                            transaction.copy(
                                 title = request.title ?: transaction.title,
                                 description = request.description ?: transaction.description,
                                 amount = request.amount ?: transaction.amount,

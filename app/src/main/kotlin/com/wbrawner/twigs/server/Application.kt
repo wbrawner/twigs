@@ -3,6 +3,7 @@ package com.wbrawner.twigs.server
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
 import com.wbrawner.twigs.storage.*
+import com.wbrawner.twigs.web.webRoutes
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.*
@@ -110,6 +111,7 @@ fun Application.moduleWithDependencies(
     categoryRoutes(categoryRepository, permissionRepository)
     transactionRoutes(transactionRepository, permissionRepository)
     userRoutes(permissionRepository, sessionRepository, userRepository)
+    webRoutes()
     launch {
         val metadata = (metadataRepository.findAll().firstOrNull() ?: DatabaseMetadata())
         var version = metadata.version
