@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.db
 
-import com.wbrawner.twigs.storage.Session
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.storage.SessionRepository
 import java.sql.ResultSet
 import java.time.Instant

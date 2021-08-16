@@ -2,10 +2,10 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Budget
 import com.wbrawner.twigs.model.Permission
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.UserPermission
 import com.wbrawner.twigs.storage.BudgetRepository
 import com.wbrawner.twigs.storage.PermissionRepository
-import com.wbrawner.twigs.storage.Session
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*

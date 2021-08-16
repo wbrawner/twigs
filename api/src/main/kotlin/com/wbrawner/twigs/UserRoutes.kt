@@ -1,8 +1,8 @@
 package com.wbrawner.twigs
 
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
 import com.wbrawner.twigs.storage.PermissionRepository
-import com.wbrawner.twigs.storage.Session
 import com.wbrawner.twigs.storage.SessionRepository
 import com.wbrawner.twigs.storage.UserRepository
 import io.ktor.application.*

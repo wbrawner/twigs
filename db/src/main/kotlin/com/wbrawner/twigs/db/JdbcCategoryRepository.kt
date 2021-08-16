@@ -36,6 +36,7 @@ class JdbcCategoryRepository(dataSource: DataSource) :
             sql.append(" AND ${Fields.ARCHIVED.name.lowercase()} = ?")
             params.add(it)
         }
+        sql.append(" ORDER BY ${Fields.TITLE.name.lowercase()} ASC")
         conn.executeQuery(sql.toString(), params)
     }
 

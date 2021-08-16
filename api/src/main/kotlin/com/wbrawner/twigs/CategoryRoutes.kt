@@ -2,9 +2,9 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Category
 import com.wbrawner.twigs.model.Permission
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.storage.CategoryRepository
 import com.wbrawner.twigs.storage.PermissionRepository
-import com.wbrawner.twigs.storage.Session
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*

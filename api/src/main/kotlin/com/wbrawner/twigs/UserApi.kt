@@ -1,8 +1,8 @@
 package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Permission
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
-import com.wbrawner.twigs.storage.Session
 import kotlinx.serialization.Serializable
 import java.util.*
 

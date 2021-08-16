@@ -1,4 +1,5 @@
 import java.net.URI
+import java.util.*
 
 plugins {
     java
@@ -46,5 +47,55 @@ tasks.shadowJar {
         archiveBaseName.set("twigs")
         archiveClassifier.set("")
         archiveVersion.set("")
+    }
+}
+
+val captainDefinition = File(project.buildDir, "captain-definition")
+val tarFile = File(project.buildDir, "twigs.tar")
+
+tasks.register("package") {
+    dependsOn(":app:shadowJar")
+    doLast {
+        captainDefinition.createNewFile()
+        captainDefinition.outputStream().writer().use {
+            it.appendLine(
+                """
+            {
+                "schemaVersion": 2,
+                "dockerfileLines": [
+                    "FROM adoptopenjdk:openj9",
+                    "COPY libs/twigs.jar twigs.jar",
+                    "CMD /opt/java/openjdk/bin/java ${'$'}JVM_ARGS -jar /twigs.jar"
+                ]
+            }
+        """.trimIndent()
+            )
+        }
+        exec {
+            commandLine(
+                "tar",
+                "-C",
+                project.buildDir.absolutePath,
+                "-cf",
+                project.buildDir.name + File.separator + tarFile.name,
+                captainDefinition.name,
+                "libs/twigs.jar"
+            )
+        }
+    }
+}
+
+tasks.register("publish") {
+    dependsOn(":app:package")
+    doLast {
+        var command = listOf("caprover", "deploy", "-t", "build/${tarFile.name}", "-n", "wbrawner", "-a", "twigs")
+        command = if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")) {
+            listOf("powershell", "-Command") + command
+        } else {
+            listOf("bash", "-c", "\"${command.joinToString(" ")}\"")
+        }
+        exec {
+            commandLine(command)
+        }
     }
 }

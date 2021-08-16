@@ -1,4 +1,4 @@
-package com.wbrawner.twigs.storage
+package com.wbrawner.twigs.model
 
 import com.wbrawner.twigs.Identifiable
 import com.wbrawner.twigs.randomString

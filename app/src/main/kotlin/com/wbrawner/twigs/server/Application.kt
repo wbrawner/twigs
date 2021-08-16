@@ -2,6 +2,7 @@ package com.wbrawner.twigs.server
 
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.storage.*
 import com.wbrawner.twigs.web.webRoutes
 import com.zaxxer.hikari.HikariConfig
@@ -27,11 +28,11 @@ private const val DATABASE_VERSION = 1
 
 @ExperimentalTime
 fun Application.module() {
-    val dbHost = environment.config.propertyOrNull("ktor.database.host")?.getString() ?: "localhost"
-    val dbPort = environment.config.propertyOrNull("ktor.database.port")?.getString() ?: "5432"
-    val dbName = environment.config.propertyOrNull("ktor.database.name")?.getString() ?: "twigs"
-    val dbUser = environment.config.propertyOrNull("ktor.database.user")?.getString() ?: "twigs"
-    val dbPass = environment.config.propertyOrNull("ktor.database.password")?.getString() ?: "twigs"
+    val dbHost = environment.config.propertyOrNull("twigs.database.host")?.getString() ?: "localhost"
+    val dbPort = environment.config.propertyOrNull("twigs.database.port")?.getString() ?: "5432"
+    val dbName = environment.config.propertyOrNull("twigs.database.name")?.getString() ?: "twigs"
+    val dbUser = environment.config.propertyOrNull("twigs.database.user")?.getString() ?: "twigs"
+    val dbPass = environment.config.propertyOrNull("twigs.database.password")?.getString() ?: "twigs"
     val jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?stringtype=unspecified"
     HikariDataSource(HikariConfig().apply {
         setJdbcUrl(jdbcUrl)
@@ -119,7 +120,16 @@ fun Application.moduleWithDependencies(
             metadataRepository.runMigration(version)
             metadataRepository.save(metadata.copy(version = version))
         }
-        salt = metadata.salt
+        salt = metadata.salt.ifEmpty {
+            metadataRepository.save(
+                metadata.copy(
+                    salt = environment.config
+                        .propertyOrNull("twigs.password.salt")
+                        ?.getString()
+                        ?: randomString(16)
+                )
+            ).salt
+        }
         while (currentCoroutineContext().isActive) {
             delay(Duration.hours(24))
             sessionRepository.deleteExpired()
