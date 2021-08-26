@@ -48,6 +48,6 @@ tasks.register("package") {
     }
 }
 
-tasks.getByName("processResources") {
-    dependsOn.add("package")
-}
+//tasks.getByName("processResources") {
+//    dependsOn.add("package")
+//}

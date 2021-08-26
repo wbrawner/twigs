@@ -44,6 +44,7 @@ fun Application.module() {
             budgetRepository = JdbcBudgetRepository(it),
             categoryRepository = JdbcCategoryRepository(it),
             permissionRepository = JdbcPermissionRepository(it),
+//            recurringTransactionRepository = Fa,
             sessionRepository = JdbcSessionRepository(it),
             transactionRepository = JdbcTransactionRepository(it),
             userRepository = JdbcUserRepository(it)
@@ -57,6 +58,7 @@ fun Application.moduleWithDependencies(
     budgetRepository: BudgetRepository,
     categoryRepository: CategoryRepository,
     permissionRepository: PermissionRepository,
+//    recurringTransactionRepository: RecurringTransactionRepository,
     sessionRepository: SessionRepository,
     transactionRepository: TransactionRepository,
     userRepository: UserRepository
@@ -130,9 +132,17 @@ fun Application.moduleWithDependencies(
                 )
             ).salt
         }
+        val jobs = listOf(
+            SessionCleanupJob(sessionRepository),
+//            RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
+        )
         while (currentCoroutineContext().isActive) {
             delay(Duration.hours(24))
-            sessionRepository.deleteExpired()
+            jobs.forEach { it.run() }
         }
     }
+}
+
+interface Job {
+    suspend fun run()
 }

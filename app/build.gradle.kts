@@ -31,6 +31,9 @@ dependencies {
     implementation("io.ktor:ktor-server-sessions:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
     implementation("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation(project(":testhelpers"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 description = "twigs-server"
@@ -98,4 +101,8 @@ tasks.register("publish") {
             commandLine(command)
         }
     }
+}
+
+tasks.getByName<Test>("test") {
+    useJUnitPlatform()
 }
