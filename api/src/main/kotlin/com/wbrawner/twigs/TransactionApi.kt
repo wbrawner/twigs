@@ -2,6 +2,7 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Transaction
 import kotlinx.serialization.Serializable
+import java.time.temporal.ChronoUnit
 
 @Serializable
 data class TransactionRequest(
@@ -34,7 +35,7 @@ fun Transaction.asResponse(): TransactionResponse = TransactionResponse(
     id = id,
     title = title,
     description = description,
-    date = date.toString(),
+    date = date.truncatedTo(ChronoUnit.SECONDS).toString(),
     amount = amount,
     expense = expense,
     budgetId = budgetId,
