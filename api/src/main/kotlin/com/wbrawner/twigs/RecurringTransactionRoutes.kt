@@ -1,82 +1,80 @@
 package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Permission
+import com.wbrawner.twigs.model.RecurringTransaction
 import com.wbrawner.twigs.model.Session
-import com.wbrawner.twigs.model.Transaction
 import com.wbrawner.twigs.storage.PermissionRepository
-import com.wbrawner.twigs.storage.TransactionRepository
+import com.wbrawner.twigs.storage.RecurringTransactionRepository
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.util.pipeline.*
 import java.time.Instant
 
 fun Application.recurringTransactionRoutes(
-    transactionRepository: TransactionRepository,
+    recurringTransactionRepository: RecurringTransactionRepository,
     permissionRepository: PermissionRepository
 ) {
+    suspend fun PipelineContext<Unit, ApplicationCall>.recurringTransactionAfterPermissionCheck(
+        id: String?,
+        userId: String,
+        success: suspend (RecurringTransaction) -> Unit
+    ) {
+        if (id.isNullOrBlank()) {
+            errorResponse(HttpStatusCode.BadRequest, "id is required")
+            return
+        }
+        val recurringTransaction = recurringTransactionRepository.findAll(ids = listOf(id)).firstOrNull()
+            ?: run {
+                errorResponse()
+                return
+            }
+        requireBudgetWithPermission(
+            permissionRepository,
+            userId,
+            recurringTransaction.budgetId,
+            Permission.WRITE
+        ) {
+            application.log.info("No permissions on budget ${recurringTransaction.budgetId}.")
+            return
+        }
+        success(recurringTransaction)
+    }
+
     routing {
         route("/api/recurringtransactions") {
             authenticate(optional = false) {
                 get {
                     val session = call.principal<Session>()!!
+                    val budgetId = call.request.queryParameters["budgetId"]
+                    requireBudgetWithPermission(
+                        permissionRepository,
+                        session.userId,
+                        budgetId,
+                        Permission.WRITE
+                    ) {
+                        return@get
+                    }
                     call.respond(
-                        transactionRepository.findAll(
-                            budgetIds = permissionRepository.findAll(
-                                budgetIds = call.request.queryParameters.getAll("budgetIds"),
-                                userId = session.userId
-                            ).map { it.budgetId },
-                            categoryIds = call.request.queryParameters.getAll("categoryIds"),
-                            from = call.request.queryParameters["from"]?.let { Instant.parse(it) },
-                            to = call.request.queryParameters["to"]?.let { Instant.parse(it) },
-                            expense = call.request.queryParameters["expense"]?.toBoolean(),
-                        ).map { it.asResponse() })
+                        recurringTransactionRepository.findAll(
+                            budgetId = budgetId!!
+                        ).map { it.asResponse() }
+                    )
                 }
 
                 get("/{id}") {
                     val session = call.principal<Session>()!!
-                    val transaction = transactionRepository.findAll(
-                        ids = call.parameters.getAll("id"),
-                        budgetIds = permissionRepository.findAll(
-                            userId = session.userId
-                        )
-                            .map { it.budgetId }
-                    )
-                        .map { it.asResponse() }
-                        .firstOrNull()
-                    transaction?.let {
-                        call.respond(it)
-                    } ?: errorResponse()
-                }
-
-                get("/sum") {
-                    val categoryId = call.request.queryParameters["categoryId"]
-                    val budgetId = call.request.queryParameters["budgetId"]
-                    val from = call.request.queryParameters["from"]?.toInstant() ?: firstOfMonth
-                    val to = call.request.queryParameters["to"]?.toInstant() ?: endOfMonth
-                    val balance = if (!categoryId.isNullOrBlank()) {
-                        if (!budgetId.isNullOrBlank()) {
-                            errorResponse(
-                                HttpStatusCode.BadRequest,
-                                "budgetId and categoryId cannot be provided together"
-                            )
-                            return@get
-                        }
-                        transactionRepository.sumByCategory(categoryId, from, to)
-                    } else if (!budgetId.isNullOrBlank()) {
-                        transactionRepository.sumByBudget(budgetId, from, to)
-                    } else {
-                        errorResponse(HttpStatusCode.BadRequest, "budgetId or categoryId must be provided to sum")
-                        return@get
+                    recurringTransactionAfterPermissionCheck(call.parameters["id"]!!, session.userId) {
+                        call.respond(it.asResponse())
                     }
-                    call.respond(BalanceResponse(balance))
                 }
 
                 post {
                     val session = call.principal<Session>()!!
-                    val request = call.receive<TransactionRequest>()
+                    val request = call.receive<RecurringTransactionRequest>()
                     if (request.title.isNullOrBlank()) {
                         errorResponse(HttpStatusCode.BadRequest, "Title cannot be null or empty")
                         return@post
@@ -94,8 +92,8 @@ fun Application.recurringTransactionRoutes(
                         return@post
                     }
                     call.respond(
-                        transactionRepository.save(
-                            Transaction(
+                        recurringTransactionRepository.save(
+                            RecurringTransaction(
                                 title = request.title,
                                 description = request.description,
                                 amount = request.amount ?: 0L,
@@ -103,7 +101,9 @@ fun Application.recurringTransactionRoutes(
                                 budgetId = request.budgetId,
                                 categoryId = request.categoryId,
                                 createdBy = session.userId,
-                                date = request.date?.let { Instant.parse(it) } ?: Instant.now()
+                                start = request.start?.toInstant() ?: Instant.now(),
+                                finish = request.finish?.toInstant(),
+                                frequency = request.frequency.asFrequency()
                             )
                         ).asResponse()
                     )
@@ -111,59 +111,49 @@ fun Application.recurringTransactionRoutes(
 
                 put("/{id}") {
                     val session = call.principal<Session>()!!
-                    val request = call.receive<TransactionRequest>()
-                    val transaction = transactionRepository.findAll(ids = call.parameters.getAll("id"))
-                        .firstOrNull()
-                        ?: run {
-                            errorResponse()
-                            return@put
+                    val request = call.receive<RecurringTransactionRequest>()
+                    recurringTransactionAfterPermissionCheck(
+                        call.parameters["id"]!!,
+                        session.userId
+                    ) { recurringTransaction ->
+                        if (request.budgetId != recurringTransaction.budgetId) {
+                            requireBudgetWithPermission(
+                                permissionRepository,
+                                session.userId,
+                                request.budgetId,
+                                Permission.WRITE
+                            ) {
+                                return@recurringTransactionAfterPermissionCheck
+                            }
                         }
-                    requireBudgetWithPermission(
-                        permissionRepository,
-                        session.userId,
-                        transaction.budgetId,
-                        Permission.WRITE
-                    ) {
-                        return@put
+                        call.respond(
+                            recurringTransactionRepository.save(
+                                recurringTransaction.copy(
+                                    title = request.title ?: recurringTransaction.title,
+                                    description = request.description ?: recurringTransaction.description,
+                                    amount = request.amount ?: recurringTransaction.amount,
+                                    expense = request.expense ?: recurringTransaction.expense,
+                                    categoryId = request.categoryId ?: recurringTransaction.categoryId,
+                                    budgetId = request.budgetId ?: recurringTransaction.budgetId,
+                                    start = request.start?.toInstant() ?: recurringTransaction.start,
+                                    finish = request.finish?.toInstant() ?: recurringTransaction.finish,
+                                    frequency = request.frequency.asFrequency()
+                                )
+                            ).asResponse()
+                        )
                     }
-                    call.respond(
-                        transactionRepository.save(
-                            transaction.copy(
-                                title = request.title ?: transaction.title,
-                                description = request.description ?: transaction.description,
-                                amount = request.amount ?: transaction.amount,
-                                expense = request.expense ?: transaction.expense,
-                                date = request.date?.let { Instant.parse(it) } ?: transaction.date,
-                                categoryId = request.categoryId ?: transaction.categoryId,
-                                budgetId = request.budgetId ?: transaction.budgetId,
-                                createdBy = transaction.createdBy,
-                            )
-                        ).asResponse()
-                    )
                 }
 
                 delete("/{id}") {
                     val session = call.principal<Session>()!!
-                    val transaction = transactionRepository.findAll(ids = call.parameters.getAll("id"))
-                        .firstOrNull()
-                        ?: run {
-                            errorResponse()
-                            return@delete
+                    recurringTransactionAfterPermissionCheck(call.parameters["id"]!!, session.userId) {
+                        val response = if (recurringTransactionRepository.delete(it)) {
+                            HttpStatusCode.NoContent
+                        } else {
+                            HttpStatusCode.InternalServerError
                         }
-                    requireBudgetWithPermission(
-                        permissionRepository,
-                        session.userId,
-                        transaction.budgetId,
-                        Permission.WRITE
-                    ) {
-                        return@delete
+                        call.respond(response)
                     }
-                    val response = if (transactionRepository.delete(transaction)) {
-                        HttpStatusCode.NoContent
-                    } else {
-                        HttpStatusCode.InternalServerError
-                    }
-                    call.respond(response)
                 }
             }
         }

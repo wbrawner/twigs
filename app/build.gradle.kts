@@ -91,7 +91,7 @@ tasks.register("package") {
 tasks.register("publish") {
     dependsOn(":app:package")
     doLast {
-        var command = listOf("caprover", "deploy", "-t", "build/${tarFile.name}", "-n", "wbrawner", "-a", "twigs")
+        var command = listOf("caprover", "deploy", "-t", "build/${tarFile.name}", "-n", "wbrawner", "-a", "twigs-dev")
         command = if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")) {
             listOf("powershell", "-Command") + command
         } else {

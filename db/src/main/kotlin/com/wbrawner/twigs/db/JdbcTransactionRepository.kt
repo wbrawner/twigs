@@ -86,7 +86,7 @@ class JdbcTransactionRepository(dataSource: DataSource) :
         id = getString(ID),
         title = getString(Fields.TITLE.name.lowercase()),
         description = getString(Fields.DESCRIPTION.name.lowercase()),
-        date = getInstant(Fields.DATE.name.lowercase()),
+        date = getInstant(Fields.DATE.name.lowercase())!!,
         amount = getLong(Fields.AMOUNT.name.lowercase()),
         expense = getBoolean(Fields.EXPENSE.name.lowercase()),
         createdBy = getString(Fields.CREATED_BY.name.lowercase()),
@@ -109,4 +109,3 @@ class JdbcTransactionRepository(dataSource: DataSource) :
         const val TABLE_TRANSACTION = "transactions"
     }
 }
-

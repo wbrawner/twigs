@@ -11,6 +11,9 @@ data class RecurringTransactionRequest(
     val categoryId: String? = null,
     val expense: Boolean? = null,
     val budgetId: String? = null,
+    val frequency: String,
+    val start: String? = null,
+    val finish: String? = null,
 )
 
 @Serializable
@@ -18,7 +21,9 @@ data class RecurringTransactionResponse(
     val id: String,
     val title: String?,
     val description: String?,
-//    val frequency: FrequencyResponse,
+    val frequency: String,
+    val start: String,
+    val finish: String? = null,
     val amount: Long?,
     val expense: Boolean?,
     val budgetId: String,
@@ -30,7 +35,9 @@ fun RecurringTransaction.asResponse(): RecurringTransactionResponse = RecurringT
     id = id,
     title = title,
     description = description,
-//    frequency = date.toString(),
+    frequency = frequency.toString(),
+    start = start.toString(),
+    finish = finish.toString(),
     amount = amount,
     expense = expense,
     budgetId = budgetId,

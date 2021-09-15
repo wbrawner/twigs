@@ -5,4 +5,5 @@ import java.time.Instant
 
 interface RecurringTransactionRepository : Repository<RecurringTransaction> {
     suspend fun findAll(now: Instant): List<RecurringTransaction>
+    suspend fun findAll(budgetId: String): List<RecurringTransaction>
 }

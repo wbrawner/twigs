@@ -12,7 +12,7 @@ data class RecurringTransaction(
     val description: String? = null,
     val frequency: Frequency,
     val start: Instant,
-    val end: Instant? = null,
+    val finish: Instant? = null,
     val amount: Long,
     val expense: Boolean,
     val createdBy: String,
@@ -37,6 +37,8 @@ sealed class Frequency {
     abstract val time: Time
 
     data class Daily(override val count: Int, override val time: Time) : Frequency() {
+        override fun toString(): String = "D;$count;$time"
+
         companion object {
             fun parse(s: String): Daily {
                 require(s[0] == 'D') { "Invalid format for Daily: $s" }
@@ -51,6 +53,7 @@ sealed class Frequency {
     }
 
     data class Weekly(override val count: Int, val daysOfWeek: Set<DayOfWeek>, override val time: Time) : Frequency() {
+        override fun toString(): String = "W;$count;${daysOfWeek.joinToString(",")};$time"
         companion object {
             fun parse(s: String): Weekly {
                 require(s[0] == 'W') { "Invalid format for Weekly: $s" }
@@ -70,6 +73,7 @@ sealed class Frequency {
         val dayOfMonth: DayOfMonth,
         override val time: Time
     ) : Frequency() {
+        override fun toString(): String = "M;$count;$dayOfMonth;$time"
         companion object {
             fun parse(s: String): Monthly {
                 require(s[0] == 'M') { "Invalid format for Monthly: $s" }
@@ -85,13 +89,16 @@ sealed class Frequency {
     }
 
     data class Yearly(override val count: Int, val dayOfYear: MonthDay, override val time: Time) : Frequency() {
+        override fun toString(): String = "Y;$count;%02d-%02d;$time".format(dayOfYear.monthValue, dayOfYear.dayOfMonth)
         companion object {
             fun parse(s: String): Yearly {
                 require(s[0] == 'Y') { "Invalid format for Yearly: $s" }
                 return with(s.split(';')) {
                     Yearly(
                         get(1).toInt(),
-                        MonthDay.parse(get(2)),
+                        with(get(2).split("-")) {
+                            MonthDay.of(get(0).toInt(), get(1).toInt())
+                        },
                         Time.parse(get(3))
                     )
                 }
@@ -100,13 +107,6 @@ sealed class Frequency {
     }
 
     fun instant(now: Instant): Instant = Instant.parse(now.toString().split("T")[0] + "T" + time.toString() + "Z")
-
-    override fun toString(): String = when (this) {
-        is Daily -> "D;$count;$time"
-        is Weekly -> "W;$count;${daysOfWeek.joinToString(",")};$time"
-        is Monthly -> "M;$count;$dayOfMonth;$time"
-        is Yearly -> "Y;$count;$dayOfYear;$time"
-    }
 
     companion object {
         fun parse(s: String): Frequency = when (s[0]) {
@@ -119,7 +119,7 @@ sealed class Frequency {
     }
 }
 
-data class Time(val hours: Int, val minutes: Int, val seconds: Int, val milliseconds: Int) {
+data class Time(val hours: Int, val minutes: Int, val seconds: Int) {
     override fun toString(): String {
         val s = StringBuilder()
         if (hours < 10) {
@@ -136,28 +136,18 @@ data class Time(val hours: Int, val minutes: Int, val seconds: Int, val millisec
             s.append("0")
         }
         s.append(seconds)
-        s.append(".")
-        if (milliseconds < 100) {
-            s.append("0")
-        }
-        if (milliseconds < 10) {
-            s.append("0")
-        }
-        s.append(milliseconds)
         return s.toString()
     }
 
     companion object {
         fun parse(s: String): Time {
-            require(s.length < 12) { "Invalid time format: $s. Time should be formatted as HH:mm:ss.SSS" }
-            require(s[3] == ':') { "Invalid time format: $s. Time should be formatted as HH:mm:ss.SSS" }
-            require(s[6] == ':') { "Invalid time format: $s. Time should be formatted as HH:mm:ss.SSS" }
-            require(s[9] == '.') { "Invalid time format: $s. Time should be formatted as HH:mm:ss.SSS" }
+            require(s.length < 9) { "Invalid time format: $s. Time should be formatted as HH:mm:ss" }
+            require(s[2] == ':') { "Invalid time format: $s. Time should be formatted as HH:mm:ss" }
+            require(s[5] == ':') { "Invalid time format: $s. Time should be formatted as HH:mm:ss" }
             return Time(
-                s.substring(0, 3).toInt(),
-                s.substring(4, 6).toInt(),
-                s.substring(7, 9).toInt(),
-                s.substring(10).toInt()
+                s.substring(0, 2).toInt(),
+                s.substring(3, 5).toInt(),
+                s.substring(7).toInt(),
             )
         }
     }

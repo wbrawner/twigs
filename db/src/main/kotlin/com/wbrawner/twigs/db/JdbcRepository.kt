@@ -1,6 +1,7 @@
 package com.wbrawner.twigs.db
 
 import com.wbrawner.twigs.Identifiable
+import com.wbrawner.twigs.model.Frequency
 import com.wbrawner.twigs.storage.Repository
 import org.slf4j.LoggerFactory
 import java.sql.Connection
@@ -101,6 +102,7 @@ abstract class JdbcRepository<Entity, Fields : Enum<Fields>>(protected val dataS
                 is Long -> setLong(index + 1, param)
                 is String -> setString(index + 1, param)
                 is Enum<*> -> setString(index + 1, param.name)
+                is Frequency -> setString(index + 1, param.toString())
                 null -> setNull(index + 1, NULL)
                 else -> throw Error("Unhandled parameter type: ${param.javaClass.name}")
             }
@@ -117,4 +119,4 @@ private val dateFormatter = DateTimeFormatterBuilder()
     .toFormatter()
     .withZone(ZoneId.of("UTC"))
 
-fun ResultSet.getInstant(column: String): Instant = dateFormatter.parse(getString(column), Instant::from)
+fun ResultSet.getInstant(column: String): Instant? = getString(column)?.let { dateFormatter.parse(it, Instant::from) }

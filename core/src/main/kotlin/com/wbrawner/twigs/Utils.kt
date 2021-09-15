@@ -1,15 +1,16 @@
 package com.wbrawner.twigs
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.wbrawner.twigs.model.Frequency
 import java.time.Instant
 import java.util.*
 
 private val CALENDAR_FIELDS = intArrayOf(
-        Calendar.MILLISECOND,
-        Calendar.SECOND,
-        Calendar.MINUTE,
-        Calendar.HOUR_OF_DAY,
-        Calendar.DATE
+    Calendar.MILLISECOND,
+    Calendar.SECOND,
+    Calendar.MINUTE,
+    Calendar.HOUR_OF_DAY,
+    Calendar.DATE
 )
 
 val firstOfMonth: Instant
@@ -46,3 +47,7 @@ fun randomString(length: Int = 32): String {
 
 lateinit var salt: String
 fun String.hash(): String = String(BCrypt.withDefaults().hash(10, salt.toByteArray(), this.toByteArray()))
+
+fun String.toInstant(): Instant = Instant.parse(this)
+
+fun String.asFrequency(): Frequency = Frequency.parse(this)

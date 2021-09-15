@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
-private const val DATABASE_VERSION = 1
+private const val DATABASE_VERSION = 2
 
 @ExperimentalTime
 fun Application.module() {
@@ -44,7 +44,7 @@ fun Application.module() {
             budgetRepository = JdbcBudgetRepository(it),
             categoryRepository = JdbcCategoryRepository(it),
             permissionRepository = JdbcPermissionRepository(it),
-//            recurringTransactionRepository = Fa,
+            recurringTransactionRepository = JdbcRecurringTransactionRepository(it),
             sessionRepository = JdbcSessionRepository(it),
             transactionRepository = JdbcTransactionRepository(it),
             userRepository = JdbcUserRepository(it)
@@ -58,7 +58,7 @@ fun Application.moduleWithDependencies(
     budgetRepository: BudgetRepository,
     categoryRepository: CategoryRepository,
     permissionRepository: PermissionRepository,
-//    recurringTransactionRepository: RecurringTransactionRepository,
+    recurringTransactionRepository: RecurringTransactionRepository,
     sessionRepository: SessionRepository,
     transactionRepository: TransactionRepository,
     userRepository: UserRepository
@@ -112,6 +112,7 @@ fun Application.moduleWithDependencies(
     }
     budgetRoutes(budgetRepository, permissionRepository)
     categoryRoutes(categoryRepository, permissionRepository)
+    recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
     transactionRoutes(transactionRepository, permissionRepository)
     userRoutes(permissionRepository, sessionRepository, userRepository)
     webRoutes()
@@ -134,7 +135,7 @@ fun Application.moduleWithDependencies(
         }
         val jobs = listOf(
             SessionCleanupJob(sessionRepository),
-//            RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
+            RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
         )
         while (currentCoroutineContext().isActive) {
             delay(Duration.hours(24))

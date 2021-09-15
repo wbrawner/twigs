@@ -6,6 +6,10 @@ import java.time.Instant
 
 class FakeRecurringTransactionsRepository : FakeRepository<RecurringTransaction>(), RecurringTransactionRepository {
     override suspend fun findAll(now: Instant): List<RecurringTransaction> = entities.filter {
-        (it.start == now || it.start.isBefore(now)) && it.end?.isAfter(now) ?: true
+        (it.start == now || it.start.isBefore(now)) && it.finish?.isAfter(now) ?: true
+    }
+
+    override suspend fun findAll(budgetId: String): List<RecurringTransaction> = entities.filter {
+        it.budgetId == budgetId
     }
 }

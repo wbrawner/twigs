@@ -10,15 +10,18 @@ import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.util.pipeline.*
-import java.time.Instant
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.requireBudgetWithPermission(
     permissionRepository: PermissionRepository,
     userId: String,
-    budgetId: String,
+    budgetId: String?,
     permission: Permission,
     otherwise: () -> Unit
 ) {
+    if (budgetId.isNullOrBlank()) {
+        errorResponse(HttpStatusCode.BadRequest, "budgetId is required")
+        return
+    }
     permissionRepository.findAll(
         userId = userId,
         budgetIds = listOf(budgetId)
@@ -57,5 +60,3 @@ suspend inline fun PipelineContext<Unit, ApplicationCall>.errorResponse(
         call.respond(httpStatusCode, ErrorResponse(message))
     }?: call.respond(httpStatusCode)
 }
-
-fun String.toInstant(): Instant = Instant.parse(this)

@@ -30,7 +30,7 @@ class JdbcSessionRepository(dataSource: DataSource) : JdbcRepository<Session, Jd
         id = getString(ID),
         userId = getString(Fields.USER_ID.name.lowercase()),
         token = getString(Fields.TOKEN.name.lowercase()),
-        expiration = getInstant(Fields.EXPIRATION.name.lowercase()),
+        expiration = getInstant(Fields.EXPIRATION.name.lowercase())!!,
     )
 
     enum class Fields(val entityField: (Session) -> Any?) {
