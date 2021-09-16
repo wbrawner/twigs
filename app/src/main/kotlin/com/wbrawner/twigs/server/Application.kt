@@ -138,8 +138,8 @@ fun Application.moduleWithDependencies(
             RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
         )
         while (currentCoroutineContext().isActive) {
-            delay(Duration.hours(24))
             jobs.forEach { it.run() }
+            delay(Duration.hours(24))
         }
     }
 }
