@@ -19,14 +19,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
 private const val DATABASE_VERSION = 2
 
-@ExperimentalTime
 fun Application.module() {
     val dbHost = environment.config.propertyOrNull("twigs.database.host")?.getString() ?: "localhost"
     val dbPort = environment.config.propertyOrNull("twigs.database.port")?.getString() ?: "5432"
@@ -52,7 +50,6 @@ fun Application.module() {
     }
 }
 
-@ExperimentalTime
 fun Application.moduleWithDependencies(
     metadataRepository: MetadataRepository,
     budgetRepository: BudgetRepository,
@@ -139,7 +136,7 @@ fun Application.moduleWithDependencies(
         )
         while (currentCoroutineContext().isActive) {
             jobs.forEach { it.run() }
-            delay(Duration.hours(24))
+            delay(TimeUnit.HOURS.toMillis(1))
         }
     }
 }
