@@ -32,7 +32,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Daily transaction",
                 amount = 123,
-                frequency = Frequency.Daily(1, Time(9, 0, 0, 0)),
+                frequency = Frequency.Daily(1, Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -54,7 +54,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Daily transaction",
                 amount = 123,
-                frequency = Frequency.Daily(2, Time(9, 0, 0, 0)),
+                frequency = Frequency.Daily(2, Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -73,7 +73,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Weekly transaction",
                 amount = 123,
-                frequency = Frequency.Weekly(1, setOf(DayOfWeek.THURSDAY), Time(9, 0, 0, 0)),
+                frequency = Frequency.Weekly(1, setOf(DayOfWeek.THURSDAY), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -96,7 +96,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Weekly transaction",
                 amount = 123,
-                frequency = Frequency.Weekly(3, setOf(DayOfWeek.THURSDAY), Time(9, 0, 0, 0)),
+                frequency = Frequency.Weekly(3, setOf(DayOfWeek.THURSDAY), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -117,7 +117,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Monthly transaction",
                 amount = 123,
-                frequency = Frequency.Monthly(1, DayOfMonth.day(1), Time(9, 0, 0, 0)),
+                frequency = Frequency.Monthly(1, DayOfMonth.day(1), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -140,7 +140,7 @@ class RecurringTransactionProcessingJobTest {
                 RecurringTransaction(
                     title = "Monthly transaction",
                     amount = 123,
-                    frequency = Frequency.Monthly(1, DayOfMonth.day(31), Time(9, 0, 0, 0)),
+                    frequency = Frequency.Monthly(1, DayOfMonth.day(31), Time(9, 0, 0)),
                     expense = true,
                     start = start,
                     createdBy = "tester",
@@ -163,7 +163,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Monthly transaction",
                 amount = 123,
-                frequency = Frequency.Monthly(6, DayOfMonth.day(15), Time(9, 0, 0, 0)),
+                frequency = Frequency.Monthly(6, DayOfMonth.day(15), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -187,7 +187,7 @@ class RecurringTransactionProcessingJobTest {
                 frequency = Frequency.Monthly(
                     1,
                     DayOfMonth.positionalDayOfWeek(Position.SECOND, DayOfWeek.TUESDAY),
-                    Time(9, 0, 0, 0)
+                    Time(9, 0, 0)
                 ),
                 expense = true,
                 start = start,
@@ -214,7 +214,7 @@ class RecurringTransactionProcessingJobTest {
                 frequency = Frequency.Monthly(
                     1,
                     DayOfMonth.positionalDayOfWeek(Position.LAST, DayOfWeek.FRIDAY),
-                    Time(9, 0, 0, 0)
+                    Time(9, 0, 0)
                 ),
                 expense = true,
                 start = start,
@@ -238,7 +238,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Yearly transaction",
                 amount = 123,
-                frequency = Frequency.Yearly(1, MonthDay.of(3, 31), Time(9, 0, 0, 0)),
+                frequency = Frequency.Yearly(1, MonthDay.of(3, 31), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -261,7 +261,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Yearly transaction",
                 amount = 123,
-                frequency = Frequency.Yearly(2, MonthDay.of(3, 31), Time(9, 0, 0, 0)),
+                frequency = Frequency.Yearly(2, MonthDay.of(3, 31), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -282,7 +282,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Yearly transaction",
                 amount = 123,
-                frequency = Frequency.Yearly(1, MonthDay.of(2, 29), Time(9, 0, 0, 0)),
+                frequency = Frequency.Yearly(1, MonthDay.of(2, 29), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
