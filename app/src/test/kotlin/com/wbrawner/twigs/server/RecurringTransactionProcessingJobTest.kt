@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.*
 import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.*
 
 class RecurringTransactionProcessingJobTest {
@@ -39,7 +40,29 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 3)
+        loopFor(start, 3)
+        val createdTransactions = transactionRepository.findAll()
+        assertEquals(3, createdTransactions.size)
+        assertEquals("1970-01-01T09:00:00Z", createdTransactions[0].date.toString())
+        assertEquals("1970-01-02T09:00:00Z", createdTransactions[1].date.toString())
+        assertEquals("1970-01-03T09:00:00Z", createdTransactions[2].date.toString())
+    }
+
+    @Test
+    fun `daily transactions are only created once per day`() = runBlockingTest {
+        val start = Instant.parse("1970-01-01T00:00:00Z")
+        recurringTransactionRepository.save(
+            RecurringTransaction(
+                title = "Daily transaction",
+                amount = 123,
+                frequency = Frequency.Daily(1, Time(9, 0, 0)),
+                expense = true,
+                start = start,
+                createdBy = "tester",
+                budgetId = "budgetId"
+            )
+        )
+        loopFor(start, 72, ChronoUnit.HOURS)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(3, createdTransactions.size)
         assertEquals("1970-01-01T09:00:00Z", createdTransactions[0].date.toString())
@@ -61,7 +84,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 3)
+        loopFor(start, 3)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(2, createdTransactions.size)
     }
@@ -80,7 +103,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 28)
+        loopFor(start, 28)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(4, createdTransactions.size)
         assertEquals("1970-01-01T09:00:00Z", createdTransactions[0].date.toString())
@@ -103,7 +126,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 28)
+        loopFor(start, 28)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(2, createdTransactions.size)
         assertEquals("1970-01-01T09:00:00Z", createdTransactions[0].date.toString())
@@ -124,7 +147,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 90)
+        loopFor(start, 90)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(3, createdTransactions.size)
         assertEquals("1970-01-01T09:00:00Z", createdTransactions[0].date.toString())
@@ -147,7 +170,7 @@ class RecurringTransactionProcessingJobTest {
                     budgetId = "budgetId"
                 )
             )
-            loopForDays(start, 120)
+            loopFor(start, 120)
             val createdTransactions = transactionRepository.findAll()
             assertEquals(4, createdTransactions.size)
             assertEquals("1970-01-31T09:00:00Z", createdTransactions[0].date.toString())
@@ -170,7 +193,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 197)
+        loopFor(start, 197)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(2, createdTransactions.size)
         assertEquals("1970-01-15T09:00:00Z", createdTransactions[0].date.toString())
@@ -195,7 +218,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 120)
+        loopFor(start, 120)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(4, createdTransactions.size)
         assertEquals("1970-01-13T09:00:00Z", createdTransactions[0].date.toString())
@@ -222,7 +245,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 120)
+        loopFor(start, 120)
         val createdTransactions = transactionRepository.findAll()
         assertEquals(4, createdTransactions.size)
         assertEquals("1970-01-30T09:00:00Z", createdTransactions[0].date.toString())
@@ -245,7 +268,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 1460) // 4 years from Jan 1, 1970
+        loopFor(start, 1460) // 4 years from Jan 1, 1970
         val createdTransactions = transactionRepository.findAll()
         assertEquals(4, createdTransactions.size)
         assertEquals("1970-03-31T09:00:00Z", createdTransactions[0].date.toString())
@@ -268,7 +291,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 1460) // 4 years from Jan 1, 1970
+        loopFor(start, 1460) // 4 years from Jan 1, 1970
         val createdTransactions = transactionRepository.findAll()
         assertEquals(2, createdTransactions.size)
         assertEquals("1970-03-31T09:00:00Z", createdTransactions[0].date.toString())
@@ -289,7 +312,7 @@ class RecurringTransactionProcessingJobTest {
                 budgetId = "budgetId"
             )
         )
-        loopForDays(start, 1460) // 4 years from Jan 1, 1970
+        loopFor(start, 1460) // 4 years from Jan 1, 1970
         val createdTransactions = transactionRepository.findAll()
         assertEquals(4, createdTransactions.size)
         assertEquals("1970-02-28T09:00:00Z", createdTransactions[0].date.toString())
@@ -298,11 +321,11 @@ class RecurringTransactionProcessingJobTest {
         assertEquals("1973-02-28T09:00:00Z", createdTransactions[3].date.toString())
     }
 
-    private suspend fun loopForDays(start: Instant, days: Int) {
-        if (days == 0) return
+    private suspend fun loopFor(start: Instant, count: Int, timeUnit: TemporalUnit = ChronoUnit.DAYS) {
+        if (count == 0) return
         val maxDays = GregorianCalendar.from(ZonedDateTime.ofInstant(start, ZoneId.of("UTC")))
             .getActualMaximum(Calendar.DAY_OF_MONTH)
         job.createTransactions(start, maxDays)
-        loopForDays(start.plus(1, ChronoUnit.DAYS), days - 1)
+        loopFor(start.plus(1, timeUnit), count - 1, timeUnit)
     }
 }
