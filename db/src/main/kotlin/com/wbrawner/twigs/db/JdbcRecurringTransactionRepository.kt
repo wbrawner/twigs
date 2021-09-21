@@ -30,6 +30,7 @@ class JdbcRecurringTransactionRepository(dataSource: DataSource) :
         frequency = getString(Fields.FREQUENCY.name.lowercase()).asFrequency(),
         start = getInstant(Fields.START.name.lowercase())!!,
         finish = getInstant(Fields.FINISH.name.lowercase()),
+        lastRun = getInstant(Fields.LAST_RUN.name.lowercase()),
         amount = getLong(Fields.AMOUNT.name.lowercase()),
         expense = getBoolean(Fields.EXPENSE.name.lowercase()),
         createdBy = getString(Fields.CREATED_BY.name.lowercase()),
