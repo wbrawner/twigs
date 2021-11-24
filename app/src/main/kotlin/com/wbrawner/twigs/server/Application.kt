@@ -107,6 +107,31 @@ fun Application.moduleWithDependencies(
             useArrayPolymorphism = true
         })
     }
+    install(CORS) {
+        anyHost()
+        method(HttpMethod.Options)
+        method(HttpMethod.Put)
+        method(HttpMethod.Delete)
+        header(HttpHeaders.Authorization)
+        header(HttpHeaders.Accept)
+        header(HttpHeaders.AcceptEncoding)
+        header(HttpHeaders.AcceptLanguage)
+        header(HttpHeaders.Connection)
+        header(HttpHeaders.ContentType)
+        header(HttpHeaders.Host)
+        header(HttpHeaders.Origin)
+        header(HttpHeaders.AccessControlRequestHeaders)
+        header(HttpHeaders.AccessControlRequestMethod)
+        header("Sec-Fetch-Dest")
+        header("Sec-Fetch-Mode")
+        header("Sec-Fetch-Site")
+        header("sec-ch-ua")
+        header("sec-ch-ua-mobile")
+        header("sec-ch-ua-platform")
+        header(HttpHeaders.UserAgent)
+        header("DNT")
+        allowCredentials = true
+    }
     budgetRoutes(budgetRepository, permissionRepository)
     categoryRoutes(categoryRepository, permissionRepository)
     recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
