@@ -20,3 +20,13 @@ jobs:
           repository: ${{ github.repository  }}/${{ github.event.repository.name  }}
           registry: docker.pkg.github.com
           tag_with_ref: true
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            docker compose pull twigs
+            docker compose up -d --build twigs
+            docker image prune -f
