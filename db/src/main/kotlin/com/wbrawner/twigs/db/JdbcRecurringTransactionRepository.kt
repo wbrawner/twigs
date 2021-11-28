@@ -15,7 +15,7 @@ class JdbcRecurringTransactionRepository(dataSource: DataSource) :
     override val conflictFields: Collection<String> = listOf(ID)
 
     override suspend fun findAll(now: Instant): List<RecurringTransaction> = dataSource.connection.use { conn ->
-        conn.executeQuery("SELECT * FROM $tableName WHERE ${Fields.START.name.lowercase()} < ?", listOf(now))
+        conn.executeQuery("SELECT * FROM $tableName WHERE ${Fields.START.name.lowercase()} < ? AND ${Fields.FINISH.name.lowercase()} > ?", listOf(now, now))
     }
 
     override suspend fun findAll(budgetId: String): List<RecurringTransaction> = dataSource.connection.use { conn ->
