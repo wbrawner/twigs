@@ -108,7 +108,7 @@ fun Application.moduleWithDependencies(
         })
     }
     install(CORS) {
-        host("twigs.wbrawner.com") // TODO: Make configurable
+        host("https://twigs.wbrawner.com") // TODO: Make configurable
         method(HttpMethod.Options)
         method(HttpMethod.Put)
         method(HttpMethod.Delete)
