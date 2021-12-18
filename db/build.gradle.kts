@@ -10,7 +10,7 @@ dependencies {
     api(project(":storage"))
     implementation("org.postgresql:postgresql:42.2.23")
     api("com.zaxxer:HikariCP:5.0.0")
-    implementation("ch.qos.logback:logback-classic:+")
+    implementation("ch.qos.logback:logback-classic:1.2.8")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
