@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
 buildscript {
-    val kotlinVersion: String by extra("1.5.20")
-    val ktorVersion: String by extra("1.6.1")
+    val kotlinVersion: String by extra("1.6.10")
+    val ktorVersion: String by extra("1.6.6")
     repositories {
         mavenLocal()
         mavenCentral()
