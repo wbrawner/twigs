@@ -1,6 +1,6 @@
 # Twigs Server
 
-This is the backend application that powers the [Android](https://git.wbrawner.com/Archive/twigs-android), [iOS](https://git.wbrawner.com/twigs-ios), and [web](https://git.wbrawner.com/twigs-web) applications for Twigs, a personal finance/budgeting app. None of these apps are complete, so expect bugs, and they are all in various stages of development, so expect some feature disparity between platforms.
+This is the backend application that powers the [Android](../../../twigs-android), [iOS](../../../twigs-ios), and [web](../../../twigs-web) applications for Twigs, a personal finance/budgeting app. None of these apps are complete, so expect bugs, and they are all in various stages of development, so expect some feature disparity between platforms.
 
 ## Prerequisites
 
