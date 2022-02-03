@@ -231,19 +231,19 @@ class RecurringTransactionProcessingJobTest {
     fun `monthly transactions are created every last friday`() = runBlockingTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
-            RecurringTransaction(
-                title = "Monthly transaction",
-                amount = 123,
-                frequency = Frequency.Monthly(
-                    1,
-                    DayOfMonth.positionalDayOfWeek(Position.LAST, DayOfWeek.FRIDAY),
-                    Time(9, 0, 0)
-                ),
-                expense = true,
-                start = start,
-                createdBy = "tester",
-                budgetId = "budgetId"
-            )
+                RecurringTransaction(
+                        title = "Monthly transaction",
+                        amount = 123,
+                        frequency = Frequency.Monthly(
+                                1,
+                                DayOfMonth.positionalDayOfWeek(Position.LAST, DayOfWeek.FRIDAY),
+                                Time(9, 0, 0)
+                        ),
+                        expense = true,
+                        start = start,
+                        createdBy = "tester",
+                        budgetId = "budgetId"
+                )
         )
         loopFor(start, 120)
         val createdTransactions = transactionRepository.findAll()
@@ -255,14 +255,39 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
+    fun `monthly transactions are created in the new year`() = runBlockingTest {
+        val start = Instant.parse("1971-01-01T00:00:00Z")
+        recurringTransactionRepository.save(
+                RecurringTransaction(
+                        title = "Monthly transaction",
+                        amount = 123,
+                        frequency = Frequency.Monthly(
+                                1,
+                                DayOfMonth.day(1),
+                                Time(9, 0, 0)
+                        ),
+                        expense = true,
+                        start = start,
+                        createdBy = "tester",
+                        budgetId = "budgetId",
+                        lastRun = Instant.parse("1970-12-01T09:00:00Z")
+                )
+        )
+        loopFor(start, 1)
+        val createdTransactions = transactionRepository.findAll()
+        assertEquals(1, createdTransactions.size)
+        assertEquals("1971-01-01T09:00:00Z", createdTransactions[0].date.toString())
+    }
+
+    @Test
     fun `yearly transactions are created every march 31st`() = runBlockingTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
-            RecurringTransaction(
-                title = "Yearly transaction",
-                amount = 123,
-                frequency = Frequency.Yearly(1, MonthDay.of(3, 31), Time(9, 0, 0)),
-                expense = true,
+                RecurringTransaction(
+                        title = "Yearly transaction",
+                        amount = 123,
+                        frequency = Frequency.Yearly(1, MonthDay.of(3, 31), Time(9, 0, 0)),
+                        expense = true,
                 start = start,
                 createdBy = "tester",
                 budgetId = "budgetId"

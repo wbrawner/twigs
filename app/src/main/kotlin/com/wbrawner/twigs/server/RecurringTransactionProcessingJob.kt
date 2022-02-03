@@ -40,7 +40,8 @@ class RecurringTransactionProcessingJob(
                 is Frequency.Monthly -> {
                     it.lastRun?.let { last ->
                         val zonedLastRun = last.atZone(ZoneId.of("UTC"))
-                        if (zonedNow.monthValue - zonedLastRun.monthValue < it.frequency.count)
+                        val monthsPassed = ((zonedNow.year * 12) + zonedNow.monthValue) - ((zonedLastRun.year * 12) + zonedLastRun.monthValue)
+                        if (monthsPassed < it.frequency.count)
                             return@forEach
                     }
                     val frequency = (it.frequency as Frequency.Monthly).dayOfMonth
@@ -63,7 +64,6 @@ class RecurringTransactionProcessingJob(
                                     return@forEach
                             }
                         }
-
                     }
                 }
                 is Frequency.Yearly -> {
