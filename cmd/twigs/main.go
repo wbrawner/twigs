@@ -8,28 +8,79 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	"github.com/urfave/cli/v2"
 )
 
-func getEnvOrDefault(env string, defaultVal string) string {
-	envVal := os.Getenv(env)
-	if envVal == "" {
-		return defaultVal
-	} else {
-		return envVal
-	}
-}
+const ARG_PORT = "port"
+const ARG_DB_NAME = "db-name"
+const ARG_DB_USER = "db-user"
+const ARG_DB_PASS = "db-pass"
+const ARG_DB_HOST = "db-host"
+const ARG_DB_PORT = "db-port"
 
 func main() {
-	dbName := getEnvOrDefault("TWIGS_DB_NAME", "budget")
-	dbUser := getEnvOrDefault("TWIGS_DB_USER", "budget")
-	dbPass := getEnvOrDefault("TWIGS_DB_PASS", "budget")
-	dbHost := getEnvOrDefault("TWIGS_DB_HOST", "localhost")
-	dbPort := getEnvOrDefault("TWIGS_DB_PORT", "3306")
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s:%s/%s", dbUser, dbPass, dbHost, dbPort, dbName))
-	if err != nil {
-		log.Fatalf("Failed to connect to database %s on %s", dbName, dbHost)
+	app := &cli.App{
+		Name:  "twigs",
+		Usage: "personal/family finance app server",
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:    ARG_PORT,
+				Value:   8080,
+				Usage:   "the `PORT` for the server to listen on",
+				Aliases: []string{"p"},
+				EnvVars: []string{"TWIGS_PORT"},
+			},
+			&cli.StringFlag{
+				Name:    ARG_DB_NAME,
+				Value:   "twigs",
+				Usage:   "the `NAME` of the database to connect to",
+				EnvVars: []string{"TWIGS_DB_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    ARG_DB_USER,
+				Value:   "twigs",
+				Usage:   "the `USERNAME` to use to connect to the database",
+				EnvVars: []string{"TWIGS_DB_USER"},
+			},
+			&cli.StringFlag{
+				Name:    ARG_DB_PASS,
+				Value:   "twigs",
+				Usage:   "the `PASSWORD` to use to connect to the database",
+				EnvVars: []string{"TWIGS_DB_PASS"},
+			},
+			&cli.StringFlag{
+				Name:    ARG_DB_HOST,
+				Value:   "twigs",
+				Usage:   "the `HOST` to use to connect to the database",
+				EnvVars: []string{"TWIGS_DB_HOST"},
+			},
+			&cli.IntFlag{
+				Name:    ARG_DB_PORT,
+				Value:   5432,
+				Usage:   "the `PORT` to use to connect to the database",
+				EnvVars: []string{"TWIGS_DB_PORT"},
+			},
+		},
+		Action: func(c *cli.Context) error {
+			_, err := sql.Open("postgres", fmt.Sprintf(
+				"%s:%s@%s:%d/%s",
+				c.String(ARG_DB_USER),
+				c.String(ARG_DB_PASS),
+				c.String(ARG_DB_HOST),
+				c.Int(ARG_DB_PORT),
+				c.String(ARG_DB_NAME),
+			))
+			if err != nil {
+				log.Fatalf("Failed to connect to database %s on %s", c.String(ARG_DB_NAME), c.String(ARG_DB_HOST))
+			}
+			_ = mux.NewRouter()
+			log.Fatal(http.ListenAndServe(":8080", nil))
+			return nil
+		},
 	}
-	router := mux.NewRouter()
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
