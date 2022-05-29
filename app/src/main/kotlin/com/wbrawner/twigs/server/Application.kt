@@ -100,6 +100,7 @@ fun Application.moduleWithDependencies(
         json(json = Json {
             ignoreUnknownKeys = true
             encodeDefaults = true
+            explicitNulls = false
             isLenient = true
             allowSpecialFloatingPointValues = true
             allowStructuredMapKeys = true
