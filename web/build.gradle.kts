@@ -1,17 +1,15 @@
 import java.util.*
 
 plugins {
-    kotlin("jvm")
     `java-library`
+    alias(libs.plugins.kotlin.jvm)
 }
-
-val ktorVersion: String by rootProject.extra
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api("io.ktor:ktor-server-core:$ktorVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    api(libs.ktor.server.core)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 tasks.getByName<Test>("test") {

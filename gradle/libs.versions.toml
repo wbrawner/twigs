@@ -1,0 +1,32 @@
+[versions]
+bcrypt = "0.9.0"
+hikari = "5.0.1"
+junit = "5.8.2"
+kotlin = "1.6.21"
+kotlin-coroutines = "1.6.1"
+ktor = "1.6.6"
+logback = "1.2.11"
+postgres = "42.3.4"
+shadow = "7.0.0"
+
+[libraries]
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
+hikari =  { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+kotlin-coroutines-core = { module = "org.jetbrains.kotlin:kotlin-coroutines-core", version.ref = "kotlin-coroutines" }
+kotlin-coroutines-test = { module = "org.jetbrains.kotlin:kotlin-coroutines-test", version.ref = "kotlin-coroutines" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+ktor-auth = { module = "io.ktor:ktor-auth", version.ref = "ktor" }
+ktor-serialization = { module = "io.ktor:ktor-serialization", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

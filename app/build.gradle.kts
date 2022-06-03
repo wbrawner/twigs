@@ -5,7 +5,7 @@ plugins {
     java
     kotlin("jvm")
     application
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    alias(libs.plugins.shadow)
 }
 
 repositories {
@@ -16,24 +16,20 @@ repositories {
     }
 }
 
-val kotlinVersion: String by rootProject.extra
-val ktorVersion: String by rootProject.extra
-
 dependencies {
     implementation(project(":api"))
     implementation(project(":core"))
     implementation(project(":db"))
     implementation(project(":web"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-cio:$ktorVersion")
-    implementation("io.ktor:ktor-server-sessions:$ktorVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
-    implementation("ch.qos.logback:logback-classic:1.2.8")
+    implementation(libs.kotlin.reflect)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.sessions)
+    implementation(libs.kotlin.coroutines.core)
+    implementation(libs.logback)
     testImplementation(project(":testhelpers"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 description = "twigs-server"
