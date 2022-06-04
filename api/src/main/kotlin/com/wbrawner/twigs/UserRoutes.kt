@@ -1,7 +1,9 @@
 package com.wbrawner.twigs
 
+import com.wbrawner.twigs.model.PasswordResetToken
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
+import com.wbrawner.twigs.storage.PasswordResetRepository
 import com.wbrawner.twigs.storage.PermissionRepository
 import com.wbrawner.twigs.storage.SessionRepository
 import com.wbrawner.twigs.storage.UserRepository
@@ -11,8 +13,11 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import java.time.Instant
 
 fun Application.userRoutes(
+    emailService: EmailService,
+    passwordResetRepository: PasswordResetRepository,
     permissionRepository: PermissionRepository,
     sessionRepository: SessionRepository,
     userRepository: UserRepository
@@ -138,6 +143,47 @@ fun Application.userRoutes(
                     userRepository.delete(user)
                     call.respond(HttpStatusCode.NoContent)
                 }
+            }
+        }
+
+        route("/api/resetpassword") {
+            post {
+                val request = call.receive<ResetPasswordRequest>()
+                userRepository.findAll(nameOrEmail = request.username)
+                    .firstOrNull()
+                    ?.let {
+                        val email = it.email ?: return@let
+                        val passwordResetToken = passwordResetRepository.save(PasswordResetToken(userId = it.id))
+                        emailService.sendPasswordResetEmail(passwordResetToken, email)
+                    }
+                call.respond(HttpStatusCode.Accepted)
+            }
+        }
+
+        route("/api/passwordreset") {
+            post {
+                val request = call.receive<PasswordResetRequest>()
+                val passwordResetToken = passwordResetRepository.findAll(listOf(request.token))
+                    .firstOrNull()
+                    ?: run {
+                        errorResponse(HttpStatusCode.Unauthorized, "Invalid token")
+                        return@post
+                    }
+                if (passwordResetToken.expiration.isBefore(Instant.now())) {
+                    errorResponse(HttpStatusCode.Unauthorized, "Token expired")
+                    return@post
+                }
+                userRepository.findAll(listOf(passwordResetToken.userId))
+                    .firstOrNull()
+                    ?.let {
+                        userRepository.save(it.copy(password = request.password.hash()))
+                        passwordResetRepository.delete(passwordResetToken)
+                    }
+                    ?: run {
+                        errorResponse(HttpStatusCode.InternalServerError, "Invalid token")
+                        return@post
+                    }
+                call.respond(HttpStatusCode.NoContent)
             }
         }
     }

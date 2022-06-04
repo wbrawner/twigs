@@ -25,11 +25,15 @@ class JdbcUserRepository(dataSource: DataSource) : JdbcRepository<User, JdbcUser
         )
     }
 
-    override fun findAll(nameOrEmail: String, password: String): List<User> = dataSource.connection.use { conn ->
-        conn.executeQuery(
-            "SELECT * FROM $tableName WHERE (${Fields.USERNAME.name.lowercase()} = ? OR ${Fields.EMAIL.name.lowercase()} = ?) AND ${Fields.PASSWORD.name.lowercase()} = ?",
-            listOf(nameOrEmail, nameOrEmail, password)
-        )
+    override fun findAll(nameOrEmail: String, password: String?): List<User> = dataSource.connection.use { conn ->
+        var sql =
+            "SELECT * FROM $tableName WHERE (${Fields.USERNAME.name.lowercase()} = ? OR ${Fields.EMAIL.name.lowercase()} = ?)"
+        val params = mutableListOf(nameOrEmail, nameOrEmail)
+        password?.let {
+            sql += " AND ${Fields.PASSWORD.name.lowercase()} = ?"
+            params.add(it)
+        }
+        conn.executeQuery(sql, params)
     }
 
     enum class Fields(val entityField: (User) -> Any?) {

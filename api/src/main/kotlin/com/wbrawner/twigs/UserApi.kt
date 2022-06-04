@@ -1,10 +1,10 @@
 package com.wbrawner.twigs
 
+import com.wbrawner.twigs.model.PasswordResetToken
 import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
 import kotlinx.serialization.Serializable
-import java.util.*
 
 @Serializable
 data class UserRequest(
@@ -31,13 +31,24 @@ data class UserPermissionResponse(val user: String, val permission: Permission?)
 @Serializable
 data class SessionResponse(val userId: String, val token: String, val expiration: String)
 
-data class PasswordResetRequest(
-    val userId: Long,
-    val id: String = randomString(),
-    private val date: Calendar = GregorianCalendar(),
-    private val token: String = randomString()
-)
+/**
+ * Used to request the password reset email
+ */
+@Serializable
+data class ResetPasswordRequest(val username: String)
+
+/**
+ * Used to modify the user's password after receiving the password reset email
+ */
+@Serializable
+data class PasswordResetRequest(val token: String, val password: String)
+
+@Serializable
+data class PasswordResetTokenResponse(val userId: String, val id: String, val expiration: String)
 
 fun User.asResponse(): UserResponse = UserResponse(id, name, email)
 
 fun Session.asResponse(): SessionResponse = SessionResponse(userId, token, expiration.toString())
+
+fun PasswordResetToken.asResponse(): PasswordResetTokenResponse =
+    PasswordResetTokenResponse(userId, id, expiration.toString())

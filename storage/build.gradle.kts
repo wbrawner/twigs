@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation(kotlin("stdlib"))
     api(project(":core"))
-    api(libs.kotlin.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
 }

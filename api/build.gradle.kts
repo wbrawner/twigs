@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":storage"))
     api(libs.ktor.server.core)
     api(libs.ktor.serialization)
-    api(libs.kotlin.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
 }

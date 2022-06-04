@@ -35,6 +35,12 @@ val twoWeeksFromNow: Instant
         toInstant()
     }
 
+val tomorrow: Instant
+    get() = GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
+        add(Calendar.DATE, 1)
+        toInstant()
+    }
+
 private const val CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 fun randomString(length: Int = 32): String {

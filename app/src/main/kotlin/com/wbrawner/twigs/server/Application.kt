@@ -1,5 +1,6 @@
 package com.wbrawner.twigs.server
 
+import ch.qos.logback.classic.Level
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
 import com.wbrawner.twigs.model.Session
@@ -19,11 +20,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
-private const val DATABASE_VERSION = 2
+private const val DATABASE_VERSION = 3
 
 fun Application.module() {
     val dbHost = environment.config.propertyOrNull("twigs.database.host")?.getString() ?: "localhost"
@@ -32,15 +34,24 @@ fun Application.module() {
     val dbUser = environment.config.propertyOrNull("twigs.database.user")?.getString() ?: "twigs"
     val dbPass = environment.config.propertyOrNull("twigs.database.password")?.getString() ?: "twigs"
     val jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?stringtype=unspecified"
+    (LoggerFactory.getLogger("com.zaxxer.hikari") as ch.qos.logback.classic.Logger).level = Level.ERROR
     HikariDataSource(HikariConfig().apply {
         setJdbcUrl(jdbcUrl)
         username = dbUser
         password = dbPass
     }).also {
         moduleWithDependencies(
+            emailService = SmtpEmailService(
+                from = environment.config.propertyOrNull("twigs.smtp.from")?.getString(),
+                host = environment.config.propertyOrNull("twigs.smtp.host")?.getString(),
+                port = environment.config.propertyOrNull("twigs.smtp.port")?.getString()?.toIntOrNull(),
+                username = environment.config.propertyOrNull("twigs.smtp.user")?.getString(),
+                password = environment.config.propertyOrNull("twigs.smtp.pass")?.getString(),
+            ),
             metadataRepository = MetadataRepository(it),
             budgetRepository = JdbcBudgetRepository(it),
             categoryRepository = JdbcCategoryRepository(it),
+            passwordResetRepository = JdbcPasswordResetRepository(it),
             permissionRepository = JdbcPermissionRepository(it),
             recurringTransactionRepository = JdbcRecurringTransactionRepository(it),
             sessionRepository = JdbcSessionRepository(it),
@@ -51,9 +62,11 @@ fun Application.module() {
 }
 
 fun Application.moduleWithDependencies(
+    emailService: EmailService,
     metadataRepository: MetadataRepository,
     budgetRepository: BudgetRepository,
     categoryRepository: CategoryRepository,
+    passwordResetRepository: PasswordResetRepository,
     permissionRepository: PermissionRepository,
     recurringTransactionRepository: RecurringTransactionRepository,
     sessionRepository: SessionRepository,
@@ -137,7 +150,7 @@ fun Application.moduleWithDependencies(
     categoryRoutes(categoryRepository, permissionRepository)
     recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
     transactionRoutes(transactionRepository, permissionRepository)
-    userRoutes(permissionRepository, sessionRepository, userRepository)
+    userRoutes(emailService, passwordResetRepository, permissionRepository, sessionRepository, userRepository)
     webRoutes()
     launch {
         val metadata = (metadataRepository.findAll().firstOrNull() ?: DatabaseMetadata())
