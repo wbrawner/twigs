@@ -1,6 +1,8 @@
 # Twigs Server
 
-This is the backend application that powers the [Android](../../../twigs-android), [iOS](../../../twigs-ios), and [web](../../../twigs-web) applications for Twigs, a personal finance/budgeting app. None of these apps are complete, so expect bugs, and they are all in various stages of development, so expect some feature disparity between platforms.
+This is the backend application that powers the [Android](../../../twigs-android), [iOS](../../../twigs-ios),
+and [web](../../../twigs-web) applications for Twigs, a personal finance/budgeting app. None of these apps are complete,
+so expect bugs, and they are all in various stages of development, so expect some feature disparity between platforms.
 
 ## Prerequisites
 
@@ -10,7 +12,10 @@ This is the backend application that powers the [Android](../../../twigs-android
 
 ## Running
 
-Prior to running the app, make sure you have a PostgreSQL server running, with a database and user ready to go. To avoid the hassle of figuring out how to get it installed locally, using Docker is recommended, and a sample `docker-compose.yml` file is included in the root of the repository. If you already have a PostgreSQL server running, you can run the app from the command line with gradle:
+Prior to running the app, make sure you have a PostgreSQL server running, with a database and user ready to go. To avoid
+the hassle of figuring out how to get it installed locally, using Docker is recommended, and a
+sample `docker-compose.yml` file is included in the root of the repository. If you already have a PostgreSQL server
+running, you can run the app from the command line with gradle:
 
     ./gradlew run
 
@@ -27,6 +32,11 @@ Environment Variable|Default Value|Note
 `TWIGS_DB_USER`|`twigs`|PostgreSQL database user
 `TWIGS_DB_PASS`|`twigs`|PostgreSQL database password
 `TWIGS_PW_SALT`||Salt to use for password, generated if empty or null
+`TWIGS_SMTP_FROM`||From email address for automated emails sent from Twigs
+`TWIGS_SMTP_HOST`||SMTP server host for sending emails
+`TWIGS_SMTP_PORT`||SMTP server port for sending emails
+`TWIGS_SMTP_USER`||SMTP server username for sending emails
+`TWIGS_SMTP_PASS`||SMTP server password for sending emails
 
 ## Building
 
