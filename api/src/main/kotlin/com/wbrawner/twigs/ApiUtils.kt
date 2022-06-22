@@ -5,10 +5,10 @@ import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.storage.BudgetRepository
 import com.wbrawner.twigs.storage.PermissionRepository
-import io.ktor.application.*
-import io.ktor.auth.*
 import io.ktor.http.*
-import io.ktor.response.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.requireBudgetWithPermission(
@@ -58,5 +58,5 @@ suspend inline fun PipelineContext<Unit, ApplicationCall>.errorResponse(
 ) {
     message?.let {
         call.respond(httpStatusCode, ErrorResponse(message))
-    }?: call.respond(httpStatusCode)
+    } ?: call.respond(httpStatusCode)
 }

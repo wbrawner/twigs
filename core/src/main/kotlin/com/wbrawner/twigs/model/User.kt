@@ -2,7 +2,7 @@ package com.wbrawner.twigs.model
 
 import com.wbrawner.twigs.Identifiable
 import com.wbrawner.twigs.randomString
-import io.ktor.auth.*
+import io.ktor.server.auth.*
 
 data class User(
     override val id: String = randomString(),

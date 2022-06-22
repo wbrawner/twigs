@@ -23,20 +23,20 @@ running, you can run the app from the command line with gradle:
 
 Some parameters of Twigs can be configured via environment variables:
 
-Environment Variable|Default Value|Note
-:---:|:---:|:---
-`TWIGS_PORT`|`8080`|Port for web server to listen on
-`TWIGS_DB_HOST`|`localhost`|PostgreSQL server host
-`TWIGS_DB_PORT`|`5432`|PostgreSQL server port
-`TWIGS_DB_NAME`|`twigs`|PostgreSQL database name
-`TWIGS_DB_USER`|`twigs`|PostgreSQL database user
-`TWIGS_DB_PASS`|`twigs`|PostgreSQL database password
-`TWIGS_PW_SALT`||Salt to use for password, generated if empty or null
-`TWIGS_SMTP_FROM`||From email address for automated emails sent from Twigs
-`TWIGS_SMTP_HOST`||SMTP server host for sending emails
-`TWIGS_SMTP_PORT`||SMTP server port for sending emails
-`TWIGS_SMTP_USER`||SMTP server username for sending emails
-`TWIGS_SMTP_PASS`||SMTP server password for sending emails
+| Environment Variable | Default Value | Note                                                    |
+|:--------------------:|:-------------:|:--------------------------------------------------------|
+|     `TWIGS_PORT`     |    `8080`     | Port for web server to listen on                        |
+|   `TWIGS_DB_HOST`    |  `localhost`  | PostgreSQL server host                                  |
+|   `TWIGS_DB_PORT`    |    `5432`     | PostgreSQL server port                                  |
+|   `TWIGS_DB_NAME`    |    `twigs`    | PostgreSQL database name                                |
+|   `TWIGS_DB_USER`    |    `twigs`    | PostgreSQL database user                                |
+|   `TWIGS_DB_PASS`    |    `twigs`    | PostgreSQL database password                            |
+|   `TWIGS_PW_SALT`    |               | Salt to use for password, generated if empty or null    |
+|  `TWIGS_SMTP_FROM`   |               | From email address for automated emails sent from Twigs |
+|  `TWIGS_SMTP_HOST`   |               | SMTP server host for sending emails                     |
+|  `TWIGS_SMTP_PORT`   |               | SMTP server port for sending emails                     |     
+|  `TWIGS_SMTP_USER`   |               | SMTP server username for sending emails                 |
+|  `TWIGS_SMTP_PASS`   |               | SMTP server password for sending emails                 |
 
 ## Building
 

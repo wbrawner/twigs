@@ -4,7 +4,7 @@ hikari = "5.0.1"
 junit = "5.8.2"
 kotlin = "1.6.21"
 kotlinx-coroutines = "1.6.2"
-ktor = "1.6.6"
+ktor = "2.0.2"
 logback = "1.2.11"
 mail = "1.6.2"
 postgres = "42.3.4"
@@ -15,18 +15,31 @@ bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-ktor-auth = { module = "io.ktor:ktor-auth", version.ref = "ktor" }
-ktor-serialization = { module = "io.ktor:ktor-serialization", version.ref = "ktor" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mail = { module = "com.sun.mail:javax.mail", version.ref = "mail" }
 postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+
+[bundles]
+ktor-server = [
+    "ktor-server-call-logging",
+    "ktor-server-cio",
+    "ktor-server-content-negotiation",
+    "ktor-server-core",
+    "ktor-server-cors",
+    "ktor-server-sessions"
+]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

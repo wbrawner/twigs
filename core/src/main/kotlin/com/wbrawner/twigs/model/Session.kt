@@ -3,7 +3,7 @@ package com.wbrawner.twigs.model
 import com.wbrawner.twigs.Identifiable
 import com.wbrawner.twigs.randomString
 import com.wbrawner.twigs.twoWeeksFromNow
-import io.ktor.auth.*
+import io.ktor.server.auth.*
 import java.time.Instant
 
 data class Session(

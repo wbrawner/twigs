@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api(libs.ktor.auth)
+    api(libs.ktor.server.auth)
     api(libs.bcrypt)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)

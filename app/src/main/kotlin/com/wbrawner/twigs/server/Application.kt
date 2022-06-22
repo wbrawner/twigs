@@ -8,13 +8,15 @@ import com.wbrawner.twigs.storage.*
 import com.wbrawner.twigs.web.webRoutes
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.application.*
-import io.ktor.auth.*
-import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.serialization.*
-import io.ktor.sessions.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.response.*
+import io.ktor.server.sessions.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -80,14 +82,14 @@ fun Application.moduleWithDependencies(
                 call.respond(HttpStatusCode.Unauthorized)
             }
             validate { session ->
-                environment.log.info("Validating session")
+                application.environment.log.info("Validating session")
                 val storedSession = sessionRepository.findAll(session.token)
                     .firstOrNull()
                 if (storedSession == null) {
-                    environment.log.info("Did not find session!")
+                    application.environment.log.info("Did not find session!")
                     return@validate null
                 } else {
-                    environment.log.info("Found session!")
+                    application.environment.log.info("Found session!")
                 }
                 return@validate if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
                     sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
@@ -101,7 +103,7 @@ fun Application.moduleWithDependencies(
         header<Session>("Authorization") {
             serializer = object : SessionSerializer<Session> {
                 override fun deserialize(text: String): Session {
-                    environment.log.info("Deserializing session!")
+                    this@moduleWithDependencies.environment.log.info("Deserializing session!")
                     return Session(token = text.substringAfter("Bearer "))
                 }
 
@@ -122,28 +124,28 @@ fun Application.moduleWithDependencies(
         })
     }
     install(CORS) {
-        host("twigs.wbrawner.com", listOf("http", "https")) // TODO: Make configurable
-        method(HttpMethod.Options)
-        method(HttpMethod.Put)
-        method(HttpMethod.Delete)
-        header(HttpHeaders.Authorization)
-        header(HttpHeaders.Accept)
-        header(HttpHeaders.AcceptEncoding)
-        header(HttpHeaders.AcceptLanguage)
-        header(HttpHeaders.Connection)
-        header(HttpHeaders.ContentType)
-        header(HttpHeaders.Host)
-        header(HttpHeaders.Origin)
-        header(HttpHeaders.AccessControlRequestHeaders)
-        header(HttpHeaders.AccessControlRequestMethod)
-        header("Sec-Fetch-Dest")
-        header("Sec-Fetch-Mode")
-        header("Sec-Fetch-Site")
-        header("sec-ch-ua")
-        header("sec-ch-ua-mobile")
-        header("sec-ch-ua-platform")
-        header(HttpHeaders.UserAgent)
-        header("DNT")
+        allowHost("twigs.wbrawner.com", listOf("http", "https")) // TODO: Make configurable
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.Accept)
+        allowHeader(HttpHeaders.AcceptEncoding)
+        allowHeader(HttpHeaders.AcceptLanguage)
+        allowHeader(HttpHeaders.Connection)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Host)
+        allowHeader(HttpHeaders.Origin)
+        allowHeader(HttpHeaders.AccessControlRequestHeaders)
+        allowHeader(HttpHeaders.AccessControlRequestMethod)
+        allowHeader("Sec-Fetch-Dest")
+        allowHeader("Sec-Fetch-Mode")
+        allowHeader("Sec-Fetch-Site")
+        allowHeader("sec-ch-ua")
+        allowHeader("sec-ch-ua-mobile")
+        allowHeader("sec-ch-ua-platform")
+        allowHeader(HttpHeaders.UserAgent)
+        allowHeader("DNT")
         allowCredentials = true
     }
     budgetRoutes(budgetRepository, permissionRepository)
