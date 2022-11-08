@@ -125,6 +125,7 @@ fun Application.moduleWithDependencies(
     }
     install(CORS) {
         allowHost("twigs.wbrawner.com", listOf("http", "https")) // TODO: Make configurable
+        allowHost("localhost:4200", listOf("http", "https"))     // TODO: Make configurable
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
