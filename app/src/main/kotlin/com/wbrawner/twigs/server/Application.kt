@@ -5,7 +5,6 @@ import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.storage.*
-import com.wbrawner.twigs.web.webRoutes
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.http.*
