@@ -1,5 +1,6 @@
 [versions]
 bcrypt = "0.9.0"
+graalvm = "0.9.19"
 hikari = "5.0.1"
 junit = "5.8.2"
 kotlin = "1.6.21"
@@ -42,6 +43,7 @@ ktor-server = [
 ]
 
 [plugins]
+graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

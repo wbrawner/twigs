@@ -5,6 +5,7 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
+        gradlePluginPortal()
     }
 
     dependencies {
@@ -28,6 +29,6 @@ allprojects {
     group = "com.wbrawner"
     version = "0.0.1-SNAPSHOT"
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "17"
     }
 }

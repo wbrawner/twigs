@@ -1,11 +1,11 @@
 import java.net.URI
-import java.util.*
 
 plugins {
     java
     kotlin("jvm")
     application
     alias(libs.plugins.shadow)
+    alias(libs.plugins.graalvm)
 }
 
 repositories {
@@ -50,4 +50,21 @@ tasks.shadowJar {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        named("main") {
+            fallback.set(false)
+            verbose.set(true)
+
+            buildArgs.add("--initialize-at-build-time=io.ktor,kotlin")
+
+            buildArgs.add("-H:+InstallExitHandlers")
+            buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
+            buildArgs.add("-H:+ReportExceptionStackTraces")
+
+            imageName.set("twigs")
+        }
+    }
 }
