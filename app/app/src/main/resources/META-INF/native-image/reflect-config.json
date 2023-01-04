@@ -1,0 +1,159 @@
+[
+{
+  "name":"[Lcom.zaxxer.hikari.util.ConcurrentBag$IConcurrentBagEntry;"
+},
+{
+  "name":"[Ljava.lang.String;"
+},
+{
+  "name":"[Ljava.sql.Statement;"
+},
+{
+  "name":"android.os.Build$VERSION"
+},
+{
+  "name":"com.wbrawner.twigs.EmailService"
+},
+{
+  "name":"com.wbrawner.twigs.db.MetadataRepository"
+},
+{
+  "name":"com.wbrawner.twigs.model.Session"
+},
+{
+  "name":"com.wbrawner.twigs.server.ApplicationKt",
+  "queryAllPublicMethods":true,
+  "methods":[
+    {"name":"main","parameterTypes":["java.lang.String[]"] }, 
+    {"name":"module","parameterTypes":["io.ktor.server.application.Application"] }
+  ]
+},
+{
+  "name":"com.wbrawner.twigs.storage.BudgetRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.CategoryRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.PasswordResetRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.PermissionRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.RecurringTransactionRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.SessionRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.TransactionRepository"
+},
+{
+  "name":"com.wbrawner.twigs.storage.UserRepository"
+},
+{
+  "name":"com.zaxxer.hikari.HikariConfig",
+  "allDeclaredFields":true
+},
+{
+  "name":"io.ktor.server.application.Application"
+},
+{
+  "name":"java.io.FilePermission"
+},
+{
+  "name":"java.lang.RuntimePermission"
+},
+{
+  "name":"java.lang.String"
+},
+{
+  "name":"java.net.NetPermission"
+},
+{
+  "name":"java.net.SocketPermission"
+},
+{
+  "name":"java.net.StandardSocketOptions"
+},
+{
+  "name":"java.net.URLPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
+},
+{
+  "name":"java.security.AllPermission"
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.security.SecurityPermission"
+},
+{
+  "name":"java.util.PropertyPermission"
+},
+{
+  "name":"javax.smartcardio.CardPermission"
+},
+{
+  "name":"kotlin.Array"
+},
+{
+  "name":"kotlin.Int"
+},
+{
+  "name":"kotlin.Metadata",
+  "queryAllDeclaredMethods":true,
+  "methods":[
+    {"name":"bv","parameterTypes":[] }, 
+    {"name":"d1","parameterTypes":[] }, 
+    {"name":"d2","parameterTypes":[] }, 
+    {"name":"k","parameterTypes":[] }, 
+    {"name":"mv","parameterTypes":[] }, 
+    {"name":"pn","parameterTypes":[] }, 
+    {"name":"xi","parameterTypes":[] }, 
+    {"name":"xs","parameterTypes":[] }
+  ]
+},
+{
+  "name":"kotlin.String"
+},
+{
+  "name":"kotlin.Unit"
+},
+{
+  "name":"kotlin.internal.jdk8.JDK8PlatformImplementations",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"kotlin.jvm.internal.DefaultConstructorMarker"
+},
+{
+  "name":"kotlin.reflect.jvm.internal.ReflectionFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"kotlin.reflect.jvm.internal.impl.resolve.scopes.DescriptorKindFilter",
+  "allPublicFields":true
+},
+{
+  "name":"org.postgresql.Driver"
+},
+{
+  "name":"sun.security.provider.DRBG",
+  "methods":[{"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.MD5",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA2$SHA256",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]

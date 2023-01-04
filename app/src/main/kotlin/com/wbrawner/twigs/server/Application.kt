@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 

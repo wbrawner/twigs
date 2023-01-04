@@ -58,8 +58,8 @@ graalvmNative {
             fallback.set(false)
             verbose.set(true)
 
-            buildArgs.add("--initialize-at-build-time=io.ktor,kotlin")
-
+            buildArgs.add("--initialize-at-build-time=io.ktor,kotlin,kotlinx.serialization,ch.qos.logback,org.slf4j")
+            buildArgs.add("--trace-object-instantiation=ch.qos.logback.classic.Logger")
             buildArgs.add("-H:+InstallExitHandlers")
             buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
             buildArgs.add("-H:+ReportExceptionStackTraces")
