@@ -2,9 +2,9 @@
 bcrypt = "0.9.0"
 hikari = "5.0.1"
 junit = "5.8.2"
-kotlin = "1.6.21"
+kotlin = "1.8.10"
 kotlinx-coroutines = "1.6.2"
-ktor = "2.0.2"
+ktor = "2.2.3"
 logback = "1.2.11"
 mail = "1.6.2"
 postgres = "42.3.4"
@@ -26,6 +26,7 @@ ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-mustache = { module = "io.ktor:ktor-server-mustache", version.ref = "ktor" }
 ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mail = { module = "com.sun.mail:javax.mail", version.ref = "mail" }

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+{{> head}}
+<body>
+<h1>Login</h1>
+<p>Login to view and manage your budgets</p>
+<form id="login" method="post" action="/login">
+    {{#error}}
+        <p class="error">{{error}}</p>
+    {{/error}}
+    <label for="username">Username</label>
+    <input id="username" type="username" name="username" placeholder="myuser" required/>
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" placeholder="mypass" required/>
+    <input id="submit" type="submit" value="Login"/>
+</form>
+</body>
+</html>

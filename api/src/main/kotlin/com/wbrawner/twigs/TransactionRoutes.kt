@@ -19,7 +19,7 @@ fun Application.transactionRoutes(
 ) {
     routing {
         route("/api/transactions") {
-            authenticate(optional = false) {
+            authenticate("auth-bearer", optional = false) {
                 get {
                     val session = call.principal<Session>()!!
                     call.respond(

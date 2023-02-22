@@ -46,7 +46,7 @@ fun Application.recurringTransactionRoutes(
 
     routing {
         route("/api/recurringtransactions") {
-            authenticate(optional = false) {
+            authenticate("auth-bearer", optional = false) {
                 get {
                     val session = call.principal<Session>()!!
                     val budgetId = call.request.queryParameters["budgetId"]

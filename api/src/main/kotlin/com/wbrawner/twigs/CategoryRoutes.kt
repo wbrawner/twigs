@@ -18,7 +18,7 @@ fun Application.categoryRoutes(
 ) {
     routing {
         route("/api/categories") {
-            authenticate(optional = false) {
+            authenticate("auth-bearer", optional = false) {
                 get {
                     val session = call.principal<Session>()!!
                     val budgetIds = permissionRepository.findAll(

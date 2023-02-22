@@ -60,7 +60,7 @@ fun Application.userRoutes(
                 )
             }
 
-            authenticate(optional = false) {
+            authenticate("auth-bearer", optional = false) {
                 get {
                     val query = call.request.queryParameters.getAll("query")
                     if (query?.firstOrNull()?.isNotBlank() == true) {

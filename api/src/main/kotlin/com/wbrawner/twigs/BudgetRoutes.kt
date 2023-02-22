@@ -19,7 +19,7 @@ fun Application.budgetRoutes(
 ) {
     routing {
         route("/api/budgets") {
-            authenticate(optional = false) {
+            authenticate("auth-bearer", optional = false) {
                 get {
                     val session = call.principal<Session>()!!
                     val budgetIds = permissionRepository.findAll(userId = session.userId).map { it.budgetId }

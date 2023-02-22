@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":core"))
     implementation(project(":db"))
-    implementation(project(":web"))
+    implementation(project(":frontend"))
     implementation(libs.kotlin.reflect)
     implementation(libs.bundles.ktor.server)
     implementation(libs.kotlinx.coroutines.core)

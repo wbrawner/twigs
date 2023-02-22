@@ -3,13 +3,30 @@ package com.wbrawner.twigs
 import com.wbrawner.twigs.model.Budget
 import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.Session
-import com.wbrawner.twigs.storage.BudgetRepository
-import com.wbrawner.twigs.storage.PermissionRepository
+import com.wbrawner.twigs.storage.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
+
+fun Application.apiRoutes(
+        budgetRepository: BudgetRepository,
+        categoryRepository: CategoryRepository,
+        emailService: EmailService,
+        passwordResetRepository: PasswordResetRepository,
+        permissionRepository: PermissionRepository,
+        recurringTransactionRepository: RecurringTransactionRepository,
+        sessionRepository: SessionRepository,
+        transactionRepository: TransactionRepository,
+        userRepository: UserRepository
+) {
+    budgetRoutes(budgetRepository, permissionRepository)
+    categoryRoutes(categoryRepository, permissionRepository)
+    recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
+    transactionRoutes(transactionRepository, permissionRepository)
+    userRoutes(emailService, passwordResetRepository, permissionRepository, sessionRepository, userRepository)
+}
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.requireBudgetWithPermission(
     permissionRepository: PermissionRepository,

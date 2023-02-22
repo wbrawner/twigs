@@ -1,17 +1,19 @@
 package com.wbrawner.twigs.server
 
 import ch.qos.logback.classic.Level
+import com.github.mustachejava.DefaultMustacheFactory
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.storage.*
-import com.wbrawner.twigs.web.webRoutes
+import com.wbrawner.twigs.web.frontendRoutes
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.mustache.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
@@ -77,39 +79,52 @@ fun Application.moduleWithDependencies(
 ) {
     install(CallLogging)
     install(Authentication) {
-        session<Session> {
-            challenge {
+        bearer("auth-bearer") {
+            authenticate { credential ->
+                sessionRepository.findAll(credential.token)
+                    .firstOrNull()
+                    ?.let { storedSession ->
+                        if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
+                            sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
+                        } else {
+                            null
+                        }
+                    }
+            }
+        }
+        session<Session>("auth-cookie") {
+            challenge { session ->
+                call.application.log.info("Challenge session: $session")
                 call.respond(HttpStatusCode.Unauthorized)
             }
             validate { session ->
-                application.environment.log.info("Validating session")
-                val storedSession = sessionRepository.findAll(session.token)
+                application.log.info("Validate session: $session")
+                sessionRepository.findAll(session.token)
                     .firstOrNull()
-                if (storedSession == null) {
-                    application.environment.log.info("Did not find session!")
-                    return@validate null
-                } else {
-                    application.environment.log.info("Found session!")
-                }
-                return@validate if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
-                    sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
-                } else {
-                    null
-                }
+                    ?.let { storedSession ->
+                        if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
+                            sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
+                        } else {
+                            null
+                        }
+                    }
             }
         }
     }
     install(Sessions) {
-        header<Session>("Authorization") {
+        cookie<Session>("twigs_session") {
+            cookie.httpOnly = true
             serializer = object : SessionSerializer<Session> {
                 override fun deserialize(text: String): Session {
-                    this@moduleWithDependencies.environment.log.info("Deserializing session!")
-                    return Session(token = text.substringAfter("Bearer "))
+                    return Session(token = text)
                 }
 
                 override fun serialize(session: Session): String = session.token
             }
         }
+    }
+    install(Mustache) {
+        mustacheFactory = DefaultMustacheFactory("templates")
     }
     install(ContentNegotiation) {
         json(json = Json {
@@ -123,38 +138,28 @@ fun Application.moduleWithDependencies(
             useArrayPolymorphism = true
         })
     }
-    install(CORS) {
-        allowHost("twigs.wbrawner.com", listOf("http", "https")) // TODO: Make configurable
-        allowHost("localhost:4200", listOf("http", "https"))     // TODO: Make configurable
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Delete)
-        allowHeader(HttpHeaders.Authorization)
-        allowHeader(HttpHeaders.Accept)
-        allowHeader(HttpHeaders.AcceptEncoding)
-        allowHeader(HttpHeaders.AcceptLanguage)
-        allowHeader(HttpHeaders.Connection)
-        allowHeader(HttpHeaders.ContentType)
-        allowHeader(HttpHeaders.Host)
-        allowHeader(HttpHeaders.Origin)
-        allowHeader(HttpHeaders.AccessControlRequestHeaders)
-        allowHeader(HttpHeaders.AccessControlRequestMethod)
-        allowHeader("Sec-Fetch-Dest")
-        allowHeader("Sec-Fetch-Mode")
-        allowHeader("Sec-Fetch-Site")
-        allowHeader("sec-ch-ua")
-        allowHeader("sec-ch-ua-mobile")
-        allowHeader("sec-ch-ua-platform")
-        allowHeader(HttpHeaders.UserAgent)
-        allowHeader("DNT")
-        allowCredentials = true
-    }
-    budgetRoutes(budgetRepository, permissionRepository)
-    categoryRoutes(categoryRepository, permissionRepository)
-    recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
-    transactionRoutes(transactionRepository, permissionRepository)
-    userRoutes(emailService, passwordResetRepository, permissionRepository, sessionRepository, userRepository)
-    webRoutes()
+    apiRoutes(
+        budgetRepository,
+        categoryRepository,
+        emailService,
+        passwordResetRepository,
+        permissionRepository,
+        recurringTransactionRepository,
+        sessionRepository,
+        transactionRepository,
+        userRepository
+    )
+    frontendRoutes(
+        budgetRepository,
+        categoryRepository,
+        emailService,
+        passwordResetRepository,
+        permissionRepository,
+        recurringTransactionRepository,
+        sessionRepository,
+        transactionRepository,
+        userRepository
+    )
     launch {
         val metadata = (metadataRepository.findAll().firstOrNull() ?: DatabaseMetadata())
         var version = metadata.version
