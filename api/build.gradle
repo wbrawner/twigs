@@ -25,7 +25,7 @@ jar {
     description = "twigs-server"
 }
 
-mainClassName = "com.wbrawner.budgetserver.TwigsServerApplication"
+mainClassName = "com.wbrawner.twigs.TwigsServerApplication"
 
 sourceCompatibility = 14
 targetCompatibility = 14
