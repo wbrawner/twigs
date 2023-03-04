@@ -8,7 +8,7 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/budget?useSSL=false"
+      SPRING_DATASOURCE_URL: "jdbc:postgres://db:5432/twigs"
       SPRING_JPA_HIBERNATE_DDL-AUTO: update
       SERVER_TOMCAT_MAX-THREADS: 5
       TWIGS_CORS_DOMAINS: "http://localhost:4200"
@@ -17,14 +17,13 @@ services:
     command: sh -c "sleep 5 && /opt/java/openjdk/bin/java $JVM_ARGS -jar /twigs-api.jar"
 
   db:
-    image: mysql:5.7
+    image: postgres:13
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
-      MYSQL_DATABASE: budget
-      MYSQL_USER: budget
-      MYSQL_PASSWORD: budget
+      POSTGRES_DB: twigs
+      POSTGRES_USER: twigs
+      POSTGRES_PASSWORD: twigs
     networks:
       - twigs
     hostname: db

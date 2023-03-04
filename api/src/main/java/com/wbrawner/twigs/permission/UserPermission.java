@@ -2,8 +2,7 @@ package com.wbrawner.twigs.permission;
 
 import com.wbrawner.twigs.budget.Budget;
 import com.wbrawner.twigs.user.User;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class UserPermission {

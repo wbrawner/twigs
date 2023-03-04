@@ -7,15 +7,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
 import javax.sql.DataSource;
@@ -25,8 +25,7 @@ import java.util.stream.Stream;
 
 
 @Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
     private final Environment env;
     private final DataSource datasource;
@@ -74,47 +73,57 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(getAuthenticationProvider());
+    @Bean
+    public SecurityFilterChain filterChain(
+            HttpSecurity httpSecurity, AuthenticationManager authenticationManager
+    ) throws Exception {
+        return httpSecurity.authorizeHttpRequests((authz) -> {
+                    try {
+                        authz
+                                .requestMatchers("/users", "/users/login")
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated()
+                                .and()
+                                .httpBasic()
+                                .authenticationEntryPoint(new SilentAuthenticationEntryPoint())
+                                .and()
+                                .cors()
+                                .configurationSource(request -> {
+                                    var corsConfig = new CorsConfiguration();
+                                    corsConfig.applyPermitDefaultValues();
+                                    var corsDomains = environment.getProperty("twigs.cors.domains", "*");
+                                    corsConfig.setAllowedOrigins(Arrays.asList(corsDomains.split(",")));
+                                    corsConfig.setAllowedMethods(
+                                            Stream.of(
+                                                            HttpMethod.GET,
+                                                            HttpMethod.POST,
+                                                            HttpMethod.PUT,
+                                                            HttpMethod.DELETE,
+                                                            HttpMethod.OPTIONS
+                                                    )
+                                                    .map(HttpMethod::name)
+                                                    .collect(Collectors.toList())
+                                    );
+                                    corsConfig.setAllowCredentials(true);
+                                    return corsConfig;
+                                })
+                                .and()
+                                .csrf()
+                                .ignoringRequestMatchers("/users", "/users/login")
+                                .and()
+                                .addFilter(new TokenAuthenticationFilter(authenticationManager))
+                                .sessionManagement()
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .build();
     }
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/users/new", "/users/login")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .httpBasic()
-                .authenticationEntryPoint(new SilentAuthenticationEntryPoint())
-                .and()
-                .cors()
-                .configurationSource(request -> {
-                    var corsConfig = new CorsConfiguration();
-                    corsConfig.applyPermitDefaultValues();
-                    var corsDomains = environment.getProperty("twigs.cors.domains", "*");
-                    corsConfig.setAllowedOrigins(Arrays.asList(corsDomains.split(",")));
-                    corsConfig.setAllowedMethods(
-                            Stream.of(
-                                            HttpMethod.GET,
-                                            HttpMethod.POST,
-                                            HttpMethod.PUT,
-                                            HttpMethod.DELETE,
-                                            HttpMethod.OPTIONS
-                                    )
-                                    .map(Enum::name)
-                                    .collect(Collectors.toList())
-                    );
-                    corsConfig.setAllowCredentials(true);
-                    return corsConfig;
-                })
-                .and()
-                .csrf()
-                .disable()
-                .addFilter(new TokenAuthenticationFilter(authenticationManager()))
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    @Bean
+    public AuthenticationManager getAuthenticationManager(AuthenticationConfiguration auth) throws Exception {
+        return auth.getAuthenticationManager();
     }
 }
-

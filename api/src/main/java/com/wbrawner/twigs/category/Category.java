@@ -1,8 +1,7 @@
 package com.wbrawner.twigs.category;
 
 import com.wbrawner.twigs.budget.Budget;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import static com.wbrawner.twigs.Utils.randomId;
 

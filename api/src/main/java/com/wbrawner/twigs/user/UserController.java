@@ -7,6 +7,7 @@ import com.wbrawner.twigs.permission.UserPermissionResponse;
 import com.wbrawner.twigs.session.Session;
 import com.wbrawner.twigs.session.SessionResponse;
 import com.wbrawner.twigs.session.UserSessionRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

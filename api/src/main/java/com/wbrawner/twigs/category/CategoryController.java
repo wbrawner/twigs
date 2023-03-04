@@ -5,6 +5,7 @@ import com.wbrawner.twigs.permission.Permission;
 import com.wbrawner.twigs.permission.UserPermission;
 import com.wbrawner.twigs.permission.UserPermissionRepository;
 import com.wbrawner.twigs.transaction.TransactionRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 

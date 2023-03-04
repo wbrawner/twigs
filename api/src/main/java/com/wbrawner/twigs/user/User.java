@@ -1,20 +1,20 @@
 package com.wbrawner.twigs.user;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static com.wbrawner.twigs.Utils.randomId;
 
-@Entity
+@Entity(name = "users")
 public class User implements UserDetails {
     @Id
     private final String id = randomId();

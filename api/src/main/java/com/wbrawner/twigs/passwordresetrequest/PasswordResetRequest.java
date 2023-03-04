@@ -1,8 +1,10 @@
 package com.wbrawner.twigs.passwordresetrequest;
 
 import com.wbrawner.twigs.user.User;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 
-import javax.persistence.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 

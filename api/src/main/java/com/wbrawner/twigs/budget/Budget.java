@@ -2,8 +2,10 @@ package com.wbrawner.twigs.budget;
 
 import com.wbrawner.twigs.category.Category;
 import com.wbrawner.twigs.transaction.Transaction;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
-import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;

@@ -3,8 +3,11 @@ package com.wbrawner.twigs.transaction;
 import com.wbrawner.twigs.budget.Budget;
 import com.wbrawner.twigs.category.Category;
 import com.wbrawner.twigs.user.User;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
-import javax.persistence.*;
 import java.time.Instant;
 
 import static com.wbrawner.twigs.Utils.randomId;

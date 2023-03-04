@@ -6,6 +6,7 @@ import com.wbrawner.twigs.category.CategoryRepository;
 import com.wbrawner.twigs.permission.Permission;
 import com.wbrawner.twigs.permission.UserPermission;
 import com.wbrawner.twigs.permission.UserPermissionRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
