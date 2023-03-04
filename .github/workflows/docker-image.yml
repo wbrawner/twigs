@@ -3,7 +3,7 @@ on:
   push:
     branches: main
     tags:
-        - '*'
+      - '*'
 
 jobs:
   push_to_registry:
@@ -17,7 +17,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/wbrawner/twigs-server
+            ghcr.io/wbrawner/twigs
           tags: |
             type=schedule
             type=ref,event=branch
