@@ -2,6 +2,7 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.RecurringTransaction
 import kotlinx.serialization.Serializable
+import java.time.temporal.ChronoUnit
 
 @Serializable
 data class RecurringTransactionRequest(
@@ -36,8 +37,8 @@ fun RecurringTransaction.asResponse(): RecurringTransactionResponse = RecurringT
     title = title,
     description = description,
     frequency = frequency.toString(),
-    start = start.toString(),
-    finish = finish?.toString(),
+    start = start.truncatedTo(ChronoUnit.SECONDS).toString(),
+    finish = finish?.truncatedTo(ChronoUnit.SECONDS)?.toString(),
     amount = amount,
     expense = expense,
     budgetId = budgetId,
