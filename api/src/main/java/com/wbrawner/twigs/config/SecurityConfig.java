@@ -80,7 +80,7 @@ public class SecurityConfig {
         return httpSecurity.authorizeHttpRequests((authz) -> {
                     try {
                         authz
-                                .requestMatchers("/users", "/users/login")
+                                .requestMatchers("/api/users/register", "/api/users/login")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
@@ -110,8 +110,7 @@ public class SecurityConfig {
                                 })
                                 .and()
                                 .csrf()
-                                .ignoringRequestMatchers("/users", "/users/login")
-                                .and()
+                                .disable()
                                 .addFilter(new TokenAuthenticationFilter(authenticationManager))
                                 .sessionManagement()
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

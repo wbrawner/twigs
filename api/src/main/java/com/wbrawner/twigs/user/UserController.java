@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import static com.wbrawner.twigs.Utils.getCurrentUser;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @Transactional
 public class UserController {
     private final BudgetRepository budgetRepository;
@@ -117,7 +117,7 @@ public class UserController {
     }
 
     @PostMapping(
-            path = "",
+            path = "/register",
             consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
@@ -143,8 +143,9 @@ public class UserController {
             consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody UpdateUserRequest request) {
-        if (!getCurrentUser().getId().equals(id)) {
+    ResponseEntity<Object> updateUser(@PathVariable String id, @RequestBody UpdateUserRequest request) {
+        var currentUser = getCurrentUser();
+        if (currentUser == null || !currentUser.getId().equals(id)) {
             return ResponseEntity.status(403).build();
         }
         var user = userRepository.findById(getCurrentUser().getId()).orElse(null);
@@ -174,7 +175,8 @@ public class UserController {
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
     ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        if (!getCurrentUser().getId().equals(id)) {
+        var currentUser = getCurrentUser();
+        if (currentUser == null || !currentUser.getId().equals(id)) {
             return ResponseEntity.status(403).build();
         }
         userRepository.deleteById(id);
