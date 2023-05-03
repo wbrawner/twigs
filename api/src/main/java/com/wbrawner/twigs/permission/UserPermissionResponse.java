@@ -1,21 +1,21 @@
 package com.wbrawner.twigs.permission;
 
-import com.wbrawner.twigs.user.UserResponse;
+import com.wbrawner.twigs.user.User;
 
 public class UserPermissionResponse {
-    private final UserResponse user;
+    private final String user;
     private final Permission permission;
 
     public UserPermissionResponse(UserPermission userPermission) {
-        this(new UserResponse(userPermission.getUser()), userPermission.getPermission());
+        this(userPermission.getUser(), userPermission.getPermission());
     }
 
-    public UserPermissionResponse(UserResponse userResponse, Permission permission) {
-        this.user = userResponse;
+    public UserPermissionResponse(User user, Permission permission) {
+        this.user = user.getId();
         this.permission = permission;
     }
 
-    public UserResponse getUser() {
+    public String getUser() {
         return user;
     }
 

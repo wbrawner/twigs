@@ -44,4 +44,6 @@ public interface TransactionRepository extends CrudRepository<Transaction, Strin
             value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE category_id = :categoryId AND expense = 0 AND date > :start), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE category_id = :categoryId AND expense = 1 AND date > :start), 0));"
     )
     Long sumBalanceByCategoryId(String categoryId, Date start);
+
+    void deleteAllByBudget(Budget budget);
 }

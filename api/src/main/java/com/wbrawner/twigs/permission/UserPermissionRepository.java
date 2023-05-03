@@ -20,4 +20,6 @@ public interface UserPermissionRepository extends CrudRepository<UserPermission,
     List<UserPermission> findAllByUserAndBudget(User user, Budget budget, Pageable pageable);
 
     List<UserPermission> findAllByUserAndBudget_IdIn(User user, List<String> budgetIds, Pageable pageable);
+
+    void deleteAllByBudget(Budget budget);
 }

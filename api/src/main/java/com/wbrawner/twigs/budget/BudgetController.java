@@ -1,5 +1,6 @@
 package com.wbrawner.twigs.budget;
 
+import com.wbrawner.twigs.category.CategoryRepository;
 import com.wbrawner.twigs.permission.Permission;
 import com.wbrawner.twigs.permission.UserPermission;
 import com.wbrawner.twigs.permission.UserPermissionRepository;
@@ -24,10 +25,11 @@ import java.util.stream.Collectors;
 import static com.wbrawner.twigs.Utils.getCurrentUser;
 
 @RestController
-@RequestMapping(value = "/budgets")
+@RequestMapping(value = "/api/budgets")
 @Transactional
 public class BudgetController {
     private final BudgetRepository budgetRepository;
+    private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final UserPermissionRepository userPermissionsRepository;
@@ -35,11 +37,13 @@ public class BudgetController {
 
     public BudgetController(
             BudgetRepository budgetRepository,
+            CategoryRepository categoryRepository,
             TransactionRepository transactionRepository,
             UserRepository userRepository,
             UserPermissionRepository userPermissionsRepository
     ) {
         this.budgetRepository = budgetRepository;
+        this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.userPermissionsRepository = userPermissionsRepository;
@@ -150,6 +154,7 @@ public class BudgetController {
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     public ResponseEntity<BudgetResponse> updateBudget(@PathVariable String id, @RequestBody BudgetRequest request) {
+        // TODO: Make sure no changes in ownership are being attempted (except by the owner)
         return getBudgetWithPermission(id, Permission.MANAGE, (budget) -> {
             if (request.name != null) {
                 budget.setName(request.name);
@@ -171,7 +176,8 @@ public class BudgetController {
                                         )
                                 ))
                         ));
-            } else {
+            }
+            if (users.isEmpty()) {
                 users.addAll(userPermissionsRepository.findAllByBudget(budget, null));
             }
 
@@ -179,11 +185,14 @@ public class BudgetController {
         });
     }
 
-    @DeleteMapping(value = "/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteBudget(@PathVariable String id) {
         return getBudgetWithPermission(id, Permission.MANAGE, (budget) -> {
+            categoryRepository.deleteAllByBudget(budget);
+            transactionRepository.deleteAllByBudget(budget);
+            userPermissionsRepository.deleteAllByBudget(budget);
             budgetRepository.delete(budget);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         });
     }
 

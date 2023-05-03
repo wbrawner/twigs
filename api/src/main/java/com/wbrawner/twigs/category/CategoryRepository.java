@@ -21,4 +21,6 @@ public interface CategoryRepository extends CrudRepository<Category, String>,
     Optional<Category> findByBudgetAndId(Budget budget, String id);
 
     List<Category> findAllByBudgetInAndIdIn(List<Budget> budgets, List<String> ids, Pageable pageable);
+
+    void deleteAllByBudget(Budget budget);
 }
