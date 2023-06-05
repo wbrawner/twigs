@@ -20,7 +20,7 @@ import static com.wbrawner.twigs.Utils.getCurrentUser;
 import static com.wbrawner.twigs.Utils.getFirstOfMonth;
 
 @RestController
-@RequestMapping(path = "/categories")
+@RequestMapping(path = "/api/categories")
 @Transactional
 class CategoryController {
     private final CategoryRepository categoryRepository;
