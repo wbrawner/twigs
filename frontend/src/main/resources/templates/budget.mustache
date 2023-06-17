@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+{{> head}}
+<body>
+<h1>{{ budget.name }}</h1>
+<p>Twigs is a self-hosted personal finance application for families.</p>
+<div class="buttons">
+    <a class="button" href="/login">Login</a>
+    {{#registration_enabled}}
+        <a class="button secondary" href="/register">Register</a>
+    {{/registration_enabled}}
+</div>
+</body>
+</html>

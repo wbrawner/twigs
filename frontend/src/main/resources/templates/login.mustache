@@ -5,14 +5,63 @@
 <h1>Login</h1>
 <p>Login to view and manage your budgets</p>
 <form id="login" method="post" action="/login">
-    {{#error}}
-        <p class="error">{{error}}</p>
-    {{/error}}
+    <p id="error" class="error"></p>
     <label for="username">Username</label>
     <input id="username" type="username" name="username" placeholder="myuser" required/>
     <label for="password">Password</label>
     <input id="password" type="password" name="password" placeholder="mypass" required/>
     <input id="submit" type="submit" value="Login"/>
 </form>
+<script type="text/javascript">
+    const error = document.getElementById('error')
+    const form = document.getElementById('login')
+    const username = document.getElementById('username')
+    const password = document.getElementById('password')
+
+    async function login(username, password) {
+        try {
+            const response = await fetch(
+                    '/api/users/login',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password,
+                        })
+                    }
+            )
+            if (!response.ok) {
+                const err = await response.json()
+                console.error('Login failed:', err)
+                if (err.message) {
+                    error.innerText = err.message
+                } else {
+                    error.innerText = 'Login failed. Please try again later.'
+                }
+            } else {
+                const json = await response.json()
+                localStorage.setItem('userId', json.userId)
+                localStorage.setItem('token', json.token)
+                window.location.href = '/budgets'
+            }
+        } catch (err) {
+            console.error('Login failed:', err)
+            if (err.message) {
+                error.innerText = err.message
+            } else {
+                error.innerText = 'Login failed. Please try again later.'
+            }
+        }
+    }
+
+    form.onsubmit = async (e) => {
+        e.preventDefault()
+        error.innerText = ''
+        await login(username.value, password.value)
+    }
+</script>
 </body>
 </html>

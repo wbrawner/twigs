@@ -2,12 +2,10 @@
 <html>
 {{> head}}
 <body>
-<h1>Login</h1>
-<p>Login to view and manage your budgets</p>
+<h1>Register</h1>
+<p>Register an account to manage your budgets</p>
 <form id="register" method="post" action="/register">
-    {{#error}}
-        <p class="error">{{error}}</p>
-    {{/error}}
+    <p id="error" class="error"></p>
     <label for="username">Username</label>
     <input id="username" type="text" name="username" placeholder="myuser" required/>
     <label for="email">Email</label>
@@ -18,5 +16,99 @@
     <input id="confirm-password" type="password" name="confirm-password" placeholder="mypass" required/>
     <input id="submit" type="submit" value="Register"/>
 </form>
+<script type="text/javascript">
+    const error = document.getElementById('error')
+    const form = document.getElementById('register')
+    const username = document.getElementById('username')
+    const email = document.getElementById('email')
+    const password = document.getElementById('password')
+    const confirmPassword = document.getElementById('confirm-password')
+
+    async function register(username, email, password) {
+        try {
+            const response = await fetch(
+                    '/api/users/register',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            email: email,
+                            password: password,
+                        })
+                    }
+            )
+            if (!response.ok) {
+                const err = await response.json()
+                console.error('Registration failed:', err)
+                if (err.message) {
+                    error.innerText = err.message
+                } else {
+                    error.innerText = 'Registration failed. Please try again later.'
+                }
+            } else {
+                login(username, password)
+            }
+        } catch (err) {
+            console.error('Registration failed:', err)
+            if (err.message) {
+                error.innerText = err.message
+            } else {
+                error.innerText = 'Registration failed. Please try again later.'
+            }
+        }
+    }
+
+    async function login(username, password) {
+        try {
+            const response = await fetch(
+                    '/api/users/login',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password,
+                        })
+                    }
+            )
+            if (!response.ok) {
+                const err = await response.json()
+                console.error('Login failed:', err)
+                if (err.message) {
+                    error.innerText = err.message
+                } else {
+                    error.innerText = 'Login failed. Please try again later.'
+                }
+            } else {
+                const json = await response.json()
+                localStorage.setItem('userId', json.userId)
+                localStorage.setItem('token', json.token)
+                window.location.href = '/budgets'
+            }
+        } catch (err) {
+            console.error('Login failed:', err)
+            if (err.message) {
+                error.innerText = err.message
+            } else {
+                error.innerText = 'Login failed. Please try again later.'
+            }
+        }
+    }
+
+    form.onsubmit = async (e) => {
+        e.preventDefault()
+        if (password.value !== confirmPassword.value) {
+            error.innerText = 'Passwords do not match'
+            return
+        }
+        error.innerText = ''
+        await register(username.value, email.value, password.value)
+    }
+</script>
 </body>
 </html>
