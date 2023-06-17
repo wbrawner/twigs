@@ -16,25 +16,25 @@ import io.ktor.server.routing.*
 import java.time.Instant
 
 fun Application.userRoutes(
-    emailService: EmailService,
-    passwordResetRepository: PasswordResetRepository,
-    permissionRepository: PermissionRepository,
-    sessionRepository: SessionRepository,
-    userRepository: UserRepository
+        emailService: EmailService,
+        passwordResetRepository: PasswordResetRepository,
+        permissionRepository: PermissionRepository,
+        sessionRepository: SessionRepository,
+        userRepository: UserRepository
 ) {
     routing {
         route("/api/users") {
             post("/login") {
                 val request = call.receive<LoginRequest>()
                 val user =
-                    userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
-                        .firstOrNull()
-                        ?: userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
-                            .firstOrNull()
-                        ?: run {
-                            errorResponse(HttpStatusCode.Unauthorized, "Invalid credentials")
-                            return@post
-                        }
+                        userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
+                                .firstOrNull()
+                                ?: userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
+                                        .firstOrNull()
+                                ?: run {
+                                    errorResponse(HttpStatusCode.Unauthorized, "Invalid credentials")
+                                    return@post
+                                }
                 val session = sessionRepository.save(Session(userId = user.id))
                 call.respond(session.asResponse())
             }
@@ -49,14 +49,26 @@ fun Application.userRoutes(
                     errorResponse(HttpStatusCode.BadRequest, "Password must not be null or blank")
                     return@post
                 }
+                val existingUser = userRepository.findAll(nameOrEmail = request.username).firstOrNull()
+                        ?: request.email?.let {
+                            return@let if (it.isBlank()) {
+                                null
+                            } else {
+                                userRepository.findAll(nameOrEmail = it).firstOrNull()
+                            }
+                        }
+                existingUser?.let {
+                    errorResponse(HttpStatusCode.BadRequest, "Username or email already taken")
+                    return@post
+                }
                 call.respond(
-                    userRepository.save(
-                        User(
-                            name = request.username,
-                            password = request.password.hash(),
-                            email = request.email
-                        )
-                    ).asResponse()
+                        userRepository.save(
+                                User(
+                                        name = request.username,
+                                        password = request.password.hash(),
+                                        email = if (request.email.isNullOrBlank()) null else request.email
+                                )
+                        ).asResponse()
                 )
             }
 
@@ -68,20 +80,20 @@ fun Application.userRoutes(
                         return@get
                     }
                     permissionRepository.findAll(
-                        budgetIds = call.request.queryParameters.getAll("budgetId")
+                            budgetIds = call.request.queryParameters.getAll("budgetId")
                     ).mapNotNull {
                         userRepository.findAll(ids = listOf(it.userId))
-                            .firstOrNull()
-                            ?.asResponse()
+                                .firstOrNull()
+                                ?.asResponse()
                     }.run { call.respond(this) }
                 }
 
                 get("/{id}") {
                     userRepository.findAll(ids = call.parameters.getAll("id"))
-                        .firstOrNull()
-                        ?.asResponse()
-                        ?.let { call.respond(it) }
-                        ?: errorResponse(HttpStatusCode.NotFound)
+                            .firstOrNull()
+                            ?.asResponse()
+                            ?.let { call.respond(it) }
+                            ?: errorResponse(HttpStatusCode.NotFound)
                 }
 
                 post {
@@ -95,13 +107,13 @@ fun Application.userRoutes(
                         return@post
                     }
                     call.respond(
-                        userRepository.save(
-                            User(
-                                name = request.username,
-                                password = request.password,
-                                email = request.email
-                            )
-                        ).asResponse()
+                            userRepository.save(
+                                    User(
+                                            name = request.username,
+                                            password = request.password,
+                                            email = request.email
+                                    )
+                            ).asResponse()
                     )
                 }
 
@@ -114,17 +126,17 @@ fun Application.userRoutes(
                         return@put
                     }
                     call.respond(
-                        userRepository.save(
-                            userRepository.findAll(ids = call.parameters.getAll("id"))
-                                .first()
-                                .run {
-                                    copy(
-                                        name = request.username ?: name,
-                                        password = request.password?.hash() ?: password,
-                                        email = request.email ?: email
-                                    )
-                                }
-                        ).asResponse()
+                            userRepository.save(
+                                    userRepository.findAll(ids = call.parameters.getAll("id"))
+                                            .first()
+                                            .run {
+                                                copy(
+                                                        name = request.username ?: name,
+                                                        password = request.password?.hash() ?: password,
+                                                        email = request.email ?: email
+                                                )
+                                            }
+                            ).asResponse()
                     )
                 }
 
@@ -150,12 +162,12 @@ fun Application.userRoutes(
             post {
                 val request = call.receive<ResetPasswordRequest>()
                 userRepository.findAll(nameOrEmail = request.username)
-                    .firstOrNull()
-                    ?.let {
-                        val email = it.email ?: return@let
-                        val passwordResetToken = passwordResetRepository.save(PasswordResetToken(userId = it.id))
-                        emailService.sendPasswordResetEmail(passwordResetToken, email)
-                    }
+                        .firstOrNull()
+                        ?.let {
+                            val email = it.email ?: return@let
+                            val passwordResetToken = passwordResetRepository.save(PasswordResetToken(userId = it.id))
+                            emailService.sendPasswordResetEmail(passwordResetToken, email)
+                        }
                 call.respond(HttpStatusCode.Accepted)
             }
         }
@@ -164,25 +176,25 @@ fun Application.userRoutes(
             post {
                 val request = call.receive<PasswordResetRequest>()
                 val passwordResetToken = passwordResetRepository.findAll(listOf(request.token))
-                    .firstOrNull()
-                    ?: run {
-                        errorResponse(HttpStatusCode.Unauthorized, "Invalid token")
-                        return@post
-                    }
+                        .firstOrNull()
+                        ?: run {
+                            errorResponse(HttpStatusCode.Unauthorized, "Invalid token")
+                            return@post
+                        }
                 if (passwordResetToken.expiration.isBefore(Instant.now())) {
                     errorResponse(HttpStatusCode.Unauthorized, "Token expired")
                     return@post
                 }
                 userRepository.findAll(listOf(passwordResetToken.userId))
-                    .firstOrNull()
-                    ?.let {
-                        userRepository.save(it.copy(password = request.password.hash()))
-                        passwordResetRepository.delete(passwordResetToken)
-                    }
-                    ?: run {
-                        errorResponse(HttpStatusCode.InternalServerError, "Invalid token")
-                        return@post
-                    }
+                        .firstOrNull()
+                        ?.let {
+                            userRepository.save(it.copy(password = request.password.hash()))
+                            passwordResetRepository.delete(passwordResetToken)
+                        }
+                        ?: run {
+                            errorResponse(HttpStatusCode.InternalServerError, "Invalid token")
+                            return@post
+                        }
                 call.respond(HttpStatusCode.NoContent)
             }
         }
