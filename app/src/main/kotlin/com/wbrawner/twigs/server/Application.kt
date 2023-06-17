@@ -92,24 +92,6 @@ fun Application.moduleWithDependencies(
                     }
             }
         }
-        session<Session>("auth-cookie") {
-            challenge { session ->
-                call.application.log.info("Challenge session: $session")
-                call.respond(HttpStatusCode.Unauthorized)
-            }
-            validate { session ->
-                application.log.info("Validate session: $session")
-                sessionRepository.findAll(session.token)
-                    .firstOrNull()
-                    ?.let { storedSession ->
-                        if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
-                            sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
-                        } else {
-                            null
-                        }
-                    }
-            }
-        }
     }
     install(Sessions) {
         cookie<Session>("twigs_session") {
