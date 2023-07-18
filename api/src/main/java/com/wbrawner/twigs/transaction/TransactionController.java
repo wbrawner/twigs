@@ -17,13 +17,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.wbrawner.twigs.Utils.*;
 
 @RestController
-@RequestMapping(path = "/transactions")
+@RequestMapping(path = "/api/transactions")
 @Transactional
 public class TransactionController {
     private final CategoryRepository categoryRepository;
@@ -239,5 +241,95 @@ public class TransactionController {
         }
         transactionRepository.delete(transaction);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/sum", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<BalanceResponse> getSum(
+            @RequestParam(value = "budgetId", required = false) String budgetId,
+            @RequestParam(value = "categoryId", required = false) String categoryId,
+            @RequestParam(value = "from", required = false) String from,
+            @RequestParam(value = "to", required = false) String to
+    ) {
+        var user = getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Instant fromInstant;
+        try {
+            fromInstant = Instant.parse(from);
+        } catch (Exception e) {
+            if (!(e instanceof NullPointerException)) {
+                logger.error("Failed to parse '" + from + "' to Instant for 'from' parameter", e);
+            }
+            fromInstant = Instant.ofEpochSecond(0);
+        }
+        Instant toInstant;
+        try {
+            toInstant = Instant.parse(to);
+        } catch (Exception e) {
+            if (!(e instanceof NullPointerException)) {
+                logger.error("Failed to parse '" + to + "' to Instant for 'to' parameter", e);
+            }
+            toInstant = Instant.now();
+        }
+
+        if (((budgetId == null || budgetId.isBlank())
+                && (categoryId == null || categoryId.isBlank()))
+                || (budgetId != null && !budgetId.isEmpty() && categoryId != null && !categoryId.isBlank())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Transaction> transactions;
+        if (categoryId != null) {
+            var budgets = userPermissionsRepository.findAllByUser(user, null)
+                    .stream()
+                    .map(UserPermission::getBudget)
+                    .collect(Collectors.toList());
+            var category = categoryRepository.findByBudgetInAndId(budgets, categoryId).orElse(null);
+            if (category == null) {
+                return ResponseEntity.notFound().build();
+            }
+            transactions = transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
+                    Collections.emptyList(),
+                    List.of(category),
+                    fromInstant,
+                    toInstant,
+                    null
+            );
+            AtomicLong balance = new AtomicLong(0L);
+            transactions.forEach(transaction -> {
+                if (transaction.getExpense()) {
+                    balance.addAndGet(transaction.getAmount() * -1);
+                } else {
+                    balance.addAndGet(transaction.getAmount());
+                }
+            });
+            return ResponseEntity.ok(new BalanceResponse(categoryId, balance.get()));
+        } else {
+            var userPermission = userPermissionsRepository.findByUserAndBudget_Id(user, budgetId).orElse(null);
+            if (userPermission == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            if (userPermission.getPermission().isNotAtLeast(Permission.READ)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            transactions = transactionRepository.findAllByBudgetInAndDateGreaterThanAndDateLessThan(
+                    List.of(userPermission.getBudget()),
+                    fromInstant,
+                    toInstant,
+                    null
+            );
+            AtomicLong balance = new AtomicLong(0L);
+            transactions.forEach(transaction -> {
+                if (transaction.getExpense()) {
+                    balance.addAndGet(transaction.getAmount() * -1);
+                } else {
+                    balance.addAndGet(transaction.getAmount());
+                }
+            });
+            return ResponseEntity.ok(new BalanceResponse(budgetId, balance.get()));
+        }
     }
 }

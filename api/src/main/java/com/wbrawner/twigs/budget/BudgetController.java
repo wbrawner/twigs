@@ -84,36 +84,6 @@ public class BudgetController {
         );
     }
 
-    @GetMapping(value = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<BudgetBalanceResponse> getBudgetBalance(
-            @PathVariable String id,
-            @RequestParam(value = "from", required = false) String from,
-            @RequestParam(value = "to", required = false) String to
-    ) {
-        return getBudgetWithPermission(id, Permission.READ, (budget) -> {
-            Instant fromInstant;
-            try {
-                fromInstant = Instant.parse(from);
-            } catch (Exception e) {
-                if (!(e instanceof NullPointerException)) {
-                    logger.error("Failed to parse '" + from + "' to Instant for 'from' parameter", e);
-                }
-                fromInstant = Instant.ofEpochSecond(0);
-            }
-            Instant toInstant;
-            try {
-                toInstant = Instant.parse(to);
-            } catch (Exception e) {
-                if (!(e instanceof NullPointerException)) {
-                    logger.error("Failed to parse '" + to + "' to Instant for 'to' parameter", e);
-                }
-                toInstant = Instant.now();
-            }
-            var balance = transactionRepository.sumBalanceByBudgetId(budget.getId(), fromInstant, toInstant);
-            return ResponseEntity.ok(new BudgetBalanceResponse(budget.getId(), balance));
-        });
-    }
-
     @PostMapping(
             value = "",
             consumes = {MediaType.APPLICATION_JSON_VALUE},

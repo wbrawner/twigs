@@ -33,17 +33,5 @@ public interface TransactionRepository extends CrudRepository<Transaction, Strin
 
     List<Transaction> findAllByBudgetAndCategory(Budget budget, Category category);
 
-    @Query(
-            nativeQuery = true,
-            value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE Budget_id = :BudgetId AND expense = 0 AND date >= :from AND date <= :to), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE Budget_id = :BudgetId AND expense = 1 AND date >= :from AND date <= :to), 0));"
-    )
-    Long sumBalanceByBudgetId(String BudgetId, Instant from, Instant to);
-
-    @Query(
-            nativeQuery = true,
-            value = "SELECT (COALESCE((SELECT SUM(amount) from transaction WHERE category_id = :categoryId AND expense = 0 AND date > :start), 0)) - (COALESCE((SELECT SUM(amount) from transaction WHERE category_id = :categoryId AND expense = 1 AND date > :start), 0));"
-    )
-    Long sumBalanceByCategoryId(String categoryId, Date start);
-
     void deleteAllByBudget(Budget budget);
 }

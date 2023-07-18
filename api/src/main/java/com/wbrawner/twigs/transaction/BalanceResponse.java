@@ -1,10 +1,10 @@
-package com.wbrawner.twigs.category;
+package com.wbrawner.twigs.transaction;
 
-public class CategoryBalanceResponse {
+public class BalanceResponse {
     private final String id;
     private final long balance;
 
-    public CategoryBalanceResponse(String id, long balance) {
+    public BalanceResponse(String id, long balance) {
         this.id = id;
         this.balance = balance;
     }

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.wbrawner.twigs.Utils.getCurrentUser;
-import static com.wbrawner.twigs.Utils.getFirstOfMonth;
 
 @RestController
 @RequestMapping(path = "/api/categories")
@@ -87,20 +86,6 @@ class CategoryController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(new CategoryResponse(category));
-    }
-
-    @GetMapping(path = "/{id}/balance", produces = {MediaType.APPLICATION_JSON_VALUE})
-    ResponseEntity<CategoryBalanceResponse> getCategoryBalance(@PathVariable String id) {
-        var budgets = userPermissionsRepository.findAllByUser(getCurrentUser(), null)
-                .stream()
-                .map(UserPermission::getBudget)
-                .collect(Collectors.toList());
-        var category = categoryRepository.findByBudgetInAndId(budgets, id).orElse(null);
-        if (category == null) {
-            return ResponseEntity.notFound().build();
-        }
-        var sum = transactionRepository.sumBalanceByCategoryId(category.getId(), getFirstOfMonth());
-        return ResponseEntity.ok(new CategoryBalanceResponse(category.getId(), sum));
     }
 
     @PostMapping(
