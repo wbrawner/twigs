@@ -291,7 +291,7 @@ public class TransactionController {
                 return ResponseEntity.notFound().build();
             }
             transactions = transactionRepository.findAllByBudgetInAndCategoryInAndDateGreaterThanAndDateLessThan(
-                    Collections.emptyList(),
+                    List.of(category.getBudget()),
                     List.of(category),
                     fromInstant,
                     toInstant,
