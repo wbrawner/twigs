@@ -1,4 +1,4 @@
-package com.wbrawner.twigs.passwordresetrequest;
+package com.wbrawner.twigs.user;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 

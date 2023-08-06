@@ -1,5 +1,6 @@
 package com.wbrawner.twigs.config;
 
+import com.wbrawner.twigs.Utils;
 import com.wbrawner.twigs.session.UserSessionRepository;
 import com.wbrawner.twigs.user.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -47,7 +48,7 @@ public class TokenAuthenticationProvider extends DaoAuthenticationProvider {
             new Thread(() -> {
                 // Update the session on a background thread to avoid holding up the request longer than necessary
                 var updatedSession = session.get();
-                updatedSession.setExpiration(twoWeeksFromNow());
+                updatedSession.setExpiration(Utils.twoWeeksFromNow());
                 userSessionRepository.save(updatedSession);
             }).start();
             return new SessionAuthenticationToken(

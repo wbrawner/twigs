@@ -4,3 +4,6 @@
 
 rootProject.name = 'twigs'
 include ':api'
+include 'app'
+include 'core'
+

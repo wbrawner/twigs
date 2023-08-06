@@ -1,5 +1,6 @@
 package com.wbrawner.twigs.budget;
 
+import com.wbrawner.twigs.Utils;
 import com.wbrawner.twigs.category.Category;
 import com.wbrawner.twigs.transaction.Transaction;
 import jakarta.persistence.Entity;
@@ -15,7 +16,7 @@ import static com.wbrawner.twigs.Utils.randomId;
 @Entity
 public class Budget {
     @Id
-    private String id = randomId();
+    private String id = Utils.randomId();
     private String name;
     private String description;
     private String currencyCode;

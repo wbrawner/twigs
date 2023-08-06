@@ -1,6 +1,6 @@
 package com.wbrawner.twigs.config;
 
-import com.wbrawner.twigs.passwordresetrequest.PasswordResetRequestRepository;
+import com.wbrawner.twigs.user.PasswordResetRequestRepository;
 import com.wbrawner.twigs.session.UserSessionRepository;
 import com.wbrawner.twigs.user.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
@@ -80,10 +79,12 @@ public class SecurityConfig {
         return httpSecurity.authorizeHttpRequests((authz) -> {
                     try {
                         authz
-                                .requestMatchers("/api/users/register", "/api/users/login")
-                                .permitAll()
-                                .anyRequest()
+                                .requestMatchers(
+                                        "/api/^(users/register|users/login)"
+                                )
                                 .authenticated()
+                                .anyRequest()
+                                .permitAll()
                                 .and()
                                 .httpBasic()
                                 .authenticationEntryPoint(new SilentAuthenticationEntryPoint())
@@ -111,9 +112,7 @@ public class SecurityConfig {
                                 .and()
                                 .csrf()
                                 .disable()
-                                .addFilter(new TokenAuthenticationFilter(authenticationManager))
-                                .sessionManagement()
-                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                                .addFilter(new TokenAuthenticationFilter(authenticationManager));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

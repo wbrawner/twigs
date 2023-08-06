@@ -9,6 +9,7 @@ import com.wbrawner.twigs.session.SessionResponse;
 import com.wbrawner.twigs.session.UserSessionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +35,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final UserPermissionRepository userPermissionsRepository;
     private final UserSessionRepository userSessionRepository;
+    private final UserService userService;
     private final DaoAuthenticationProvider authenticationProvider;
 
     @Autowired
@@ -43,13 +45,14 @@ public class UserController {
             UserSessionRepository userSessionRepository,
             PasswordEncoder passwordEncoder,
             UserPermissionRepository userPermissionsRepository,
-            DaoAuthenticationProvider authenticationProvider
+            UserService userService, DaoAuthenticationProvider authenticationProvider
     ) {
         this.budgetRepository = budgetRepository;
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
         this.passwordEncoder = passwordEncoder;
         this.userPermissionsRepository = userPermissionsRepository;
+        this.userService = userService;
         this.authenticationProvider = authenticationProvider;
     }
 
@@ -75,17 +78,13 @@ public class UserController {
 
     @PostMapping(path = "/login", produces = {MediaType.APPLICATION_JSON_VALUE})
     ResponseEntity<SessionResponse> login(@RequestBody LoginRequest request) {
-        var authReq = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
-        Authentication auth;
         try {
-            auth = authenticationProvider.authenticate(authReq);
+            return ResponseEntity.ok(new SessionResponse(
+                    userService.login(request.getUsername(), request.getPassword())
+            ));
         } catch (AuthenticationException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        var user = Objects.requireNonNull(getCurrentUser());
-        var session = userSessionRepository.save(new Session(user.getId()));
-        return ResponseEntity.ok(new SessionResponse(session));
     }
 
     @GetMapping(path = "/me", produces = {MediaType.APPLICATION_JSON_VALUE})

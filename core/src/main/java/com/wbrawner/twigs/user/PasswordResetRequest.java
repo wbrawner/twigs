@@ -1,4 +1,4 @@
-package com.wbrawner.twigs.passwordresetrequest;
+package com.wbrawner.twigs.user;
 
 import com.wbrawner.twigs.user.User;
 import jakarta.persistence.Entity;
