@@ -15,6 +15,7 @@ class MetadataRepository(dataSource: DataSource) :
             .getResource("/sql/$toVersion.sql")
             ?.readText()
             ?.split(";")
+            ?.filterNot { it.isBlank() }
             ?: throw Error("No migration found for version $toVersion")
         dataSource.connection.use { conn ->
             queries.forEach { query ->

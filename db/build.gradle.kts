@@ -8,7 +8,8 @@ val ktorVersion: String by rootProject.extra
 dependencies {
     implementation(kotlin("stdlib"))
     api(project(":storage"))
-    implementation(libs.postgres)
+    runtimeOnly(libs.postgres)
+    runtimeOnly(libs.sqlite)
     api(libs.hikari)
     implementation(libs.logback)
     testImplementation(libs.junit.jupiter.api)

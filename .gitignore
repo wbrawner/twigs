@@ -29,3 +29,5 @@ HELP.md
 .vscode/
 .gradle
 *.sql
+
+twigs.db

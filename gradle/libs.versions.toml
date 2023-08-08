@@ -7,8 +7,9 @@ kotlinx-coroutines = "1.6.2"
 ktor = "2.0.2"
 logback = "1.2.11"
 mail = "1.6.2"
-postgres = "42.3.4"
+postgres = "42.3.8"
 shadow = "7.0.0"
+sqlite = "3.42.0.0"
 
 [libraries]
 bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
@@ -30,6 +31,7 @@ ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = 
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mail = { module = "com.sun.mail:javax.mail", version.ref = "mail" }
 postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+sqlite = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
 
 [bundles]
 ktor-server = [

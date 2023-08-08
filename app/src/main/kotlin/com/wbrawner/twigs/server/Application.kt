@@ -23,6 +23,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
@@ -30,13 +31,25 @@ fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 private const val DATABASE_VERSION = 3
 
 fun Application.module() {
+    val dbType = environment.config.propertyOrNull("twigs.database.type")?.getString() ?: "sqlite"
     val dbHost = environment.config.propertyOrNull("twigs.database.host")?.getString() ?: "localhost"
     val dbPort = environment.config.propertyOrNull("twigs.database.port")?.getString() ?: "5432"
     val dbName = environment.config.propertyOrNull("twigs.database.name")?.getString() ?: "twigs"
     val dbUser = environment.config.propertyOrNull("twigs.database.user")?.getString() ?: "twigs"
     val dbPass = environment.config.propertyOrNull("twigs.database.password")?.getString() ?: "twigs"
-    val jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?stringtype=unspecified"
-    (LoggerFactory.getLogger("com.zaxxer.hikari") as ch.qos.logback.classic.Logger).level = Level.ERROR
+    val jdbcUrl = when (dbType) {
+        "postgresql" -> {
+            "jdbc:$dbType://$dbHost:$dbPort/$dbName?stringtype=unspecified"
+        }
+        "sqlite" -> {
+            Class.forName("org.sqlite.JDBC")
+            "jdbc:$dbType:$dbName"
+        }
+        else -> {
+            throw RuntimeException("Unsupported DB type: $dbType")
+        }
+    }
+    (LoggerFactory.getLogger("com.zaxxer.hikari") as ch.qos.logback.classic.Logger).level = Level.DEBUG
     HikariDataSource(HikariConfig().apply {
         setJdbcUrl(jdbcUrl)
         username = dbUser
