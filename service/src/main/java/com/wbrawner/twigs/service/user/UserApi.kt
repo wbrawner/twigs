@@ -1,4 +1,4 @@
-package com.wbrawner.twigs
+package com.wbrawner.twigs.service.user
 
 import com.wbrawner.twigs.model.PasswordResetToken
 import com.wbrawner.twigs.model.Permission

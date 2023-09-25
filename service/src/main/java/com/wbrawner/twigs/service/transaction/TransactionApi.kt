@@ -1,30 +1,26 @@
-package com.wbrawner.twigs
+package com.wbrawner.twigs.service.transaction
 
-import com.wbrawner.twigs.model.RecurringTransaction
+import com.wbrawner.twigs.model.Transaction
 import kotlinx.serialization.Serializable
 import java.time.temporal.ChronoUnit
 
 @Serializable
-data class RecurringTransactionRequest(
+data class TransactionRequest(
     val title: String? = null,
     val description: String? = null,
+    val date: String? = null,
     val amount: Long? = null,
     val categoryId: String? = null,
     val expense: Boolean? = null,
     val budgetId: String? = null,
-    val frequency: String,
-    val start: String? = null,
-    val finish: String? = null,
 )
 
 @Serializable
-data class RecurringTransactionResponse(
+data class TransactionResponse(
     val id: String,
     val title: String?,
     val description: String?,
-    val frequency: String,
-    val start: String,
-    val finish: String?,
+    val date: String,
     val amount: Long?,
     val expense: Boolean?,
     val budgetId: String,
@@ -32,13 +28,14 @@ data class RecurringTransactionResponse(
     val createdBy: String
 )
 
-fun RecurringTransaction.asResponse(): RecurringTransactionResponse = RecurringTransactionResponse(
+@Serializable
+data class BalanceResponse(val balance: Long)
+
+fun Transaction.asResponse(): TransactionResponse = TransactionResponse(
     id = id,
     title = title,
     description = description,
-    frequency = frequency.toString(),
-    start = start.truncatedTo(ChronoUnit.SECONDS).toString(),
-    finish = finish?.truncatedTo(ChronoUnit.SECONDS)?.toString(),
+    date = date.truncatedTo(ChronoUnit.SECONDS).toString(),
     amount = amount,
     expense = expense,
     budgetId = budgetId,
