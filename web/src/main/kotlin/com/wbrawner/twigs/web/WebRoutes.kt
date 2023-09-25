@@ -9,12 +9,12 @@ import io.ktor.server.routing.*
 fun Application.webRoutes() {
     routing {
         static {
-            resources("web")
+            resources()
             default("index.html")
         }
         intercept(ApplicationCallPipeline.Setup) {
             if (!call.request.path().startsWith("/api") && !call.request.path().matches(Regex(".*\\.\\w+$"))) {
-                call.resolveResource("web/index.html")?.let {
+                call.resolveResource("index.html")?.let {
                     call.respond(it)
                     return@intercept finish()
                 }
