@@ -1,4 +1,4 @@
-package com.wbrawner.twigs
+package com.wbrawner.twigs.service.category
 
 import com.wbrawner.twigs.model.Category
 import kotlinx.serialization.Serializable

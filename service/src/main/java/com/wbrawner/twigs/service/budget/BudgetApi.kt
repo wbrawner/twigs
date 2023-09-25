@@ -1,9 +1,10 @@
-package com.wbrawner.twigs
+package com.wbrawner.twigs.service.budget
 
 import com.wbrawner.twigs.model.Budget
 import com.wbrawner.twigs.model.UserPermission
+import com.wbrawner.twigs.service.user.UserPermissionRequest
+import com.wbrawner.twigs.service.user.UserPermissionResponse
 import kotlinx.serialization.Serializable
-import java.util.*
 
 @Serializable
 data class BudgetRequest(
@@ -20,7 +21,7 @@ data class BudgetResponse(
     val users: List<UserPermissionResponse>
 ) {
     constructor(budget: Budget, users: Iterable<UserPermission>) : this(
-        Objects.requireNonNull<String>(budget.id),
+        requireNotNull(budget.id),
         budget.name,
         budget.description,
         users.map { userPermission: UserPermission ->

@@ -1,11 +1,8 @@
 package com.wbrawner.twigs
 
-import com.wbrawner.twigs.model.Budget
-import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.Session
-import com.wbrawner.twigs.model.UserPermission
-import com.wbrawner.twigs.storage.BudgetRepository
-import com.wbrawner.twigs.storage.PermissionRepository
+import com.wbrawner.twigs.service.budget.BudgetRequest
+import com.wbrawner.twigs.service.budget.BudgetService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -13,111 +10,39 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.budgetRoutes(
-    budgetRepository: BudgetRepository,
-    permissionRepository: PermissionRepository
-) {
+fun Application.budgetRoutes(budgetService: BudgetService) {
     routing {
         route("/api/budgets") {
             authenticate(optional = false) {
                 get {
-                    val session = call.principal<Session>()!!
-                    val budgetIds = permissionRepository.findAll(userId = session.userId).map { it.budgetId }
-                    if (budgetIds.isEmpty()) {
-                        call.respond(emptyList<BudgetResponse>())
-                        return@get
-                    }
-                    val budgets = budgetRepository.findAll(ids = budgetIds).map {
-                        BudgetResponse(it, permissionRepository.findAll(budgetIds = listOf(it.id)))
-                    }
-                    call.respond(budgets)
+                    val session = requireNotNull(call.principal<Session>()) { "session is required" }
+                    call.respond(budgetService.budgetsForUser(userId = session.userId))
                 }
 
                 get("/{id}") {
-                    budgetWithPermission(
-                        budgetRepository,
-                        permissionRepository,
-                        call.parameters["id"]!!,
-                        Permission.READ
-                    ) { budget ->
-                        val users = permissionRepository.findAll(budgetIds = listOf(budget.id))
-                        call.respond(BudgetResponse(budget, users))
-                    }
+                    val session = requireNotNull(call.principal<Session>()) { "session is required" }
+                    val budgetId = requireNotNull(call.parameters["id"]) { "budgetId is required" }
+                    call.respond(budgetService.budget(budgetId = budgetId, userId = session.userId))
                 }
 
                 post {
                     val session = call.principal<Session>()!!
                     val request = call.receive<BudgetRequest>()
-                    if (request.name.isNullOrBlank()) {
-                        errorResponse(HttpStatusCode.BadRequest, "Name cannot be empty or null")
-                        return@post
-                    }
-                    val budget = budgetRepository.save(
-                        Budget(
-                            name = request.name,
-                            description = request.description
-                        )
-                    )
-                    val users = request.users?.map {
-                        permissionRepository.save(
-                            UserPermission(
-                                budgetId = budget.id,
-                                userId = it.user,
-                                permission = it.permission
-                            )
-                        )
-                    }?.toMutableSet() ?: mutableSetOf()
-                    if (users.none { it.userId == session.userId }) {
-                        users.add(
-                            permissionRepository.save(
-                                UserPermission(
-                                    budgetId = budget.id,
-                                    userId = session.userId,
-                                    permission = Permission.OWNER
-                                )
-                            )
-                        )
-                    }
-                    call.respond(BudgetResponse(budget, users))
+                    call.respond(budgetService.save(request = request, userId = session.userId))
                 }
 
                 put("/{id}") {
-                    budgetWithPermission(
-                        budgetRepository,
-                        permissionRepository,
-                        call.parameters["id"]!!,
-                        Permission.MANAGE
-                    ) { budget ->
-                        val request = call.receive<BudgetRequest>()
-                        val name = request.name ?: budget.name
-                        val description = request.description ?: budget.description
-                        val users = request.users?.map {
-                            permissionRepository.save(UserPermission(budget.id, it.user, it.permission))
-                        } ?: permissionRepository.findAll(budgetIds = listOf(budget.id))
-                        permissionRepository.findAll(budgetIds = listOf(budget.id)).forEach {
-                            if (it.permission != Permission.OWNER && users.none { userPermission -> userPermission.userId == it.userId }) {
-                                permissionRepository.delete(it)
-                            }
-                        }
-                        call.respond(
-                            BudgetResponse(
-                                budgetRepository.save(budget.copy(name = name, description = description)),
-                                users
-                            )
-                        )
-                    }
+                    val session = requireNotNull(call.principal<Session>()) { "session was null" }
+                    val request = call.receive<BudgetRequest>()
+                    val budgetId = requireNotNull(call.parameters["id"]) { "budgetId is required" }
+                    call.respond(budgetService.save(request = request, userId = session.id, budgetId = budgetId))
                 }
 
                 delete("/{id}") {
-                    budgetWithPermission(
-                        budgetRepository,
-                        permissionRepository,
-                        budgetId = call.parameters["id"]!!,
-                        Permission.OWNER
-                    ) { budget ->
-                        budgetRepository.delete(budget)
-                        call.respond(HttpStatusCode.NoContent)
-                    }
+                    val session = requireNotNull(call.principal<Session>()) { "session was null" }
+                    val budgetId = requireNotNull(call.parameters["id"]) { "budgetId is required" }
+                    budgetService.delete(budgetId = budgetId, userId = session.userId)
+                    call.respond(HttpStatusCode.NoContent)
                 }
             }
         }
