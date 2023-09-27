@@ -17,6 +17,8 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
 }
 
+val javaVersion = JavaVersion.VERSION_17
+
 allprojects {
     repositories {
         mavenLocal()
@@ -27,7 +29,11 @@ allprojects {
     }
     group = "com.wbrawner"
     version = "0.0.1-SNAPSHOT"
+    tasks.withType<JavaCompile> {
+        sourceCompatibility = javaVersion.majorVersion
+        targetCompatibility = javaVersion.majorVersion
+    }
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = javaVersion.majorVersion
     }
 }
