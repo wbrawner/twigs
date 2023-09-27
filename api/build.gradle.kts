@@ -11,8 +11,7 @@ dependencies {
     api(libs.ktor.server.core)
     api(libs.ktor.serialization)
     api(libs.kotlinx.coroutines.core)
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(project(":testhelpers"))
 }
 
 tasks.getByName<Test>("test") {

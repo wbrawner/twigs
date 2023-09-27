@@ -3,9 +3,9 @@ package com.wbrawner.twigs.server
 import com.wbrawner.twigs.model.*
 import com.wbrawner.twigs.storage.RecurringTransactionRepository
 import com.wbrawner.twigs.storage.TransactionRepository
-import com.wbrawner.twigs.test.helpers.repository.FakeRecurringTransactionsRepository
+import com.wbrawner.twigs.test.helpers.repository.FakeRecurringTransactionRepository
 import com.wbrawner.twigs.test.helpers.repository.FakeTransactionRepository
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,13 +21,13 @@ class RecurringTransactionProcessingJobTest {
 
     @BeforeEach
     fun setup() {
-        recurringTransactionRepository = FakeRecurringTransactionsRepository()
+        recurringTransactionRepository = FakeRecurringTransactionRepository()
         transactionRepository = FakeTransactionRepository()
         job = RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
     }
 
     @Test
-    fun `daily transactions are created every day`() = runBlockingTest {
+    fun `daily transactions are created every day`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -49,7 +49,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `daily transactions are only created once per day`() = runBlockingTest {
+    fun `daily transactions are only created once per day`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -71,7 +71,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `daily transactions are created every other day`() = runBlockingTest {
+    fun `daily transactions are created every other day`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -90,7 +90,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `weekly transactions are created every thursday`() = runBlockingTest {
+    fun `weekly transactions are created every thursday`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -113,7 +113,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `weekly transactions are created every third thursday`() = runBlockingTest {
+    fun `weekly transactions are created every third thursday`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -134,7 +134,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `monthly transactions are created every 1st of month`() = runBlockingTest {
+    fun `monthly transactions are created every 1st of month`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -157,7 +157,7 @@ class RecurringTransactionProcessingJobTest {
 
     @Test
     fun `monthly transactions are created every last day of month when greater than max days in month`() =
-        runBlockingTest {
+        runTest {
             val start = Instant.parse("1970-01-01T00:00:00Z")
             recurringTransactionRepository.save(
                 RecurringTransaction(
@@ -180,7 +180,7 @@ class RecurringTransactionProcessingJobTest {
         }
 
     @Test
-    fun `monthly transactions are created every 6 months`() = runBlockingTest {
+    fun `monthly transactions are created every 6 months`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -201,7 +201,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `monthly transactions are created every 2nd tuesday`() = runBlockingTest {
+    fun `monthly transactions are created every 2nd tuesday`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -228,7 +228,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `monthly transactions are created every last friday`() = runBlockingTest {
+    fun `monthly transactions are created every last friday`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
                 RecurringTransaction(
@@ -255,7 +255,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `monthly transactions are created in the new year`() = runBlockingTest {
+    fun `monthly transactions are created in the new year`() = runTest {
         val start = Instant.parse("1971-01-01T00:00:00Z")
         recurringTransactionRepository.save(
                 RecurringTransaction(
@@ -280,7 +280,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `yearly transactions are created every march 31st`() = runBlockingTest {
+    fun `yearly transactions are created every march 31st`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
                 RecurringTransaction(
@@ -303,7 +303,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `yearly transactions are created every other march 31st`() = runBlockingTest {
+    fun `yearly transactions are created every other march 31st`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(
@@ -324,7 +324,7 @@ class RecurringTransactionProcessingJobTest {
     }
 
     @Test
-    fun `yearly transactions are created every february 29th`() = runBlockingTest {
+    fun `yearly transactions are created every february 29th`() = runTest {
         val start = Instant.parse("1970-01-01T00:00:00Z")
         recurringTransactionRepository.save(
             RecurringTransaction(

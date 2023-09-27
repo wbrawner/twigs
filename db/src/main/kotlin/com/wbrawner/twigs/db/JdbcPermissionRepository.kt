@@ -32,6 +32,10 @@ class JdbcPermissionRepository(dataSource: DataSource) :
             conn.executeQuery(sql.toString(), params)
         }
 
+    override suspend fun findAll(ids: List<String>?): List<UserPermission> {
+        throw UnsupportedOperationException("UserPermission requires a userId and budgetId")
+    }
+
     override fun ResultSet.toEntity(): UserPermission = UserPermission(
         budgetId = getString(Fields.BUDGET_ID.name.lowercase()),
         userId = getString(Fields.USER_ID.name.lowercase()),
