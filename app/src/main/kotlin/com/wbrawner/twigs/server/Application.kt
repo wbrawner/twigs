@@ -1,4 +1,4 @@
-package com.wbrawner.twigs.server
+package com.wbrawner.twigs.server 
 
 import ch.qos.logback.classic.Level
 import com.wbrawner.twigs.*
@@ -12,6 +12,8 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.cio.*
+import io.ktor.server.engine.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
@@ -23,10 +25,13 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
-import java.lang.RuntimeException
 import java.util.concurrent.TimeUnit
 
-fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
+fun main() {
+    embeddedServer(CIO, port = System.getenv("PORT")?.toIntOrNull() ?: 8080) {
+        module()
+    }.start(wait = true)
+}
 
 private const val DATABASE_VERSION = 3
 
@@ -63,7 +68,7 @@ fun Application.module() {
                 username = environment.config.propertyOrNull("twigs.smtp.user")?.getString(),
                 password = environment.config.propertyOrNull("twigs.smtp.pass")?.getString(),
             ),
-            metadataRepository = MetadataRepository(it),
+            metadataRepository = JdbcMetadataRepository(it),
             budgetRepository = JdbcBudgetRepository(it),
             categoryRepository = JdbcCategoryRepository(it),
             passwordResetRepository = JdbcPasswordResetRepository(it),

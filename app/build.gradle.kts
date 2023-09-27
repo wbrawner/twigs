@@ -1,5 +1,4 @@
 import java.net.URI
-import java.util.*
 
 plugins {
     java
@@ -27,8 +26,8 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.mail)
     testImplementation(project(":testhelpers"))
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.ktor.server.test)
 }
 
 description = "twigs-server"

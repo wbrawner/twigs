@@ -15,9 +15,9 @@ data class BudgetRequest(
 @Serializable
 data class BudgetResponse(
     val id: String,
-    val name: String?,
-    val description: String?,
-    private val users: List<UserPermissionResponse>
+    val name: String? = null,
+    val description: String? = null,
+    val users: List<UserPermissionResponse>
 ) {
     constructor(budget: Budget, users: Iterable<UserPermission>) : this(
         Objects.requireNonNull<String>(budget.id),

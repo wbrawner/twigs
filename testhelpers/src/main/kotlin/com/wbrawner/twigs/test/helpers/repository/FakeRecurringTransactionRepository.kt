@@ -4,7 +4,7 @@ import com.wbrawner.twigs.model.RecurringTransaction
 import com.wbrawner.twigs.storage.RecurringTransactionRepository
 import java.time.Instant
 
-class FakeRecurringTransactionsRepository : FakeRepository<RecurringTransaction>(), RecurringTransactionRepository {
+class FakeRecurringTransactionRepository : FakeRepository<RecurringTransaction>(), RecurringTransactionRepository {
     override suspend fun findAll(now: Instant): List<RecurringTransaction> = entities.filter {
         (it.start == now || it.start.isBefore(now)) && it.finish?.isAfter(now) ?: true
     }

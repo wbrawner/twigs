@@ -1,16 +1,21 @@
 package com.wbrawner.twigs.db
 
+import com.wbrawner.twigs.storage.Repository
 import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
 
-class MetadataRepository(dataSource: DataSource) :
-    JdbcRepository<DatabaseMetadata, MetadataRepository.Fields>(dataSource) {
+interface MetadataRepository : Repository<DatabaseMetadata> {
+    fun runMigration(toVersion: Int)
+}
+
+class JdbcMetadataRepository(dataSource: DataSource) :
+    JdbcRepository<DatabaseMetadata, JdbcMetadataRepository.Fields>(dataSource), MetadataRepository {
     override val tableName: String = TABLE_METADATA
     override val fields: Map<Fields, (DatabaseMetadata) -> Any?> = Fields.values().associateWith { it.entityField }
     override val conflictFields: Collection<String> = listOf()
 
-    suspend fun runMigration(toVersion: Int) {
+    override fun runMigration(toVersion: Int) {
         val queries = MetadataRepository::class.java
             .getResource("/sql/$toVersion.sql")
             ?.readText()
