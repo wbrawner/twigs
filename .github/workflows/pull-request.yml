@@ -14,7 +14,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Run checks with Gradle Wrapper
-        run: ./gradlew check
+        run: ./gradlew --no-daemon --no-configuration-cache check
 #  automerge:
 #    name: Enable automerge
 #    runs-on: ubuntu-latest
