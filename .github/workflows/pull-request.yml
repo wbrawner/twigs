@@ -15,6 +15,14 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Run checks with Gradle Wrapper
         run: ./gradlew --no-daemon --no-configuration-cache check
+      - name: Publish JUnit Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests
+          path: "*/build/test-results/test/*.xml"
+          reporter: java-junit
+          fail-on-error: true
 #  automerge:
 #    name: Enable automerge
 #    runs-on: ubuntu-latest
