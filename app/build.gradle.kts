@@ -50,3 +50,10 @@ tasks.shadowJar {
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
+
+tasks.test {
+    reports {
+        junitXml.required.set(true)
+        html.required.set(false)
+    }
+}
