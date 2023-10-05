@@ -9,3 +9,7 @@
 
 tags
 twigs.db
+
+# Added by cargo
+
+/target
