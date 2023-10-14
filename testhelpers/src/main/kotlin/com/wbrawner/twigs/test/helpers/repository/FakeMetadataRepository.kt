@@ -4,8 +4,10 @@ import com.wbrawner.twigs.db.DatabaseMetadata
 import com.wbrawner.twigs.db.MetadataRepository
 import com.wbrawner.twigs.storage.Repository
 
+const val TEST_SALT = "testtesttesttest"
+
 class FakeMetadataRepository : Repository<DatabaseMetadata>, MetadataRepository {
-    var metadata = DatabaseMetadata()
+    var metadata = DatabaseMetadata(salt = TEST_SALT)
     override fun runMigration(toVersion: Int) {
         metadata = metadata.copy(version = toVersion)
     }
