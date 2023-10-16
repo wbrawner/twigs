@@ -66,7 +66,7 @@ fun Application.userRoutes(
                                 User(
                                         name = request.username,
                                         password = request.password.hash(),
-                                        email = if (request.email.isNullOrBlank()) null else request.email
+                                    email = if (request.email.isNullOrBlank()) "" else request.email
                                 )
                         ).asResponse()
                 )
@@ -94,27 +94,6 @@ fun Application.userRoutes(
                             ?.asResponse()
                             ?.let { call.respond(it) }
                             ?: errorResponse(HttpStatusCode.NotFound)
-                }
-
-                post {
-                    val request = call.receive<UserRequest>()
-                    if (request.username.isNullOrBlank()) {
-                        errorResponse(HttpStatusCode.BadRequest, "Username must not be null or blank")
-                        return@post
-                    }
-                    if (request.password.isNullOrBlank()) {
-                        errorResponse(HttpStatusCode.BadRequest, "Password must not be null or blank")
-                        return@post
-                    }
-                    call.respond(
-                            userRepository.save(
-                                    User(
-                                            name = request.username,
-                                            password = request.password,
-                                            email = request.email
-                                    )
-                            ).asResponse()
-                    )
                 }
 
                 put("/{id}") {

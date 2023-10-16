@@ -5,11 +5,11 @@ import com.wbrawner.twigs.storage.UserRepository
 
 class FakeUserRepository : FakeRepository<User>(), UserRepository {
     override fun findAll(nameOrEmail: String, password: String?): List<User> {
-        return entities.filter {
-            (it.name.equals(nameOrEmail, ignoreCase = true) || it.email.equals(
+        return entities.filter { user ->
+            (user.name.equals(nameOrEmail, ignoreCase = true) || user.email.equals(
                 nameOrEmail,
                 ignoreCase = true
-            )) && it.password == password
+            )) && password?.let { user.password == it } ?: true
         }
     }
 
