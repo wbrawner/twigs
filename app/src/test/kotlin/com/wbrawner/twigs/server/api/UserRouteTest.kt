@@ -1,8 +1,6 @@
 package com.wbrawner.twigs.server.api
 
-import com.wbrawner.twigs.ErrorResponse
-import com.wbrawner.twigs.LoginRequest
-import com.wbrawner.twigs.SessionResponse
+import com.wbrawner.twigs.*
 import com.wbrawner.twigs.model.User
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -68,7 +66,7 @@ class UserRouteTest : ApiTest() {
     }
 
     @Test
-    fun `login with valid credentials returns 200`() = apiTest { client ->
+    fun `login with valid username and password returns 200`() = apiTest { client ->
         val users = listOf(
             User(name = "testuser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"),
             User(name = "otheruser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb..rhfIeOkP4qil1Drj29LDUhBxVkm6fS"),
@@ -86,7 +84,7 @@ class UserRouteTest : ApiTest() {
     }
 
     @Test
-    fun `login with valid email returns 200`() = apiTest { client ->
+    fun `login with valid email and password returns 200`() = apiTest { client ->
         val users = listOf(
             User(
                 name = "testuser",
@@ -105,5 +103,113 @@ class UserRouteTest : ApiTest() {
         val session = response.body<SessionResponse>()
         assertEquals(users.first().id, session.userId)
         assert(session.token.isNotBlank())
+    }
+
+    @Test
+    fun `register with null username returns 400`() = apiTest { client ->
+        val request = UserRequest(password = "")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorBody = response.body<ErrorResponse>()
+        assertEquals("Username must not be null or blank", errorBody.message)
+    }
+
+    @Test
+    fun `register with empty username returns 400`() = apiTest { client ->
+        val request = UserRequest(username = "", password = "")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorBody = response.body<ErrorResponse>()
+        assertEquals("Username must not be null or blank", errorBody.message)
+    }
+
+    @Test
+    fun `register with null password returns 400`() = apiTest { client ->
+        val request = UserRequest(username = "test@example.com")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorBody = response.body<ErrorResponse>()
+        assertEquals("Password must not be null or blank", errorBody.message)
+    }
+
+    @Test
+    fun `register with empty password returns 400`() = apiTest { client ->
+        val request = UserRequest(username = "test@example.com", password = "")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorBody = response.body<ErrorResponse>()
+        assertEquals("Password must not be null or blank", errorBody.message)
+    }
+
+    @Test
+    fun `register with existing username returns 400`() = apiTest { client ->
+        val users = listOf(
+            User(
+                name = "testuser",
+                email = "test@example.com",
+                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
+            ),
+        )
+        users.forEach { userRepository.save(it) }
+        val request = UserRequest(username = "testuser", password = "password")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorBody = response.body<ErrorResponse>()
+        assertEquals("Username or email already taken", errorBody.message)
+    }
+
+    @Test
+    fun `register with existing email returns 400`() = apiTest { client ->
+        val users = listOf(
+            User(
+                name = "testuser",
+                email = "test@example.com",
+                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
+            ),
+        )
+        users.forEach { userRepository.save(it) }
+        val request = UserRequest(username = "testuser2", email = "test@example.com", password = "password")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorBody = response.body<ErrorResponse>()
+        assertEquals("Username or email already taken", errorBody.message)
+    }
+
+    @Test
+    fun `register with valid username and password returns 200`() = apiTest { client ->
+        val request = UserRequest("testuser", "testpassword")
+        val response = client.post("/api/users/register") {
+            header("Content-Type", "application/json")
+            setBody(request)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val userResponse = response.body<UserResponse>()
+        assert(userResponse.id.isNotBlank())
+        assertEquals(request.username, userResponse.username)
+        assertEquals("", userResponse.email)
+        assertEquals(1, userRepository.entities.size)
+        val savedUser: User = userRepository.entities.first()
+        assertEquals(userResponse.id, savedUser.id)
+        assertEquals(request.username, savedUser.name)
+        assertEquals("", savedUser.email)
+        assertEquals("\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2", savedUser.password)
     }
 }
