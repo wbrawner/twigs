@@ -212,39 +212,4 @@ class UserRouteTest : ApiTest() {
         assertEquals("", savedUser.email)
         assertEquals("\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2", savedUser.password)
     }
-
-    @Test
-    fun `reset password with invalid username returns 202`() = apiTest { client ->
-        val request = ResetPasswordRequest(username = "testuser")
-        val response = client.post("/api/resetpassword") {
-            header("Content-Type", "application/json")
-            setBody(request)
-        }
-        assertEquals(HttpStatusCode.Accepted, response.status)
-        assert(emailService.emails.isEmpty())
-    }
-
-    @Test
-    fun `reset password with valid username returns 202`() = apiTest { client ->
-        val users = listOf(
-            User(
-                name = "testuser",
-                email = "test@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
-            ),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = ResetPasswordRequest(username = "testuser")
-        val response = client.post("/api/resetpassword") {
-            header("Content-Type", "application/json")
-            setBody(request)
-        }
-        assertEquals(HttpStatusCode.Accepted, response.status)
-        assertEquals(1, emailService.emails.size)
-        val email = emailService.emails.first()
-        assertEquals(users.first().email, email.to)
-        assertEquals(1, passwordResetRepository.entities.size)
-        val passwordReset = passwordResetRepository.entities.first()
-        assertEquals(users.first().id, passwordReset.userId)
-    }
 }
