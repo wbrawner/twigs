@@ -212,4 +212,10 @@ class UserRouteTest : ApiTest() {
         assertEquals("", savedUser.email)
         assertEquals("\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2", savedUser.password)
     }
+
+    @Test
+    fun `get users requires authentication`() = apiTest { client ->
+        val response = client.get("/api/users")
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
 }
