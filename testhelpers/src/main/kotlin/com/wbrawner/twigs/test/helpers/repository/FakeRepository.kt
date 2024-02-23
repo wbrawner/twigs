@@ -4,7 +4,7 @@ import com.wbrawner.twigs.Identifiable
 import com.wbrawner.twigs.storage.Repository
 
 abstract class FakeRepository<T : Identifiable> : Repository<T> {
-    val entities = mutableListOf<T>()
+    open val entities = mutableListOf<T>()
 
     override suspend fun findAll(ids: List<String>?): List<T> = if (ids == null) {
         entities

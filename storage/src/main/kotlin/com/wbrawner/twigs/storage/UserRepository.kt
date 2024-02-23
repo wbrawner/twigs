@@ -10,3 +10,7 @@ interface UserRepository : Repository<User> {
 
     fun findAll(nameLike: String): List<User>
 }
+
+fun interface PasswordHasher {
+    fun hash(password: String): String
+}

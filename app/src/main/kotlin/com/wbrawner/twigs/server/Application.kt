@@ -1,5 +1,6 @@
-package com.wbrawner.twigs.server 
+package com.wbrawner.twigs.server
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import ch.qos.logback.classic.Level
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
@@ -19,10 +20,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -46,10 +44,12 @@ fun Application.module() {
         "postgresql" -> {
             "jdbc:$dbType://$dbHost:$dbPort/$dbName?stringtype=unspecified"
         }
+
         "sqlite" -> {
             Class.forName("org.sqlite.JDBC")
             "jdbc:$dbType:$dbName"
         }
+
         else -> {
             throw RuntimeException("Unsupported DB type: $dbType")
         }
@@ -60,6 +60,27 @@ fun Application.module() {
         username = dbUser
         password = dbPass
     }).also {
+        val metadataRepository = JdbcMetadataRepository(it)
+        val metadata = runBlocking {
+            val metadata = (metadataRepository.findAll().firstOrNull() ?: DatabaseMetadata())
+            var version = metadata.version
+            while (currentCoroutineContext().isActive && version++ < DATABASE_VERSION) {
+                metadataRepository.runMigration(version)
+                metadataRepository.save(metadata.copy(version = version))
+            }
+            if (metadata.salt.isBlank()) {
+                metadataRepository.save(
+                    metadata.copy(
+                        salt = environment.config
+                            .propertyOrNull("twigs.password.salt")
+                            ?.getString()
+                            ?: randomString(16)
+                    )
+                )
+            } else {
+                metadata
+            }
+        }
         moduleWithDependencies(
             emailService = SmtpEmailService(
                 from = environment.config.propertyOrNull("twigs.smtp.from")?.getString(),
@@ -72,6 +93,9 @@ fun Application.module() {
             budgetRepository = JdbcBudgetRepository(it),
             categoryRepository = JdbcCategoryRepository(it),
             passwordResetRepository = JdbcPasswordResetRepository(it),
+            passwordHasher = { password ->
+                String(BCrypt.withDefaults().hash(10, metadata.salt.toByteArray(), password.toByteArray()))
+            },
             permissionRepository = JdbcPermissionRepository(it),
             recurringTransactionRepository = JdbcRecurringTransactionRepository(it),
             sessionRepository = JdbcSessionRepository(it),
@@ -87,6 +111,7 @@ fun Application.moduleWithDependencies(
     budgetRepository: BudgetRepository,
     categoryRepository: CategoryRepository,
     passwordResetRepository: PasswordResetRepository,
+    passwordHasher: PasswordHasher,
     permissionRepository: PermissionRepository,
     recurringTransactionRepository: RecurringTransactionRepository,
     sessionRepository: SessionRepository,
@@ -171,25 +196,9 @@ fun Application.moduleWithDependencies(
     categoryRoutes(categoryRepository, permissionRepository)
     recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
     transactionRoutes(transactionRepository, permissionRepository)
-    userRoutes(emailService, passwordResetRepository, permissionRepository, sessionRepository, userRepository)
+    userRoutes(emailService, passwordResetRepository, permissionRepository, sessionRepository, userRepository, passwordHasher)
     webRoutes()
     launch {
-        val metadata = (metadataRepository.findAll().firstOrNull() ?: DatabaseMetadata())
-        var version = metadata.version
-        while (currentCoroutineContext().isActive && version++ < DATABASE_VERSION) {
-            metadataRepository.runMigration(version)
-            metadataRepository.save(metadata.copy(version = version))
-        }
-        salt = metadata.salt.ifEmpty {
-            metadataRepository.save(
-                metadata.copy(
-                    salt = environment.config
-                        .propertyOrNull("twigs.password.salt")
-                        ?.getString()
-                        ?: randomString(16)
-                )
-            ).salt
-        }
         val jobs = listOf(
             SessionCleanupJob(sessionRepository),
             RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)

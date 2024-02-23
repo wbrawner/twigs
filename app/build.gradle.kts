@@ -23,6 +23,7 @@ dependencies {
     implementation(libs.kotlin.reflect)
     implementation(libs.bundles.ktor.server)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.bcrypt)
     implementation(libs.logback)
     implementation(libs.mail)
     testImplementation(project(":testhelpers"))

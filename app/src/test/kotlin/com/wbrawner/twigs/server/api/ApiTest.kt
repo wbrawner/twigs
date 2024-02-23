@@ -42,6 +42,7 @@ open class ApiTest {
                 metadataRepository = metadataRepository,
                 budgetRepository = budgetRepository,
                 categoryRepository = categoryRepository,
+                passwordHasher = { it },
                 passwordResetRepository = passwordResetRepository,
                 permissionRepository = permissionRepository,
                 recurringTransactionRepository = recurringTransactionRepository,
