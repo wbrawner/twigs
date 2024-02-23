@@ -1,6 +1,5 @@
 package com.wbrawner.twigs
 
-import at.favre.lib.crypto.bcrypt.BCrypt
 import com.wbrawner.twigs.model.Frequency
 import java.time.Instant
 import java.util.*
@@ -50,9 +49,6 @@ fun randomString(length: Int = 32): String {
     }
     return id.toString()
 }
-
-lateinit var salt: String
-fun String.hash(): String = String(BCrypt.withDefaults().hash(10, salt.toByteArray(), this.toByteArray()))
 
 fun String.toInstant(): Instant = Instant.parse(this)
 

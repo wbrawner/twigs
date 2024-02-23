@@ -1,6 +1,7 @@
 package com.wbrawner.twigs.server.api
 
 import com.wbrawner.twigs.*
+import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -218,4 +219,75 @@ class UserRouteTest : ApiTest() {
         val response = client.get("/api/users")
         assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
+
+    @Test
+    fun `get users with empty query returns 400`() = apiTest { client ->
+        val users = listOf(
+            User(name = "testuser", password = "testpassword"),
+            User(name = "otheruser", password = "otherpassword"),
+        )
+        users.forEach { userRepository.save(it) }
+        val session = Session(userId = users.first().id)
+        sessionRepository.save(session)
+        val response = client.get("/api/users?query=") {
+            header("Authorization", "Bearer ${session.token}")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val error: ErrorResponse = response.body()
+        assertEquals("query cannot be empty", error.message)
+    }
+
+    @Test
+    fun `get users with valid query but no matches returns empty list`() = apiTest { client ->
+        val users = listOf(
+            User(name = "testuser", password = "testpassword"),
+            User(name = "otheruser", password = "otherpassword"),
+        )
+        users.forEach { userRepository.save(it) }
+        val session = Session(userId = users.first().id)
+        sessionRepository.save(session)
+        val response = client.get("/api/users?query=something") {
+            header("Authorization", "Bearer ${session.token}")
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val userQueryResponse: List<UserResponse> = response.body()
+        assertEquals(0, userQueryResponse.size)
+    }
+
+    @Test
+    fun `get users with valid query and matches returns list`() = apiTest { client ->
+        val users = listOf(
+            User(name = "testuser", password = "testpassword"),
+            User(name = "otheruser", password = "otherpassword"),
+        )
+        users.forEach { userRepository.save(it) }
+        val session = Session(userId = users.first().id)
+        sessionRepository.save(session)
+        val response = client.get("/api/users?query=user") {
+            header("Authorization", "Bearer ${session.token}")
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val userQueryResponse: List<UserResponse> = response.body()
+        assertEquals(2, userQueryResponse.size)
+        repeat(2) { i ->
+            assertEquals(users[i].id, userQueryResponse[i].id, "User IDs at index $i don't match")
+            assertEquals(users[i].name, userQueryResponse[i].username, "Usernames at index $i don't match")
+            assertEquals(users[i].email, userQueryResponse[i].email, "User emails at index $i don't match")
+        }
+    }
+
+    @Test
+    fun `get users with empty budgetId returns 400`() = apiTest { client ->
+
+    }
+
+//    @Test
+//    fun ``() = apiTest { client ->
+//
+//    }
+
+//    @Test
+//    fun ``() = apiTest { client ->
+//
+//    }
 }

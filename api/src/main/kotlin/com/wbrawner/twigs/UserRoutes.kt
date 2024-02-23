@@ -3,10 +3,7 @@ package com.wbrawner.twigs
 import com.wbrawner.twigs.model.PasswordResetToken
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
-import com.wbrawner.twigs.storage.PasswordResetRepository
-import com.wbrawner.twigs.storage.PermissionRepository
-import com.wbrawner.twigs.storage.SessionRepository
-import com.wbrawner.twigs.storage.UserRepository
+import com.wbrawner.twigs.storage.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -20,16 +17,17 @@ fun Application.userRoutes(
         passwordResetRepository: PasswordResetRepository,
         permissionRepository: PermissionRepository,
         sessionRepository: SessionRepository,
-        userRepository: UserRepository
+        userRepository: UserRepository,
+        passwordHasher: PasswordHasher
 ) {
     routing {
         route("/api/users") {
             post("/login") {
                 val request = call.receive<LoginRequest>()
                 val user =
-                        userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
+                        userRepository.findAll(nameOrEmail = request.username, password = passwordHasher.hash(request.password))
                                 .firstOrNull()
-                                ?: userRepository.findAll(nameOrEmail = request.username, password = request.password.hash())
+                                ?: userRepository.findAll(nameOrEmail = request.username, password = passwordHasher.hash(request.password))
                                         .firstOrNull()
                                 ?: run {
                                     errorResponse(HttpStatusCode.Unauthorized, "Invalid credentials")
@@ -65,7 +63,7 @@ fun Application.userRoutes(
                         userRepository.save(
                                 User(
                                         name = request.username,
-                                        password = request.password.hash(),
+                                        password = passwordHasher.hash(request.password),
                                     email = if (request.email.isNullOrBlank()) "" else request.email
                                 )
                         ).asResponse()
@@ -74,9 +72,12 @@ fun Application.userRoutes(
 
             authenticate(optional = false) {
                 get {
-                    val query = call.request.queryParameters.getAll("query")
-                    if (query?.firstOrNull()?.isNotBlank() == true) {
-                        call.respond(userRepository.findAll(nameLike = query.first()).map { it.asResponse() })
+                    val query = call.request.queryParameters["query"]
+                    if (query != null) {
+                        if (query.isBlank()) {
+                            errorResponse(HttpStatusCode.BadRequest, "query cannot be empty")
+                        }
+                        call.respond(userRepository.findAll(nameLike = query).map { it.asResponse() })
                         return@get
                     }
                     permissionRepository.findAll(
@@ -111,7 +112,7 @@ fun Application.userRoutes(
                                             .run {
                                                 copy(
                                                         name = request.username ?: name,
-                                                        password = request.password?.hash() ?: password,
+                                                        password = request.password?.let { passwordHasher.hash(it) } ?: password,
                                                         email = request.email ?: email
                                                 )
                                             }
@@ -143,7 +144,7 @@ fun Application.userRoutes(
                 userRepository.findAll(nameOrEmail = request.username)
                         .firstOrNull()
                         ?.let {
-                            val email = it.email ?: return@let
+                            val email = it.email
                             val passwordResetToken = passwordResetRepository.save(PasswordResetToken(userId = it.id))
                             emailService.sendPasswordResetEmail(passwordResetToken, email)
                         }
@@ -167,7 +168,7 @@ fun Application.userRoutes(
                 userRepository.findAll(listOf(passwordResetToken.userId))
                         .firstOrNull()
                         ?.let {
-                            userRepository.save(it.copy(password = request.password.hash()))
+                            userRepository.save(it.copy(password = passwordHasher.hash(request.password)))
                             passwordResetRepository.delete(passwordResetToken)
                         }
                         ?: run {
