@@ -26,20 +26,22 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
 fun main() {
-    embeddedServer(CIO, port = System.getenv("PORT")?.toIntOrNull() ?: 8080) {
-        module()
-    }.start(wait = true)
+    embeddedServer(
+        CIO,
+        port = System.getenv("PORT")?.toIntOrNull() ?: 8080,
+        module = Application::module
+    ).start(wait = true)
 }
 
 private const val DATABASE_VERSION = 3
 
 fun Application.module() {
-    val dbType = environment.config.propertyOrNull("twigs.database.type")?.getString() ?: "sqlite"
-    val dbHost = environment.config.propertyOrNull("twigs.database.host")?.getString() ?: "localhost"
-    val dbPort = environment.config.propertyOrNull("twigs.database.port")?.getString() ?: "5432"
-    val dbName = environment.config.propertyOrNull("twigs.database.name")?.getString() ?: "twigs"
-    val dbUser = environment.config.propertyOrNull("twigs.database.user")?.getString() ?: "twigs"
-    val dbPass = environment.config.propertyOrNull("twigs.database.password")?.getString() ?: "twigs"
+    val dbType = System.getenv("TWIGS_DB_TYPE") ?: "sqlite"
+    val dbHost = System.getenv("TWIGS_DB_HOST") ?: "localhost"
+    val dbPort = System.getenv("TWIGS_DB_PORT") ?: "5432"
+    val dbName = System.getenv("TWIGS_DB_NAME") ?: "twigs"
+    val dbUser = System.getenv("TWIGS_DB_USER") ?: "twigs"
+    val dbPass = System.getenv("TWIGS_DB_PASS") ?: "twigs"
     val jdbcUrl = when (dbType) {
         "postgresql" -> {
             "jdbc:$dbType://$dbHost:$dbPort/$dbName?stringtype=unspecified"
@@ -71,9 +73,7 @@ fun Application.module() {
             if (metadata.salt.isBlank()) {
                 metadataRepository.save(
                     metadata.copy(
-                        salt = environment.config
-                            .propertyOrNull("twigs.password.salt")
-                            ?.getString()
+                        salt = System.getenv("TWIGS_PW_SALT")
                             ?: randomString(16)
                     )
                 )
@@ -83,11 +83,11 @@ fun Application.module() {
         }
         moduleWithDependencies(
             emailService = SmtpEmailService(
-                from = environment.config.propertyOrNull("twigs.smtp.from")?.getString(),
-                host = environment.config.propertyOrNull("twigs.smtp.host")?.getString(),
-                port = environment.config.propertyOrNull("twigs.smtp.port")?.getString()?.toIntOrNull(),
-                username = environment.config.propertyOrNull("twigs.smtp.user")?.getString(),
-                password = environment.config.propertyOrNull("twigs.smtp.pass")?.getString(),
+                from = System.getenv("TWIGS_SMTP_FROM"),
+                host = System.getenv("TWIGS_SMTP_HOST"),
+                port = System.getenv("TWIGS_SMTP_PORT")?.toIntOrNull(),
+                username = System.getenv("TWIGS_SMTP_USER"),
+                password = System.getenv("TWIGS_SMTP_PASS"),
             ),
             metadataRepository = JdbcMetadataRepository(it),
             budgetRepository = JdbcBudgetRepository(it),
