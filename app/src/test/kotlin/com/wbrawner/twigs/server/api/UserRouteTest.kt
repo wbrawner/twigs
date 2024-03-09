@@ -3,10 +3,13 @@ package com.wbrawner.twigs.server.api
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
+import com.wbrawner.twigs.test.helpers.repository.FakeUserRepository.Companion.OTHER_USER
+import com.wbrawner.twigs.test.helpers.repository.FakeUserRepository.Companion.TEST_USER
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 class UserRouteTest : ApiTest() {
@@ -36,11 +39,7 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `login with invalid password returns 401`() = apiTest { client ->
-        val users = listOf(
-            User(name = "testuser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = LoginRequest("testuser", "pass")
+        val request = LoginRequest(TEST_USER.name, "pass")
         val response = client.post("/api/users/login") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -52,11 +51,7 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `login with empty password returns 401`() = apiTest { client ->
-        val users = listOf(
-            User(name = "testuser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = LoginRequest("testuser", "")
+        val request = LoginRequest(TEST_USER.name, "")
         val response = client.post("/api/users/login") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -68,41 +63,27 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `login with valid username and password returns 200`() = apiTest { client ->
-        val users = listOf(
-            User(name = "testuser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"),
-            User(name = "otheruser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb..rhfIeOkP4qil1Drj29LDUhBxVkm6fS"),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = LoginRequest("testuser", "testpassword")
+        val request = LoginRequest(TEST_USER.name, TEST_USER.password)
         val response = client.post("/api/users/login") {
             header("Content-Type", "application/json")
             setBody(request)
         }
         assertEquals(HttpStatusCode.OK, response.status)
         val session = response.body<SessionResponse>()
-        assertEquals(users.first().id, session.userId)
+        assertEquals(TEST_USER.id, session.userId)
         assert(session.token.isNotBlank())
     }
 
     @Test
     fun `login with valid email and password returns 200`() = apiTest { client ->
-        val users = listOf(
-            User(
-                name = "testuser",
-                email = "test@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
-            ),
-            User(name = "otheruser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb..rhfIeOkP4qil1Drj29LDUhBxVkm6fS"),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = LoginRequest("test@example.com", "testpassword")
+        val request = LoginRequest(TEST_USER.email, TEST_USER.password)
         val response = client.post("/api/users/login") {
             header("Content-Type", "application/json")
             setBody(request)
         }
         assertEquals(HttpStatusCode.OK, response.status)
         val session = response.body<SessionResponse>()
-        assertEquals(users.first().id, session.userId)
+        assertEquals(TEST_USER.id, session.userId)
         assert(session.token.isNotBlank())
     }
 
@@ -156,15 +137,7 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `register with existing username returns 400`() = apiTest { client ->
-        val users = listOf(
-            User(
-                name = "testuser",
-                email = "test@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
-            ),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = UserRequest(username = "testuser", password = "password")
+        val request = UserRequest(username = TEST_USER.name, password = "password")
         val response = client.post("/api/users/register") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -176,15 +149,7 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `register with existing email returns 400`() = apiTest { client ->
-        val users = listOf(
-            User(
-                name = "testuser",
-                email = "test@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
-            ),
-        )
-        users.forEach { userRepository.save(it) }
-        val request = UserRequest(username = "testuser2", email = "test@example.com", password = "password")
+        val request = UserRequest(username = "testuser2", email = TEST_USER.email, password = "password")
         val response = client.post("/api/users/register") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -196,7 +161,8 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `register with valid username and password returns 200`() = apiTest { client ->
-        val request = UserRequest("testuser", "testpassword")
+        val initialUserCount = userRepository.entities.size
+        val request = UserRequest("newuser", "newpass")
         val response = client.post("/api/users/register") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -206,12 +172,14 @@ class UserRouteTest : ApiTest() {
         assert(userResponse.id.isNotBlank())
         assertEquals(request.username, userResponse.username)
         assertEquals("", userResponse.email)
-        assertEquals(1, userRepository.entities.size)
-        val savedUser: User = userRepository.entities.first()
+        assertEquals(initialUserCount + 1, userRepository.entities.size)
+        val savedUser: User? = userRepository.findAll("newuser").firstOrNull()
+        assertNotNull(savedUser)
+        requireNotNull(savedUser)
         assertEquals(userResponse.id, savedUser.id)
         assertEquals(request.username, savedUser.name)
         assertEquals("", savedUser.email)
-        assertEquals("\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2", savedUser.password)
+        assertEquals("newpass", savedUser.password)
     }
 
     @Test
@@ -256,12 +224,7 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `get users with valid query and matches returns list`() = apiTest { client ->
-        val users = listOf(
-            User(name = "testuser", password = "testpassword"),
-            User(name = "otheruser", password = "otherpassword"),
-        )
-        users.forEach { userRepository.save(it) }
-        val session = Session(userId = users.first().id)
+        val session = Session(userId = TEST_USER.id)
         sessionRepository.save(session)
         val response = client.get("/api/users?query=user") {
             header("Authorization", "Bearer ${session.token}")
@@ -269,25 +232,17 @@ class UserRouteTest : ApiTest() {
         assertEquals(HttpStatusCode.OK, response.status)
         val userQueryResponse: List<UserResponse> = response.body()
         assertEquals(2, userQueryResponse.size)
-        repeat(2) { i ->
-            assertEquals(users[i].id, userQueryResponse[i].id, "User IDs at index $i don't match")
-            assertEquals(users[i].name, userQueryResponse[i].username, "Usernames at index $i don't match")
-            assertEquals(users[i].email, userQueryResponse[i].email, "User emails at index $i don't match")
-        }
+        assertEquals(TEST_USER.asResponse(), userQueryResponse[0])
+        assertEquals(OTHER_USER.asResponse(), userQueryResponse[1])
     }
 
     @Test
     fun `get users with empty budgetId returns 400`() = apiTest { client ->
-
+        val session = Session(userId = TEST_USER.id)
+        sessionRepository.save(session)
+        val response = client.get("/api/users?budgetId=") {
+            header("Authorization", "Bearer ${session.token}")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
-
-//    @Test
-//    fun ``() = apiTest { client ->
-//
-//    }
-
-//    @Test
-//    fun ``() = apiTest { client ->
-//
-//    }
 }
