@@ -33,7 +33,7 @@ jobs:
   automerge:
     name: Enable automerge
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'wbrawner' }}
+    if: ${{ github.actor == 'wbrawner' || github.actor == 'dependabot[bot]' }}
     steps:
       - name: Enable auto-merge
         run: gh pr merge --auto --merge "$PR_URL"
