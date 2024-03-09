@@ -4,8 +4,8 @@ import com.wbrawner.twigs.ErrorResponse
 import com.wbrawner.twigs.PasswordResetRequest
 import com.wbrawner.twigs.ResetPasswordRequest
 import com.wbrawner.twigs.model.PasswordResetToken
-import com.wbrawner.twigs.model.User
 import com.wbrawner.twigs.randomString
+import com.wbrawner.twigs.test.helpers.repository.FakeUserRepository.Companion.TEST_USER
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -17,7 +17,7 @@ import java.util.*
 class PasswordResetRouteTest : ApiTest() {
     @Test
     fun `reset password with invalid username returns 202`() = apiTest { client ->
-        val request = ResetPasswordRequest(username = "testuser")
+        val request = ResetPasswordRequest(username = "invaliduser")
         val response = client.post("/api/resetpassword") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -28,14 +28,6 @@ class PasswordResetRouteTest : ApiTest() {
 
     @Test
     fun `reset password with valid username returns 202`() = apiTest { client ->
-        val users = listOf(
-            User(
-                name = "testuser",
-                email = "test@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"
-            ),
-        )
-        users.forEach { userRepository.save(it) }
         val request = ResetPasswordRequest(username = "testuser")
         val response = client.post("/api/resetpassword") {
             header("Content-Type", "application/json")
@@ -44,10 +36,10 @@ class PasswordResetRouteTest : ApiTest() {
         assertEquals(HttpStatusCode.Accepted, response.status)
         assertEquals(1, emailService.emails.size)
         val email = emailService.emails.first()
-        assertEquals(users.first().email, email.to)
+        assertEquals(TEST_USER.email, email.to)
         assertEquals(1, passwordResetRepository.entities.size)
         val passwordReset = passwordResetRepository.entities.first()
-        assertEquals(users.first().id, passwordReset.userId)
+        assertEquals(TEST_USER.id, passwordReset.userId)
     }
 
     @Test
@@ -77,11 +69,7 @@ class PasswordResetRouteTest : ApiTest() {
 
     @Test
     fun `password reset with valid token returns 200`() = apiTest { client ->
-        val users = listOf(
-            User(name = "testuser", password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2"),
-        )
-        users.forEach { userRepository.save(it) }
-        val token = passwordResetRepository.save(PasswordResetToken(userId = users.first().id))
+        val token = passwordResetRepository.save(PasswordResetToken(userId = userRepository.findAll("testuser").first().id))
         val request = PasswordResetRequest(token = token.id, password = "newpass")
         val response = client.post("/api/passwordreset") {
             header("Content-Type", "application/json")
@@ -89,8 +77,8 @@ class PasswordResetRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.NoContent, response.status)
         assertEquals(
-            "\$2a\$10\$bETxbFPja1PyXVLybETxb.E7dYGWCalFjrgd3ofAfKD8MqR0Ukua6",
-            userRepository.entities.first().password
+            "newpass",
+            userRepository.findAll(TEST_USER.name).first().password
         )
         assert(passwordResetRepository.entities.isEmpty())
     }

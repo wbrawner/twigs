@@ -4,18 +4,7 @@ import com.wbrawner.twigs.model.User
 import com.wbrawner.twigs.storage.UserRepository
 
 class FakeUserRepository : FakeRepository<User>(), UserRepository {
-    override val entities: MutableList<User> = mutableListOf(
-            User(
-                name = "testuser",
-                email = "test@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb.CWBYzyYdZpmCcA7NSIN8dkdzidt1Xv2" // testpass
-            ),
-            User(
-                name = "otheruser",
-                email = "other@example.com",
-                password = "\$2a\$10\$bETxbFPja1PyXVLybETxb..rhfIeOkP4qil1Drj29LDUhBxVkm6fS"
-            ),
-    )
+    override val entities: MutableList<User> = mutableListOf(TEST_USER, OTHER_USER)
 
     override fun findAll(nameOrEmail: String, password: String?): List<User> {
         return entities.filter { user ->
@@ -28,5 +17,21 @@ class FakeUserRepository : FakeRepository<User>(), UserRepository {
 
     override fun findAll(nameLike: String): List<User> {
         return entities.filter { it.name.contains(nameLike, ignoreCase = true) }
+    }
+
+    companion object {
+        val TEST_USER = User(
+            id = "id-test-user",
+            name = "testuser",
+            email = "test@example.com",
+            password = "testpass"
+        )
+
+        val OTHER_USER = User(
+            id = "id-other-user",
+            name = "otheruser",
+            email = "other@example.com",
+            password = "otherpass"
+        )
     }
 }
