@@ -13,7 +13,7 @@ class JdbcPermissionRepository(dataSource: DataSource) :
     override val conflictFields: Collection<String> =
         listOf(Fields.USER_ID.name.lowercase(), Fields.BUDGET_ID.name.lowercase())
 
-    override fun findAll(budgetIds: List<String>?, userId: String?): List<UserPermission> =
+    override suspend fun findAll(budgetIds: List<String>?, userId: String?): List<UserPermission> =
         dataSource.connection.use { conn ->
             if (budgetIds.isNullOrEmpty() && userId.isNullOrBlank()) {
                 throw Error("budgetIds or userId must be provided")

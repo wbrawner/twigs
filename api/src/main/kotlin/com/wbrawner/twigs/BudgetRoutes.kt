@@ -1,48 +1,58 @@
 package com.wbrawner.twigs
 
-import com.wbrawner.twigs.model.Session
-import com.wbrawner.twigs.service.budget.BudgetRequest
 import com.wbrawner.twigs.service.budget.BudgetService
+import com.wbrawner.twigs.service.requireSession
+import com.wbrawner.twigs.service.respondCatching
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.*
 
 fun Application.budgetRoutes(budgetService: BudgetService) {
     routing {
         route("/api/budgets") {
             authenticate(optional = false) {
                 get {
-                    val session = requireNotNull(call.principal<Session>()) { "session is required" }
-                    call.respond(budgetService.budgetsForUser(userId = session.userId))
+                    call.respondCatching {
+                        budgetService.budgetsForUser(userId = requireSession().userId)
+                    }
                 }
 
                 get("/{id}") {
-                    val session = requireNotNull(call.principal<Session>()) { "session is required" }
-                    val budgetId = requireNotNull(call.parameters["id"]) { "budgetId is required" }
-                    call.respond(budgetService.budget(budgetId = budgetId, userId = session.userId))
+                    call.respondCatching {
+                        budgetService.budget(
+                            budgetId = call.parameters.getOrFail("id"),
+                            userId = requireSession().userId
+                        )
+                    }
                 }
 
                 post {
-                    val session = call.principal<Session>()!!
-                    val request = call.receive<BudgetRequest>()
-                    call.respond(budgetService.save(request = request, userId = session.userId))
+                    call.respondCatching {
+                        budgetService.save(request = call.receive(), userId = requireSession().userId)
+                    }
                 }
 
                 put("/{id}") {
-                    val session = requireNotNull(call.principal<Session>()) { "session was null" }
-                    val request = call.receive<BudgetRequest>()
-                    val budgetId = requireNotNull(call.parameters["id"]) { "budgetId is required" }
-                    call.respond(budgetService.save(request = request, userId = session.id, budgetId = budgetId))
+                    call.respondCatching {
+                        budgetService.save(
+                            request = call.receive(),
+                            userId = requireSession().userId,
+                            budgetId = call.parameters.getOrFail("id")
+                        )
+                    }
                 }
 
                 delete("/{id}") {
-                    val session = requireNotNull(call.principal<Session>()) { "session was null" }
-                    val budgetId = requireNotNull(call.parameters["id"]) { "budgetId is required" }
-                    budgetService.delete(budgetId = budgetId, userId = session.userId)
-                    call.respond(HttpStatusCode.NoContent)
+                    call.respondCatching {
+                        budgetService.delete(
+                            budgetId = call.parameters.getOrFail("id"),
+                            userId = requireSession().userId
+                        )
+                        HttpStatusCode.NoContent
+                    }
                 }
             }
         }

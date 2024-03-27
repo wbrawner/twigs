@@ -1,15 +1,14 @@
 package com.wbrawner.twigs.server.api
 
-import com.wbrawner.twigs.BudgetRequest
-import com.wbrawner.twigs.BudgetResponse
-import com.wbrawner.twigs.UserPermissionRequest
-import com.wbrawner.twigs.UserPermissionResponse
 import com.wbrawner.twigs.model.*
+import com.wbrawner.twigs.service.budget.BudgetRequest
+import com.wbrawner.twigs.service.budget.BudgetResponse
+import com.wbrawner.twigs.service.user.UserPermissionRequest
+import com.wbrawner.twigs.service.user.UserPermissionResponse
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class BudgetRouteTest : ApiTest() {
@@ -228,9 +227,8 @@ class BudgetRouteTest : ApiTest() {
         assertEquals(expectedUsers, updatedUsers)
     }
 
-    @Disabled("Will be fixed with service layer refactor")
     @Test
-    fun `updating budgets returns not found for users with no access`() = apiTest { client ->
+    fun `updating budgets returns forbidden for users with no access`() = apiTest { client ->
         val users = listOf(
             User(name = "testuser", password = "testpassword"),
             User(name = "otheruser", password = "otherpassword"),
@@ -254,7 +252,6 @@ class BudgetRouteTest : ApiTest() {
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
 
-    @Disabled("Will be fixed with service layer refactor")
     @Test
     fun `updating non-existent budgets returns not found`() = apiTest { client ->
         val users = listOf(
@@ -273,7 +270,6 @@ class BudgetRouteTest : ApiTest() {
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
 
-    @Disabled("Will be fixed with service layer refactor")
     @Test
     fun `updating budgets returns forbidden for users with manage access attempting to remove owner`() =
         apiTest { client ->

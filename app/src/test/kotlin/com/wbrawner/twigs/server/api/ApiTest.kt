@@ -1,6 +1,11 @@
 package com.wbrawner.twigs.server.api
 
 import com.wbrawner.twigs.server.moduleWithDependencies
+import com.wbrawner.twigs.service.budget.DefaultBudgetService
+import com.wbrawner.twigs.service.category.DefaultCategoryService
+import com.wbrawner.twigs.service.recurringtransaction.DefaultRecurringTransactionService
+import com.wbrawner.twigs.service.transaction.DefaultTransactionService
+import com.wbrawner.twigs.service.user.DefaultUserService
 import com.wbrawner.twigs.test.helpers.FakeEmailService
 import com.wbrawner.twigs.test.helpers.repository.*
 import io.ktor.client.*
@@ -38,17 +43,29 @@ open class ApiTest {
     fun apiTest(test: suspend ApiTest.(client: HttpClient) -> Unit) = testApplication {
         application {
             moduleWithDependencies(
-                emailService = emailService,
-                metadataRepository = metadataRepository,
-                budgetRepository = budgetRepository,
-                categoryRepository = categoryRepository,
-                passwordHasher = { it },
-                passwordResetRepository = passwordResetRepository,
-                permissionRepository = permissionRepository,
-                recurringTransactionRepository = recurringTransactionRepository,
-                sessionRepository = sessionRepository,
-                transactionRepository = transactionRepository,
-                userRepository = userRepository
+                budgetService = DefaultBudgetService(budgetRepository, permissionRepository),
+                categoryService = DefaultCategoryService(categoryRepository, permissionRepository),
+                recurringTransactionService = DefaultRecurringTransactionService(
+                    recurringTransactionRepository,
+                    permissionRepository
+                ),
+                transactionService = DefaultTransactionService(
+                    transactionRepository,
+                    categoryRepository,
+                    permissionRepository
+                ),
+                userService = DefaultUserService(
+                    emailService,
+                    passwordResetRepository,
+                    permissionRepository,
+                    sessionRepository,
+                    userRepository,
+                    { it }
+                ),
+                jobs = listOf(),
+                sessionValidator = {
+                    sessionRepository.findAll(it.token).firstOrNull()
+                }
             )
         }
         val client = createClient {

@@ -5,7 +5,17 @@ import ch.qos.logback.classic.Level
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
 import com.wbrawner.twigs.model.Session
-import com.wbrawner.twigs.storage.*
+import com.wbrawner.twigs.service.budget.BudgetService
+import com.wbrawner.twigs.service.budget.DefaultBudgetService
+import com.wbrawner.twigs.service.category.CategoryService
+import com.wbrawner.twigs.service.category.DefaultCategoryService
+import com.wbrawner.twigs.service.recurringtransaction.DefaultRecurringTransactionService
+import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionService
+import com.wbrawner.twigs.service.transaction.DefaultTransactionService
+import com.wbrawner.twigs.service.transaction.TransactionService
+import com.wbrawner.twigs.service.user.DefaultUserService
+import com.wbrawner.twigs.service.user.UserService
+import com.wbrawner.twigs.storage.PasswordHasher
 import com.wbrawner.twigs.web.webRoutes
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -81,42 +91,78 @@ fun Application.module() {
                 metadata
             }
         }
+        val budgetRepository = JdbcBudgetRepository(it)
+        val categoryRepository = JdbcCategoryRepository(it)
+        val permissionRepository = JdbcPermissionRepository(it)
+        val passwordResetRepository = JdbcPasswordResetRepository(it)
+        val passwordHasher = PasswordHasher { password ->
+            String(BCrypt.withDefaults().hash(10, metadata.salt.toByteArray(), password.toByteArray()))
+        }
+        val recurringTransactionRepository = JdbcRecurringTransactionRepository(it)
+        val sessionRepository = JdbcSessionRepository(it)
+        val transactionRepository = JdbcTransactionRepository(it)
+        val userRepository = JdbcUserRepository(it)
+        val emailService = SmtpEmailService(
+            from = System.getenv("TWIGS_SMTP_FROM"),
+            host = System.getenv("TWIGS_SMTP_HOST"),
+            port = System.getenv("TWIGS_SMTP_PORT")?.toIntOrNull(),
+            username = System.getenv("TWIGS_SMTP_USER"),
+            password = System.getenv("TWIGS_SMTP_PASS"),
+        )
+        val jobs = listOf(
+            SessionCleanupJob(sessionRepository),
+            RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
+        )
+        val sessionValidator: suspend ApplicationCall.(Session) -> Principal? = validate@{ session ->
+            application.environment.log.info("Validating session")
+            val storedSession = sessionRepository.findAll(session.token)
+                .firstOrNull()
+            if (storedSession == null) {
+                application.environment.log.info("Did not find session!")
+                return@validate null
+            } else {
+                application.environment.log.info("Found session!")
+            }
+            return@validate if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
+                sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
+            } else {
+                null
+            }
+        }
         moduleWithDependencies(
-            emailService = SmtpEmailService(
-                from = System.getenv("TWIGS_SMTP_FROM"),
-                host = System.getenv("TWIGS_SMTP_HOST"),
-                port = System.getenv("TWIGS_SMTP_PORT")?.toIntOrNull(),
-                username = System.getenv("TWIGS_SMTP_USER"),
-                password = System.getenv("TWIGS_SMTP_PASS"),
+            budgetService = DefaultBudgetService(budgetRepository, permissionRepository),
+            categoryService = DefaultCategoryService(categoryRepository, permissionRepository),
+            recurringTransactionService = DefaultRecurringTransactionService(
+                recurringTransactionRepository,
+                permissionRepository
             ),
-            metadataRepository = JdbcMetadataRepository(it),
-            budgetRepository = JdbcBudgetRepository(it),
-            categoryRepository = JdbcCategoryRepository(it),
-            passwordResetRepository = JdbcPasswordResetRepository(it),
-            passwordHasher = { password ->
-                String(BCrypt.withDefaults().hash(10, metadata.salt.toByteArray(), password.toByteArray()))
-            },
-            permissionRepository = JdbcPermissionRepository(it),
-            recurringTransactionRepository = JdbcRecurringTransactionRepository(it),
-            sessionRepository = JdbcSessionRepository(it),
-            transactionRepository = JdbcTransactionRepository(it),
-            userRepository = JdbcUserRepository(it)
+            transactionService = DefaultTransactionService(
+                transactionRepository,
+                categoryRepository,
+                permissionRepository
+            ),
+            userService = DefaultUserService(
+                emailService,
+                passwordResetRepository,
+                permissionRepository,
+                sessionRepository,
+                userRepository,
+                passwordHasher
+            ),
+            jobs = jobs,
+            sessionValidator = sessionValidator
         )
     }
 }
 
 fun Application.moduleWithDependencies(
-    emailService: EmailService,
-    metadataRepository: MetadataRepository,
-    budgetRepository: BudgetRepository,
-    categoryRepository: CategoryRepository,
-    passwordResetRepository: PasswordResetRepository,
-    passwordHasher: PasswordHasher,
-    permissionRepository: PermissionRepository,
-    recurringTransactionRepository: RecurringTransactionRepository,
-    sessionRepository: SessionRepository,
-    transactionRepository: TransactionRepository,
-    userRepository: UserRepository
+    budgetService: BudgetService,
+    categoryService: CategoryService,
+    recurringTransactionService: RecurringTransactionService,
+    transactionService: TransactionService,
+    userService: UserService,
+    jobs: List<Job>,
+    sessionValidator: suspend ApplicationCall.(Session) -> Principal?
 ) {
     install(CallLogging)
     install(Authentication) {
@@ -124,22 +170,7 @@ fun Application.moduleWithDependencies(
             challenge {
                 call.respond(HttpStatusCode.Unauthorized)
             }
-            validate { session ->
-                application.environment.log.info("Validating session")
-                val storedSession = sessionRepository.findAll(session.token)
-                    .firstOrNull()
-                if (storedSession == null) {
-                    application.environment.log.info("Did not find session!")
-                    return@validate null
-                } else {
-                    application.environment.log.info("Found session!")
-                }
-                return@validate if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
-                    sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
-                } else {
-                    null
-                }
-            }
+            validate(sessionValidator)
         }
     }
     install(Sessions) {
@@ -170,6 +201,8 @@ fun Application.moduleWithDependencies(
         allowHost("twigs.wbrawner.com", listOf("http", "https")) // TODO: Make configurable
         allowHost("localhost:4200", listOf("http", "https"))     // TODO: Make configurable
         allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
         allowHeader(HttpHeaders.Authorization)
@@ -192,17 +225,13 @@ fun Application.moduleWithDependencies(
         allowHeader("DNT")
         allowCredentials = true
     }
-    budgetRoutes(budgetRepository, permissionRepository)
-    categoryRoutes(categoryRepository, permissionRepository)
-    recurringTransactionRoutes(recurringTransactionRepository, permissionRepository)
-    transactionRoutes(transactionRepository, permissionRepository)
-    userRoutes(emailService, passwordResetRepository, permissionRepository, sessionRepository, userRepository, passwordHasher)
+    budgetRoutes(budgetService)
+    categoryRoutes(categoryService)
+    recurringTransactionRoutes(recurringTransactionService)
+    transactionRoutes(transactionService)
+    userRoutes(userService)
     webRoutes()
     launch {
-        val jobs = listOf(
-            SessionCleanupJob(sessionRepository),
-            RecurringTransactionProcessingJob(recurringTransactionRepository, transactionRepository)
-        )
         while (currentCoroutineContext().isActive) {
             jobs.forEach { it.run() }
             delay(TimeUnit.HOURS.toMillis(1))
