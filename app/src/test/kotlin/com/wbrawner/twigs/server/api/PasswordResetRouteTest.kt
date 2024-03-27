@@ -1,10 +1,10 @@
 package com.wbrawner.twigs.server.api
 
-import com.wbrawner.twigs.ErrorResponse
-import com.wbrawner.twigs.PasswordResetRequest
-import com.wbrawner.twigs.ResetPasswordRequest
 import com.wbrawner.twigs.model.PasswordResetToken
 import com.wbrawner.twigs.randomString
+import com.wbrawner.twigs.service.ErrorResponse
+import com.wbrawner.twigs.service.user.PasswordResetRequest
+import com.wbrawner.twigs.service.user.ResetPasswordRequest
 import com.wbrawner.twigs.test.helpers.repository.FakeUserRepository.Companion.TEST_USER
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -18,7 +18,7 @@ class PasswordResetRouteTest : ApiTest() {
     @Test
     fun `reset password with invalid username returns 202`() = apiTest { client ->
         val request = ResetPasswordRequest(username = "invaliduser")
-        val response = client.post("/api/resetpassword") {
+        val response = client.post("/api/users/resetpassword") {
             header("Content-Type", "application/json")
             setBody(request)
         }
@@ -29,7 +29,7 @@ class PasswordResetRouteTest : ApiTest() {
     @Test
     fun `reset password with valid username returns 202`() = apiTest { client ->
         val request = ResetPasswordRequest(username = "testuser")
-        val response = client.post("/api/resetpassword") {
+        val response = client.post("/api/users/resetpassword") {
             header("Content-Type", "application/json")
             setBody(request)
         }
@@ -43,9 +43,9 @@ class PasswordResetRouteTest : ApiTest() {
     }
 
     @Test
-    fun `password reset with invalid token returns 400`() = apiTest { client ->
+    fun `password reset with invalid token returns 401`() = apiTest { client ->
         val request = PasswordResetRequest(token = randomString(), password = "newpass")
-        val response = client.post("/api/passwordreset") {
+        val response = client.put("/api/users/resetpassword") {
             header("Content-Type", "application/json")
             setBody(request)
         }
@@ -55,10 +55,10 @@ class PasswordResetRouteTest : ApiTest() {
     }
 
     @Test
-    fun `password reset with expired token returns 400`() = apiTest { client ->
+    fun `password reset with expired token returns 401`() = apiTest { client ->
         val token = passwordResetRepository.save(PasswordResetToken(expiration = twoWeeksAgo))
         val request = PasswordResetRequest(token = token.id, password = "newpass")
-        val response = client.post("/api/passwordreset") {
+        val response = client.put("/api/users/resetpassword") {
             header("Content-Type", "application/json")
             setBody(request)
         }
@@ -68,10 +68,11 @@ class PasswordResetRouteTest : ApiTest() {
     }
 
     @Test
-    fun `password reset with valid token returns 200`() = apiTest { client ->
-        val token = passwordResetRepository.save(PasswordResetToken(userId = userRepository.findAll("testuser").first().id))
+    fun `password reset with valid token returns 204`() = apiTest { client ->
+        val token =
+            passwordResetRepository.save(PasswordResetToken(userId = userRepository.findAll("testuser").first().id))
         val request = PasswordResetRequest(token = token.id, password = "newpass")
-        val response = client.post("/api/passwordreset") {
+        val response = client.put("/api/users/resetpassword") {
             header("Content-Type", "application/json")
             setBody(request)
         }

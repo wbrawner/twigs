@@ -1,8 +1,9 @@
 package com.wbrawner.twigs.server.api
 
-import com.wbrawner.twigs.*
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.model.User
+import com.wbrawner.twigs.service.ErrorResponse
+import com.wbrawner.twigs.service.user.*
 import com.wbrawner.twigs.test.helpers.repository.FakeUserRepository.Companion.OTHER_USER
 import com.wbrawner.twigs.test.helpers.repository.FakeUserRepository.Companion.TEST_USER
 import io.ktor.client.call.*
@@ -96,7 +97,7 @@ class UserRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         val errorBody = response.body<ErrorResponse>()
-        assertEquals("Username must not be null or blank", errorBody.message)
+        assertEquals("username must not be null or blank", errorBody.message)
     }
 
     @Test
@@ -108,7 +109,7 @@ class UserRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         val errorBody = response.body<ErrorResponse>()
-        assertEquals("Username must not be null or blank", errorBody.message)
+        assertEquals("username must not be null or blank", errorBody.message)
     }
 
     @Test
@@ -120,7 +121,7 @@ class UserRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         val errorBody = response.body<ErrorResponse>()
-        assertEquals("Password must not be null or blank", errorBody.message)
+        assertEquals("password must not be null or blank", errorBody.message)
     }
 
     @Test
@@ -132,7 +133,7 @@ class UserRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         val errorBody = response.body<ErrorResponse>()
-        assertEquals("Password must not be null or blank", errorBody.message)
+        assertEquals("password must not be null or blank", errorBody.message)
     }
 
     @Test
@@ -144,7 +145,7 @@ class UserRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         val errorBody = response.body<ErrorResponse>()
-        assertEquals("Username or email already taken", errorBody.message)
+        assertEquals("username or email already taken", errorBody.message)
     }
 
     @Test
@@ -156,7 +157,7 @@ class UserRouteTest : ApiTest() {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         val errorBody = response.body<ErrorResponse>()
-        assertEquals("Username or email already taken", errorBody.message)
+        assertEquals("username or email already taken", errorBody.message)
     }
 
     @Test

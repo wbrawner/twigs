@@ -5,7 +5,7 @@ import com.wbrawner.twigs.storage.PermissionRepository
 
 class FakePermissionRepository : PermissionRepository {
     val permissions: MutableList<UserPermission> = mutableListOf()
-    override fun findAll(budgetIds: List<String>?, userId: String?): List<UserPermission> =
+    override suspend fun findAll(budgetIds: List<String>?, userId: String?): List<UserPermission> =
         permissions.filter { userPermission ->
             budgetIds?.contains(userPermission.budgetId) ?: true
                     && userId?.let { it == userPermission.userId } ?: true

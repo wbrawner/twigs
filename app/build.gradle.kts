@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.bcrypt)
     implementation(libs.logback)
     implementation(libs.mail)
+    implementation(project(mapOf("path" to ":service")))
     testImplementation(project(":testhelpers"))
     testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.ktor.server.test)

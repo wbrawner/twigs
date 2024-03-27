@@ -2,6 +2,7 @@ package com.wbrawner.twigs
 
 import com.wbrawner.twigs.model.Frequency
 import java.time.Instant
+import java.time.format.DateTimeParseException
 import java.util.*
 
 private val CALENDAR_FIELDS = intArrayOf(
@@ -51,5 +52,11 @@ fun randomString(length: Int = 32): String {
 }
 
 fun String.toInstant(): Instant = Instant.parse(this)
+
+fun String.toInstantOrNull(): Instant? = try {
+    Instant.parse(this)
+} catch (e: DateTimeParseException) {
+    null
+}
 
 fun String.asFrequency(): Frequency = Frequency.parse(this)
