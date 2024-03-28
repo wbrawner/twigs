@@ -2,8 +2,8 @@ name: Pull request workflow
 on: pull_request
 
 permissions:
-  contents: write
-  pull-requests: write
+  statuses: write
+  checks: write
 
 jobs:
   test:
