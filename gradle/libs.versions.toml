@@ -7,7 +7,7 @@ kotlinx-coroutines = "1.8.0"
 ktor = "2.3.9"
 logback = "1.5.3"
 mail = "1.6.2"
-postgres = "42.7.2"
+postgres = "42.7.3"
 shadow = "8.1.1"
 sqlite = "3.45.1.0"
 
