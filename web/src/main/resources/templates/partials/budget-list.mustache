@@ -1,0 +1,13 @@
+<ul>
+    {{#budgets}}
+        <li>
+            <span class="budget-name">{{name}}</span>
+            <span class="budget-description">{{description}}</span>
+        </li>
+    {{/budgets}}
+</ul>
+{{^budgets}}
+    <p style="text-align: center;">Welcome to Twigs! It looks like you haven't created any budgets yet. Budgets are the
+        foundation for planning and growing your finances. To get started with Twigs, <a href="/budgets/new">create a
+            new budget</a> now!</p>
+{{/budgets}}

@@ -1,3 +1,12 @@
 package com.wbrawner.twigs.web
 
-open class Page(val title: String)
+import com.wbrawner.twigs.service.user.UserResponse
+
+interface Page {
+    val title: String
+    val error: String?
+}
+
+interface AuthenticatedPage : Page {
+    val user: UserResponse
+}
