@@ -8,6 +8,7 @@ html, body {
     --color-accent: #004800;
     --color-on-accent: #FFFFFF;
     --color-on-background: #000000;
+    --color-on-dim: #222222;
     --logo: url("/img/logo-color.svg");
     --background-color-primary: #ffffff;
     --background-color-secondary: #bbbbbb;
@@ -20,6 +21,7 @@ html, body {
         --color-accent: #baff33;
         --color-on-accent: #000000;
         --color-on-background: #FFFFFF;
+        --color-on-dim: #888888;
         --logo: url("/img/logo-white.svg");
         --background-color-primary: #000000;
         --background-color-secondary: #333333;
@@ -90,6 +92,11 @@ form > input {
     border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--input-padding);
+}
+
+input:disabled {
+    background-color: var(--background-color-secondary);
+    color: var(--color-on-background);
 }
 
 a {
