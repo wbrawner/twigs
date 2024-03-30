@@ -1,21 +1,34 @@
 package com.wbrawner.twigs.web
 
+import com.wbrawner.twigs.model.CookieSession
+import com.wbrawner.twigs.service.budget.BudgetService
+import com.wbrawner.twigs.service.user.UserService
+import com.wbrawner.twigs.web.user.userWebRoutes
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
-import io.ktor.server.request.*
+import io.ktor.server.mustache.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 
-fun Application.webRoutes() {
+fun Application.webRoutes(
+    budgetService: BudgetService,
+    userService: UserService
+) {
     routing {
-        staticResources("/", "web")
-        intercept(ApplicationCallPipeline.Setup) {
-            if (!call.request.path().startsWith("/api") && !call.request.path().matches(Regex(".*\\.\\w+$"))) {
-                call.resolveResource("web/index.html")?.let {
-                    call.respond(it)
-                    return@intercept finish()
-                }
-            }
+        staticResources("/", "static")
+        get("/") {
+            call.sessions.get(CookieSession::class)
+                ?.let { userService.session(it.token) }
+                ?.let { session ->
+                    application.environment.log.info("Session found!")
+                    budgetService.budgetsForUser(session.userId)
+                        .firstOrNull()
+                        ?.let { budget ->
+                            call.respondRedirect("/budgets/${budget.id}")
+                        } ?: call.respondRedirect("/budgets")
+                } ?: call.respond(MustacheContent("index.mustache", null))
         }
     }
+    userWebRoutes(userService)
 }

@@ -8,7 +8,7 @@ data class User(
     override val id: String = randomString(),
     val name: String = "",
     val password: String = "",
-    val email: String = ""
+    val email: String? = null
 ) : Principal, Identifiable
 
 enum class Permission {

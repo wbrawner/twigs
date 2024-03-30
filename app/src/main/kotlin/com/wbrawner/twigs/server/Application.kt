@@ -2,8 +2,11 @@ package com.wbrawner.twigs.server
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import ch.qos.logback.classic.Level
+import com.github.mustachejava.DefaultMustacheFactory
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
+import com.wbrawner.twigs.model.CookieSession
+import com.wbrawner.twigs.model.HeaderSession
 import com.wbrawner.twigs.model.Session
 import com.wbrawner.twigs.service.budget.BudgetService
 import com.wbrawner.twigs.service.budget.DefaultBudgetService
@@ -16,15 +19,18 @@ import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.DefaultUserService
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.storage.PasswordHasher
+import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import com.wbrawner.twigs.web.webRoutes
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
+import io.ktor.server.mustache.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
@@ -124,7 +130,7 @@ fun Application.module() {
                 application.environment.log.info("Found session!")
             }
             return@validate if (twoWeeksFromNow.isAfter(storedSession.expiration)) {
-                sessionRepository.save(storedSession.copy(expiration = twoWeeksFromNow))
+                sessionRepository.save(storedSession.updateExpiration(newExpiration = twoWeeksFromNow))
             } else {
                 null
             }
@@ -176,13 +182,26 @@ fun Application.moduleWithDependencies(
     install(Sessions) {
         header<Session>("Authorization") {
             serializer = object : SessionSerializer<Session> {
-                override fun deserialize(text: String): Session {
+                override fun deserialize(text: String): HeaderSession {
                     this@moduleWithDependencies.environment.log.info("Deserializing session!")
-                    return Session(token = text.substringAfter("Bearer "))
+                    return HeaderSession(token = text.substringAfter("Bearer "))
                 }
 
                 override fun serialize(session: Session): String = session.token
             }
+        }
+
+        cookie<CookieSession>(TWIGS_SESSION_COOKIE) {
+            serializer = object : SessionSerializer<CookieSession> {
+                override fun deserialize(text: String): CookieSession {
+                    this@moduleWithDependencies.environment.log.info("Deserializing session!")
+                    return CookieSession(token = text)
+                }
+
+                override fun serialize(session: CookieSession): String = session.token
+            }
+            cookie.httpOnly = true
+            cookie.secure = true
         }
     }
     install(ContentNegotiation) {
@@ -196,6 +215,8 @@ fun Application.moduleWithDependencies(
             prettyPrint = false
             useArrayPolymorphism = true
         })
+
+        formData()
     }
     install(CORS) {
         allowHost("twigs.wbrawner.com", listOf("http", "https")) // TODO: Make configurable
@@ -225,12 +246,15 @@ fun Application.moduleWithDependencies(
         allowHeader("DNT")
         allowCredentials = true
     }
+    install(Mustache) {
+        mustacheFactory = DefaultMustacheFactory("templates")
+    }
     budgetRoutes(budgetService)
     categoryRoutes(categoryService)
     recurringTransactionRoutes(recurringTransactionService)
     transactionRoutes(transactionService)
     userRoutes(userService)
-    webRoutes()
+    webRoutes(budgetService, userService)
     launch {
         while (currentCoroutineContext().isActive) {
             jobs.forEach { it.run() }

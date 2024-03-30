@@ -22,6 +22,8 @@ interface UserService {
 
     suspend fun user(userId: String): UserResponse
 
+    suspend fun session(token: String): SessionResponse
+
     suspend fun save(request: UserRequest, targetUserId: String, requestingUserId: String): UserResponse
 
     suspend fun delete(targetUserId: String, requestingUserId: String)
@@ -68,7 +70,7 @@ class DefaultUserService(
             User(
                 name = request.username,
                 password = passwordHasher.hash(request.password),
-                email = if (request.email.isNullOrBlank()) "" else request.email
+                email = if (request.email.isNullOrBlank()) null else request.email
             )
         ).asResponse()
     }
@@ -77,7 +79,7 @@ class DefaultUserService(
         userRepository.findAll(nameOrEmail = request.username)
             .firstOrNull()
             ?.let {
-                val email = it.email
+                val email = it.email ?: return@let
                 val passwordResetToken = passwordResetRepository.save(PasswordResetToken(userId = it.id))
                 emailService.sendPasswordResetEmail(passwordResetToken, email)
             }
@@ -130,6 +132,13 @@ class DefaultUserService(
             .firstOrNull()
             ?.asResponse()
             ?: throw HttpException(HttpStatusCode.NotFound)
+    }
+
+    override suspend fun session(token: String): SessionResponse {
+        return sessionRepository.findAll(token = token)
+            .firstOrNull()
+            ?.asResponse()
+            ?: throw HttpException(HttpStatusCode.Unauthorized)
     }
 
     override suspend fun save(
