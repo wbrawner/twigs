@@ -178,6 +178,12 @@ fun Application.moduleWithDependencies(
             }
             validate(sessionValidator)
         }
+        session<CookieSession>(TWIGS_SESSION_COOKIE) {
+            challenge {
+                call.respond(HttpStatusCode.Unauthorized)
+            }
+            validate(sessionValidator)
+        }
     }
     install(Sessions) {
         header<Session>("Authorization") {
@@ -254,7 +260,7 @@ fun Application.moduleWithDependencies(
     recurringTransactionRoutes(recurringTransactionService)
     transactionRoutes(transactionService)
     userRoutes(userService)
-    webRoutes(budgetService, userService)
+    webRoutes(budgetService, categoryService, transactionService, userService)
     launch {
         while (currentCoroutineContext().isActive) {
             jobs.forEach { it.run() }

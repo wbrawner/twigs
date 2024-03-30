@@ -2,7 +2,10 @@ package com.wbrawner.twigs.web
 
 import com.wbrawner.twigs.model.CookieSession
 import com.wbrawner.twigs.service.budget.BudgetService
+import com.wbrawner.twigs.service.category.CategoryService
+import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
+import com.wbrawner.twigs.web.budget.budgetWebRoutes
 import com.wbrawner.twigs.web.user.userWebRoutes
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -13,6 +16,8 @@ import io.ktor.server.sessions.*
 
 fun Application.webRoutes(
     budgetService: BudgetService,
+    categoryService: CategoryService,
+    transactionService: TransactionService,
     userService: UserService
 ) {
     routing {
@@ -30,5 +35,6 @@ fun Application.webRoutes(
                 } ?: call.respond(MustacheContent("index.mustache", null))
         }
     }
+    budgetWebRoutes(budgetService, categoryService, transactionService, userService)
     userWebRoutes(userService)
 }

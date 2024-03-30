@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+{{> partials/head }}
+<body>
+<div id="app">
+    <h1>{{title}}</h1>
+    <div class="center">
+        {{#error }}
+            <p class="error">{{error}}</p>
+        {{/error}}
+        <form method="post">
+            <label for="name">Name</label>
+            <input id="name" type="text" name="name" value="{{ budget.name }}"/>
+            <label for="description">Description</label>
+            <textarea id="description" name="description">{{ budget.description }}</textarea>
+            <input id="submit" type="submit" class="button button-primary" value="Save"/>
+        </form>
+    </div>
+</div>
+{{>partials/foot}}
+</body>
+</html>

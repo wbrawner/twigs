@@ -39,19 +39,19 @@ class DefaultBudgetService(
         budgetPermissionRepository.budgetWithPermission(userId, budgetId, Permission.READ)
 
     override suspend fun save(request: BudgetRequest, userId: String, budgetId: String?): BudgetResponse {
-        val budget = budgetId?.let {
+        val budget = if (budgetId?.isNotBlank() == true) {
             budgetPermissionRepository.budgetWithPermission(
-                budgetId = it,
+                budgetId = budgetId,
                 userId = userId,
                 permission = Permission.MANAGE
             ).run {
                 Budget(
-                    id = it,
+                    id = budgetId,
                     name = request.name ?: name,
                     description = request.description ?: description
                 )
             }
-        } ?: run {
+        } else {
             if (request.name.isNullOrBlank()) {
                 throw HttpException(HttpStatusCode.BadRequest, message = "Name cannot be empty or null")
             }

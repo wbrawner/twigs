@@ -17,21 +17,21 @@ import java.time.Instant
 interface TransactionService {
     suspend fun transactions(
         budgetIds: List<String>,
-        categoryIds: List<String>?,
-        from: Instant?,
-        to: Instant?,
-        expense: Boolean?,
+        categoryIds: List<String>? = null,
+        from: Instant? = null,
+        to: Instant? = null,
+        expense: Boolean? = null,
         userId: String,
     ): List<TransactionResponse>
 
     suspend fun transaction(transactionId: String, userId: String): TransactionResponse
 
     suspend fun sum(
-        budgetId: String?,
-        categoryId: String?,
-        from: Instant?,
-        to: Instant?,
         userId: String,
+        budgetId: String? = null,
+        categoryId: String? = null,
+        from: Instant? = null,
+        to: Instant? = null,
     ): Long
 
     suspend fun save(
@@ -78,11 +78,11 @@ class DefaultTransactionService(
     }
 
     override suspend fun sum(
+        userId: String,
         budgetId: String?,
         categoryId: String?,
         from: Instant?,
-        to: Instant?,
-        userId: String
+        to: Instant?
     ): Long {
         if (budgetId.isNullOrBlank() && categoryId.isNullOrBlank()) {
             throw HttpException(HttpStatusCode.BadRequest, message = "budgetId or categoryId must be provided to sum")
