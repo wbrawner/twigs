@@ -13,11 +13,12 @@
             <input id="username" type="text" name="username" value="{{ username }}"/>
             <label for="password">Password</label>
             <input id="password" type="password" name="password"/>
-            <input type="submit" class="button button-primary" value="Login"/>
+            <input id="submit" type="submit" class="button button-primary" value="Login"/>
         </form>
         <a href="/resetpassword" style="padding: var(--input-padding)">Forgot your password?</a>
         <a href="/register" style="padding: var(--input-padding)">Create an account</a>
     </div>
 </div>
+{{>partials/foot}}
 </body>
 </html>
