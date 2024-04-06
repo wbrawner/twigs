@@ -1,0 +1,36 @@
+{{> partials/head }}
+<div id="app">
+    {{>partials/sidebar}}
+    <main>
+        <div class="column">
+            <h1>{{category.category.title}}</h1>
+            <p>{{category.category.description}}</p>
+            <div class="row">
+                <div class="stacked-label">
+                    <p class="body-small">Budgeted</p>
+                    <p class="body-large">{{category.amountLabel}}</p>
+                </div>
+                <div class="stacked-label">
+                    <p class="body-small">Actual</p>
+                    <p class="body-large">{{category.balanceLabel}}</p>
+                </div>
+                <div class="stacked-label">
+                    <p class="body-small">Remaining</p>
+                    <p class="body-large">{{category.remainingAmountLabel}}</p>
+                </div>
+            </div>
+            <progress value="{{category.balance}}"
+                      max="{{category.category.amount}}">{{category.balanceLabel}}</progress>
+        </div>
+        <!-- TODO: Add a search bar to filter transactions by name/description -->
+        <div class="card">
+            <h3>Transactions</h3>
+            <ul>
+                {{#transactions}}
+                    {{>partials/transaction-list}}
+                {{/transactions}}
+            </ul>
+        </div>
+    </main>
+</div>
+{{>partials/foot}}

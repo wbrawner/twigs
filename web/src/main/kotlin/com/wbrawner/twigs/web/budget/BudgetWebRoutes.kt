@@ -12,6 +12,7 @@ import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstantOrNull
 import com.wbrawner.twigs.web.NotFoundPage
+import com.wbrawner.twigs.web.category.CategoryWithBalanceResponse
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -103,7 +104,7 @@ fun Application.budgetWebRoutes(
                             .map { category ->
                                 val categoryBalance =
                                     abs(transactionService.sum(categoryId = category.id, userId = user.id))
-                                BudgetDetailsPage.CategoryWithBalanceResponse(
+                                CategoryWithBalanceResponse(
                                     category = category,
                                     amountLabel = category.amount.toCurrencyString(numberFormat),
                                     balance = categoryBalance,
@@ -225,6 +226,6 @@ private fun <T> MutableCollection<T>.extractIf(predicate: (T) -> Boolean): List<
     return extracted
 }
 
-private fun Long.toCurrencyString(formatter: NumberFormat): String = formatter.format(
+fun Long.toCurrencyString(formatter: NumberFormat): String = formatter.format(
     this.toBigDecimal().divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
 )
