@@ -60,7 +60,8 @@ fun Application.categoryWebRoutes(
                                         expense = true,
                                         archived = false,
                                     ),
-                                    user
+                                    budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                    user = user
                                 )
                             )
                         )
@@ -88,8 +89,9 @@ fun Application.categoryWebRoutes(
                                             archived = call.parameters["archived"]?.toBoolean() ?: false,
                                             budgetId = budgetId
                                         ),
-                                        user,
-                                        e.message
+                                        budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                        user = user,
+                                        error = e.message
                                     )
                                 )
                             )
@@ -130,13 +132,17 @@ fun Application.categoryWebRoutes(
                                 .mapValues { (_, transactions) -> transactions.map { it.toListItem(numberFormat) } }
                                 .entries
                                 .sortedBy { it.key }
+                            val budgets = budgetService.budgetsForUser(user.id)
+                            val budgetId = call.parameters.getOrFail("budgetId")
+                            val budget = budgets.first { it.id == budgetId }
                             call.respond(
                                 MustacheContent(
                                     "category-details.mustache", CategoryDetailsPage(
                                         category = categoryWithBalance,
                                         transactions = transactionsByDate,
                                         transactionCount = transactionCount,
-                                        budgets = budgetService.budgetsForUser(user.id),
+                                        budgets = budgets,
+                                        budget = budget,
                                         user = user
                                     )
                                 )
@@ -156,10 +162,12 @@ fun Application.categoryWebRoutes(
                                 categoryId = call.parameters.getOrFail("id"),
                                 userId = user.id
                             )
+                            val budgetId = call.parameters.getOrFail("budgetId")
+                            val budget = budgetService.budget(budgetId = budgetId, userId = user.id)
                             call.respond(
                                 MustacheContent(
                                     "category-form.mustache",
-                                    CategoryFormPage(category, user)
+                                    CategoryFormPage(category, budget, user)
                                 )
                             )
                         }
