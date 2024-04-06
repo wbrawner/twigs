@@ -22,10 +22,11 @@ data class BudgetDetailsPage(
     val archivedIncomeCategories: List<CategoryWithBalanceResponse>,
     val archivedExpenseCategories: List<CategoryWithBalanceResponse>,
     val transactionCount: String,
+    val monthAndYear: String,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
-    override val title: String = "Budgets"
+    override val title: String = budget.name.orEmpty()
 }
 
 data class BudgetFormPage(

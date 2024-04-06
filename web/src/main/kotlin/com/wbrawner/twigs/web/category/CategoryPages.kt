@@ -10,6 +10,7 @@ import java.text.NumberFormat
 
 data class CategoryDetailsPage(
     val category: CategoryWithBalanceResponse,
+    val budget: BudgetResponse,
     val budgets: List<BudgetResponse>,
     val transactionCount: String,
     val transactions: List<Map.Entry<String, List<TransactionListItem>>>,
@@ -39,6 +40,7 @@ fun TransactionResponse.toListItem(numberFormat: NumberFormat) = TransactionList
 
 data class CategoryFormPage(
     val category: CategoryResponse,
+    val budget: BudgetResponse,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {

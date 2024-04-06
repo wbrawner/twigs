@@ -1,4 +1,45 @@
 <aside class="sidebar">
     <div class="logo" style="height: 100px; width: 100px;"></div>
+    <ul>
+        <li class="list-item">
+            <a href="/budgets/{{budget.id}}">
+                Overview
+            </a>
+        </li>
+        <li class="list-item">
+            <a href="/budgets/{{budget.id}}/transactions">
+                Transactions
+            </a>
+        </li>
+        <li class="list-item">
+            <a href="/budgets/{{budget.id}}/recurring">
+                Recurring Transactions
+            </a>
+        </li>
+    </ul>
+    <hr/>
     {{>budget-list}}
+    <hr/>
+    <ul>
+        <li class="list-item">
+            <a href="/profile">
+                Profile
+            </a>
+        </li>
+        <li class="list-item">
+            <a href="/settings">
+                Settings
+            </a>
+        </li>
+        <li class="list-item">
+            <a href="/about">
+                About Twigs
+            </a>
+        </li>
+        <li class="list-item">
+            <a href="https://github.com/wbrawner/twigs">
+                Source Code
+            </a>
+        </li>
+    </ul>
 </aside>

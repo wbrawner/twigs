@@ -25,6 +25,8 @@ import io.ktor.server.util.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.NumberFormat
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.abs
 
@@ -157,6 +159,7 @@ fun Application.budgetWebRoutes(
                                     archivedExpenseCategories = archivedExpenseCategories,
                                     transactionCount = NumberFormat.getNumberInstance(Locale.US)
                                         .format(transactions.size),
+                                    monthAndYear = YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
                                     user = user
                                 )
                             )
