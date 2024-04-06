@@ -1,6 +1,7 @@
 package com.wbrawner.twigs.web
 
 import com.wbrawner.twigs.model.CookieSession
+import com.wbrawner.twigs.service.HttpException
 import com.wbrawner.twigs.service.budget.BudgetService
 import com.wbrawner.twigs.service.category.CategoryService
 import com.wbrawner.twigs.service.transaction.TransactionService
@@ -24,7 +25,13 @@ fun Application.webRoutes(
         staticResources("/", "static")
         get("/") {
             call.sessions.get(CookieSession::class)
-                ?.let { userService.session(it.token) }
+                ?.let {
+                    try {
+                        userService.session(it.token)
+                    } catch (e: HttpException) {
+                        null
+                    }
+                }
                 ?.let { session ->
                     application.environment.log.info("Session found!")
                     budgetService.budgetsForUser(session.userId)

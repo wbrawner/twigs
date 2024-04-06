@@ -1,3 +1,7 @@
+* {
+    transition: 0.25s ease;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -30,13 +34,73 @@ html, body {
 
 body {
     background-image: linear-gradient(var(--background-color-primary), var(--background-color-secondary));
+    background-attachment: fixed;
     height: 100vh;
     width: 100vw;
 }
 
+h1, h2, h3, h4, h5, h6, p, ul {
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, p, summary {
+    padding: 0.5rem;
+}
+
 #app {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
     height: 100%;
     width: 100%;
+}
+
+main {
+    height: 100%;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.sidebar {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    max-width: 300px;
+}
+
+.stacked-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+@media all and (min-width: 1200px) {
+    .columns {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .columns > * {
+        flex-grow: 1;
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.card {
+    background: var(--background-color-primary);
+    border-radius: var(--border-radius);
 }
 
 .button {
@@ -75,6 +139,7 @@ body {
 .logo {
     background-image: var(--logo);
     background-size: contain;
+    background-repeat: no-repeat;
     height: 200px;
     width: 200px;
 }
@@ -101,6 +166,34 @@ input:disabled {
 
 a {
     color: var(--color-accent);
+}
+
+.list-item {
+    list-style: none;
+}
+
+.list-item > a {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+}
+
+.list-item > a:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.body-large {
+    font-size: 1.1rem;
+}
+
+.body-medium {
+    font-size: 1rem;
+}
+
+.body-small {
+    font-size: 0.9rem;
 }
 
 @media all and (max-width: 400px) {

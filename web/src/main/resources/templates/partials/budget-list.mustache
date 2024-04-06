@@ -1,8 +1,10 @@
 <ul>
     {{#budgets}}
-        <li>
-            <span class="budget-name">{{name}}</span>
-            <span class="budget-description">{{description}}</span>
+        <li class="list-item">
+            <a class="{{#selected}}selected{{/selected}}" href="/budgets/{{id}}">
+                <span class="body-large">{{name}}</span>
+                <span class="body-small">{{description}}</span>
+            </a>
         </li>
     {{/budgets}}
 </ul>

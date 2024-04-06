@@ -1,14 +1,65 @@
-<!DOCTYPE html>
-<html>
 {{> partials/head }}
-<body>
 <div id="app">
-    <div class="center">
-        <div class="flex-full-width">
-            {{>partials/budget-list}}
+    {{>partials/sidebar}}
+    <main>
+        <h1>{{budget.name}}</h1>
+        <p>{{budget.description}}</p>
+        <div class="row">
+            <div class="stacked-label">
+                <p class="body-small">Month</p>
+                <p class="body-large">TODO</p>
+            </div>
+            <div class="stacked-label">
+                <p class="body-small">Cash Flow</p>
+                <p class="body-large">{{balances.cashFlow}}</p>
+            </div>
+            <div class="stacked-label">
+                <p class="body-small">Transactions</p>
+                <p class="body-large">{{transactionCount}}</p>
+            </div>
         </div>
-    </div>
+        <div class="card">
+            <h3>Income</h3>
+            <div class="column">
+                <p>{{balances.actualIncomeLabel}} earned of {{balances.expectedIncomeLabel}} expected</p>
+                <progress style="margin: 0 0.5rem;"
+                          value="{{balances.actualIncome}}"
+                          max="{{balances.maxProgressBarValue}}">{{balances.actualIncomeLabel}}</progress>
+            </div>
+            <ul>
+                {{#incomeCategories}}
+                    {{>partials/category-list}}
+                {{/incomeCategories}}
+            </ul>
+            <details>
+                <summary>Archived</summary>
+                <ul>
+                    {{#archivedIncomeCategories}}
+                        {{>partials/category-list}}
+                    {{/archivedIncomeCategories}}
+                </ul>
+            </details>
+            <h3>Expenses</h3>
+            <div class="column">
+                <p>{{balances.actualExpensesLabel}} spent of {{balances.expectedExpensesLabel}} expected</p>
+                <progress style="margin: 0 0.5rem;"
+                          value="{{balances.actualExpenses}}"
+                          max="{{balances.maxProgressBarValue}}">{{balances.actualExpensesLabel}}</progress>
+            </div>
+            <ul>
+                {{#expenseCategories}}
+                    {{>partials/category-list}}
+                {{/expenseCategories}}
+            </ul>
+            <details>
+                <summary>Archived</summary>
+                <ul>
+                    {{#archivedExpenseCategories}}
+                        {{>partials/category-list}}
+                    {{/archivedExpenseCategories}}
+                </ul>
+            </details>
+        </div>
+    </main>
 </div>
 {{>partials/foot}}
-</body>
-</html>

@@ -10,3 +10,8 @@ interface Page {
 interface AuthenticatedPage : Page {
     val user: UserResponse
 }
+
+object NotFoundPage : Page {
+    override val title: String = "404 Not Found"
+    override val error: String? = null
+}

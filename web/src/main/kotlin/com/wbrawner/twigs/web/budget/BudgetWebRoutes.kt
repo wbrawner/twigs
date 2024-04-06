@@ -8,10 +8,10 @@ import com.wbrawner.twigs.service.budget.BudgetResponse
 import com.wbrawner.twigs.service.budget.BudgetService
 import com.wbrawner.twigs.service.category.CategoryService
 import com.wbrawner.twigs.service.requireSession
-import com.wbrawner.twigs.service.transaction.BalanceResponse
 import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstantOrNull
+import com.wbrawner.twigs.web.NotFoundPage
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -21,6 +21,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.NumberFormat
+import java.util.*
+import kotlin.math.abs
 
 fun Application.budgetWebRoutes(
     budgetService: BudgetService,
@@ -33,7 +38,7 @@ fun Application.budgetWebRoutes(
             route("/budgets") {
                 get {
                     val user = userService.user(requireSession().userId)
-                    val budgets = budgetService.budgetsForUser(user.id)
+                    val budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() }
                     call.respond(MustacheContent("budgets.mustache", BudgetListPage(budgets, user)))
                 }
 
@@ -84,33 +89,73 @@ fun Application.budgetWebRoutes(
                 }
 
                 route("/{id}") {
-
                     get {
                         val user = userService.user(requireSession().userId)
-                        val budget = budgetService.budget(budgetId = call.parameters.getOrFail("id"), userId = user.id)
-                        val balance = BalanceResponse(transactionService.sum(budgetId = budget.id, userId = user.id))
+                        val budgetId = call.parameters.getOrFail("id")
+                        val budgets = budgetService.budgetsForUser(userId = user.id).toMutableList()
+                        val budget = budgets.firstOrNull { it.id == budgetId }
+                            ?: run {
+                                call.respond(MustacheContent("404.mustache", NotFoundPage))
+                                return@get
+                            }
+                        val numberFormat = NumberFormat.getCurrencyInstance(Locale.US)
                         val categories = categoryService.categories(budgetIds = listOf(budget.id), userId = user.id)
                             .map { category ->
+                                val categoryBalance =
+                                    abs(transactionService.sum(categoryId = category.id, userId = user.id))
                                 BudgetDetailsPage.CategoryWithBalanceResponse(
-                                    category,
-                                    BalanceResponse(transactionService.sum(categoryId = category.id, userId = user.id))
+                                    category = category,
+                                    amountLabel = category.amount.toCurrencyString(numberFormat),
+                                    balance = categoryBalance,
+                                    balanceLabel = categoryBalance.toCurrencyString(numberFormat),
+                                    remainingAmountLabel = (category.amount - categoryBalance).toCurrencyString(
+                                        numberFormat
+                                    )
                                 )
                             }
-                        // TODO: Add a count method so we don't have to do this
+                            .toMutableSet()
+                        val incomeCategories = categories.extractIf { !it.category.expense && !it.category.archived }
+                        val archivedIncomeCategories =
+                            categories.extractIf { !it.category.expense && it.category.archived }
+                        val expenseCategories = categories.extractIf { it.category.expense && !it.category.archived }
+                        val archivedExpenseCategories =
+                            categories.extractIf { it.category.expense && it.category.archived }
                         val transactions = transactionService.transactions(
                             budgetIds = listOf(budget.id),
                             from = call.parameters["from"]?.toInstantOrNull() ?: firstOfMonth,
                             to = call.parameters["to"]?.toInstantOrNull() ?: endOfMonth,
                             userId = user.id
                         )
+                        // TODO: Allow user-configurable locale
+                        val budgetBalance = transactionService.sum(budgetId = budget.id, userId = user.id)
+                            .toCurrencyString(numberFormat)
+                        val expectedIncome = incomeCategories.sumOf { it.category.amount }
+                        val actualIncome = transactions.sumOf { if (it.expense == false) it.amount ?: 0L else 0L }
+                        val expectedExpenses = expenseCategories.sumOf { it.category.amount }
+                        val actualExpenses = transactions.sumOf { if (it.expense == true) it.amount ?: 0L else 0L }
+                        val balances = BudgetBalances(
+                            cashFlow = budgetBalance,
+                            expectedIncome = expectedIncome,
+                            expectedIncomeLabel = expectedIncome.toCurrencyString(numberFormat),
+                            actualIncome = actualIncome,
+                            actualIncomeLabel = actualIncome.toCurrencyString(numberFormat),
+                            expectedExpenses = expectedExpenses,
+                            expectedExpensesLabel = expectedExpenses.toCurrencyString(numberFormat),
+                            actualExpenses = actualExpenses,
+                            actualExpensesLabel = actualExpenses.toCurrencyString(numberFormat),
+                        )
                         call.respond(
                             MustacheContent(
                                 "budget-details.mustache", BudgetDetailsPage(
+                                    budgets = budgets.map { it.toBudgetListItem(budgetId) }.sortedBy { it.name },
                                     budget = budget,
-                                    balance = balance,
-                                    categories = categories.filter { !it.category.archived },
-                                    archivedCategories = categories.filter { it.category.archived },
-                                    transactionCount = transactions.size.toLong(),
+                                    balances = balances,
+                                    incomeCategories = incomeCategories,
+                                    archivedIncomeCategories = archivedIncomeCategories,
+                                    expenseCategories = expenseCategories,
+                                    archivedExpenseCategories = archivedExpenseCategories,
+                                    transactionCount = NumberFormat.getNumberInstance(Locale.US)
+                                        .format(transactions.size),
                                     user = user
                                 )
                             )
@@ -138,8 +183,48 @@ fun Application.budgetWebRoutes(
     }
 }
 
+data class BudgetBalances(
+    val cashFlow: String,
+    val expectedIncome: Long,
+    val expectedIncomeLabel: String,
+    val actualIncome: Long,
+    val actualIncomeLabel: String,
+    val expectedExpenses: Long,
+    val expectedExpensesLabel: String,
+    val actualExpenses: Long,
+    val actualExpensesLabel: String,
+) {
+    val maxProgressBarValue: Long = maxOf(expectedExpenses, expectedIncome, actualIncome, actualExpenses)
+}
+
+data class BudgetListItem(val id: String, val name: String, val description: String, val selected: Boolean)
+
+private fun BudgetResponse.toBudgetListItem(selectedId: String? = null) = BudgetListItem(
+    id = id,
+    name = name.orEmpty(),
+    description = description.orEmpty(),
+    selected = id == selectedId
+)
+
 private fun Parameters.toBudgetRequest() = BudgetRequest(
     name = get("name"),
     description = get("description"),
     users = setOf() // TODO: Enable adding users at budget creation
+)
+
+private fun <T> MutableCollection<T>.extractIf(predicate: (T) -> Boolean): List<T> {
+    val extracted = mutableListOf<T>()
+    val iterator = iterator()
+    while (iterator.hasNext()) {
+        val item = iterator.next()
+        if (predicate(item)) {
+            extracted.add(item)
+            iterator.remove()
+        }
+    }
+    return extracted
+}
+
+private fun Long.toCurrencyString(formatter: NumberFormat): String = formatter.format(
+    this.toBigDecimal().divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
 )
