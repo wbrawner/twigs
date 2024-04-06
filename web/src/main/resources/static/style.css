@@ -60,6 +60,8 @@ main {
     height: 100%;
     overflow-y: auto;
     flex-grow: 1;
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 .sidebar {

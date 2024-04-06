@@ -1,0 +1,18 @@
+<li class="list-item">
+    <h5>
+        {{key}}
+    </h5>
+</li>
+{{#value}}
+    <li class="list-item">
+        <a href="/budgets/{{budgetId}}/transactions/{{id}}">
+            <div class="row" style="justify-content: space-between">
+                <div class="column">
+                    <span class="body-large">{{title}}</span>
+                    <span class="body-small">{{description}}</span>
+                </div>
+                <span class="body-medium {{expenseClass}}">{{amountLabel}}</span>
+            </div>
+        </a>
+    </li>
+{{/value}}

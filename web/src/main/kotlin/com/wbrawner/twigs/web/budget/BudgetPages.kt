@@ -1,9 +1,9 @@
 package com.wbrawner.twigs.web.budget
 
 import com.wbrawner.twigs.service.budget.BudgetResponse
-import com.wbrawner.twigs.service.category.CategoryResponse
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.web.AuthenticatedPage
+import com.wbrawner.twigs.web.category.CategoryWithBalanceResponse
 
 data class BudgetListPage(
     val budgets: List<BudgetListItem>,
@@ -26,14 +26,6 @@ data class BudgetDetailsPage(
     override val error: String? = null
 ) : AuthenticatedPage {
     override val title: String = "Budgets"
-
-    data class CategoryWithBalanceResponse(
-        val category: CategoryResponse,
-        val amountLabel: String,
-        val balance: Long,
-        val balanceLabel: String,
-        val remainingAmountLabel: String,
-    )
 }
 
 data class BudgetFormPage(

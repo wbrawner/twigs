@@ -7,6 +7,7 @@ import com.wbrawner.twigs.service.category.CategoryService
 import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.web.budget.budgetWebRoutes
+import com.wbrawner.twigs.web.category.categoryWebRoutes
 import com.wbrawner.twigs.web.user.userWebRoutes
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -43,5 +44,6 @@ fun Application.webRoutes(
         }
     }
     budgetWebRoutes(budgetService, categoryService, transactionService, userService)
+    categoryWebRoutes(budgetService, categoryService, transactionService, userService)
     userWebRoutes(userService)
 }
