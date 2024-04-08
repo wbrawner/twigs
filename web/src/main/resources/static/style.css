@@ -154,7 +154,9 @@ form {
     max-width: 1200px;
 }
 
-form > input {
+input, select, textarea {
+    font-family: "Segoe UI", "Product Sans", "Roboto", "San Francisco", sans-serif;
+    font-size: 1rem;
     margin-bottom: 10px;
     border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
