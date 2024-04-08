@@ -1,0 +1,41 @@
+{{> partials/head }}
+<div id="app">
+    <main>
+        <h1>{{title}}</h1>
+        <div class="center">
+            {{#error }}
+                <p class="error">{{error}}</p>
+            {{/error}}
+            <form method="post">
+                <label for="title">Name</label>
+                <input id="title" type="text" name="title" value="{{ transaction.title }}" required/>
+                <label for="description">Description</label>
+                <textarea id="description" name="description">{{ transaction.description }}</textarea>
+                <label for="date">Date</label>
+                <input id="date" type="datetime-local" name="date" value="{{ transaction.date }}" required/>
+                <label for="amount">Amount</label>
+                <input id="amount" type="number" name="amount" value="{{ amountLabel }}" required/>
+                <label for="categoryId">Category</label>
+                <select id="categoryId" name="categoryId" required>
+                    <option selected disabled>Select a category</option>
+                    <option disabled>Income</option>
+                    {{#incomeCategories}}
+                        <option value="{{id}}">{{title}}</option>
+                    {{/incomeCategories}}
+                    <option disabled>Expense</option>
+                    {{#expenseCategories}}
+                        <option value="{{id}}">{{title}}</option>
+                    {{/expenseCategories}}
+                </select>
+                <input id="submit" type="submit" class="button button-primary" value="Save"/>
+            </form>
+        </div>
+    </main>
+</div>
+<script type="text/javascript">
+    const dateField = document.querySelector('#date')
+    let localDateTime = dateField.valueAsDate
+    const localTimeMs = localDateTime.setMinutes(localDateTime.getMinutes() - localDateTime.getTimezoneOffset())
+    dateField.value = new Date(localTimeMs).toISOString().slice(0, -1)
+</script>
+{{>partials/foot}}
