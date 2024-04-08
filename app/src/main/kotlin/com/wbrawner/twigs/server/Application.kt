@@ -208,6 +208,7 @@ fun Application.moduleWithDependencies(
             }
             cookie.httpOnly = true
             cookie.secure = true
+            cookie.extensions["SameSite"] = "Strict"
         }
     }
     install(ContentNegotiation) {
