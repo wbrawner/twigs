@@ -2,30 +2,60 @@
 <div id="app">
     {{>partials/sidebar}}
     <main>
-        <h1>{{budget.name}}</h1>
+        <header class="row">
+            <a id="hamburger" href="#sidebar">☰</a>
+            <h1>{{title}}</h1>
+            <a href="/budgets/{{budget.id}}/transactions/new"
+               class="button button-secondary">
+                <!-- TODO: Hide text on small widths -->
+                <span aria-description="New Transaction">+</span> <span class="hide-small" aria-hidden="true">New Transaction</span>
+            </a>
+        </header>
         <p>{{budget.description}}</p>
-        <div class="row">
-            <div class="stacked-label">
-                <p class="body-small">Month</p>
-                <p class="body-large">{{monthAndYear}}</p>
-            </div>
-            <div class="stacked-label">
-                <p class="body-small">Cash Flow</p>
-                <p class="body-large">{{balances.cashFlow}}</p>
-            </div>
-            <div class="stacked-label">
-                <p class="body-small">Transactions</p>
-                <p class="body-large">{{transactionCount}}</p>
+        <div class="card">
+            <div class="row">
+                <div class="stacked-label">
+                    <p class="body-small">Month</p>
+                    <p class="body-large">{{monthAndYear}}</p>
+                </div>
+                <div class="stacked-label">
+                    <p class="body-small">Cash Flow</p>
+                    <p class="body-large">{{balances.cashFlow}}</p>
+                </div>
+                <div class="stacked-label">
+                    <p class="body-small">Transactions</p>
+                    <p class="body-large">{{transactionCount}}</p>
+                </div>
             </div>
         </div>
         <div class="card">
-            <h3>Income</h3>
             <div class="column">
-                <p>{{balances.actualIncomeLabel}} earned of {{balances.expectedIncomeLabel}} expected</p>
+                <p>Expected income: {{balances.expectedIncomeLabel}}</p>
+                <progress style="margin: 0 0.5rem;"
+                          value="{{balances.expectedIncome}}"
+                          max="{{balances.maxProgressBarValue}}">{{balances.expectedIncomeLabel}}</progress>
+                <p>Actual Income: {{balances.actualIncomeLabel}}</p>
                 <progress style="margin: 0 0.5rem;"
                           value="{{balances.actualIncome}}"
                           max="{{balances.maxProgressBarValue}}">{{balances.actualIncomeLabel}}</progress>
+                <p>Expected expenses: {{balances.expectedExpensesLabel}}</p>
+                <progress style="margin: 0 0.5rem;"
+                          value="{{balances.expectedExpenses}}"
+                          max="{{balances.maxProgressBarValue}}">{{balances.expectedExpensesLabel}}</progress>
+                <p>Actual Income: {{balances.actualIncomeLabel}}</p>
+                <progress style="margin: 0 0.5rem;"
+                          value="{{balances.actualExpenses}}"
+                          max="{{balances.maxProgressBarValue}}">{{balances.actualExpensesLabel}}</progress>
             </div>
+        </div>
+        <div class="card">
+            <header class="row">
+                <h3>Income</h3>
+                <a href="/budgets/{{budget.id}}/categories/new?expense=false" class="button button-secondary">
+                    <!-- TODO: Hide text on small widths -->
+                    <span aria-description="New Category">+</span> <span class="hide-small" aria-hidden="true">New Category</span>
+                </a>
+            </header>
             <ul>
                 {{#incomeCategories}}
                     {{>partials/category-list}}
@@ -39,13 +69,15 @@
                     {{/archivedIncomeCategories}}
                 </ul>
             </details>
-            <h3>Expenses</h3>
-            <div class="column">
-                <p>{{balances.actualExpensesLabel}} spent of {{balances.expectedExpensesLabel}} expected</p>
-                <progress style="margin: 0 0.5rem;"
-                          value="{{balances.actualExpenses}}"
-                          max="{{balances.maxProgressBarValue}}">{{balances.actualExpensesLabel}}</progress>
-            </div>
+        </div>
+        <div class="card">
+            <header class="row">
+                <h3>Expenses</h3>
+                <a href="/budgets/{{budget.id}}/categories/new?expense=true" class="button button-secondary">
+                    <!-- TODO: Hide text on small widths -->
+                    <span aria-description="New Category">+</span> <span class="hide-small" aria-hidden="true">New Category</span>
+                </a>
+            </header>
             <ul>
                 {{#expenseCategories}}
                     {{>partials/category-list}}

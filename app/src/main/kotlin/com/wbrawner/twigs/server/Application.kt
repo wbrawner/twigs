@@ -1,7 +1,6 @@
 package com.wbrawner.twigs.server
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import ch.qos.logback.classic.Level
 import com.github.mustachejava.DefaultMustacheFactory
 import com.wbrawner.twigs.*
 import com.wbrawner.twigs.db.*
@@ -38,7 +37,6 @@ import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
-import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
 fun main() {
@@ -72,7 +70,6 @@ fun Application.module() {
             throw RuntimeException("Unsupported DB type: $dbType")
         }
     }
-    (LoggerFactory.getLogger("com.zaxxer.hikari") as ch.qos.logback.classic.Logger).level = Level.DEBUG
     HikariDataSource(HikariConfig().apply {
         setJdbcUrl(jdbcUrl)
         username = dbUser

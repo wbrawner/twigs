@@ -2,7 +2,14 @@
 <div id="app">
     {{>partials/sidebar}}
     <main>
-        <h1>{{title}}</h1>
+        <header class="row">
+            <a id="hamburger" href="#sidebar">☰</a>
+            <h1>{{title}}</h1>
+            <a href="/budgets/{{budget.id}}/transactions/{{transaction.id}}/edit"
+               class="button button-secondary">
+                Edit
+            </a>
+        </header>
         <div class="card">
             <div class="row">
                 <span class="body-large">{{dateLabel}}</span>

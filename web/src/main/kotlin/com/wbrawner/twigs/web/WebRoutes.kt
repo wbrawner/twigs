@@ -31,6 +31,7 @@ fun Application.webRoutes(
                     try {
                         userService.session(it.token)
                     } catch (e: HttpException) {
+                        application.environment.log.debug("Failed to retrieve session for user", e)
                         null
                     }
                 }

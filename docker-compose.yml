@@ -9,6 +9,7 @@ services:
       - db
     environment:
       TWIGS_DB_HOST: db
+      TWIGS_DB_TYPE: postgresql
     networks:
       - twigs
 

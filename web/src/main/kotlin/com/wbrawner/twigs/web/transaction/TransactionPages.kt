@@ -24,8 +24,7 @@ data class TransactionFormPage(
     val transaction: TransactionResponse,
     val amountLabel: String,
     val budget: BudgetResponse,
-    val incomeCategories: List<CategoryResponse>,
-    val expenseCategories: List<CategoryResponse>,
+    val categoryOptions: List<CategoryOption>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
@@ -34,4 +33,20 @@ data class TransactionFormPage(
     } else {
         "Edit Transaction"
     }
+
+    data class CategoryOption(
+        val id: String,
+        val title: String,
+        val isSelected: Boolean = false,
+        val isDisabled: Boolean = false
+    ) {
+        val selected: String
+            get() = if (isSelected) "selected" else ""
+
+        val disabled: String
+            get() = if (isDisabled) "disabled" else ""
+    }
 }
+
+fun CategoryResponse.asOption(selectedCategoryId: String) =
+    TransactionFormPage.CategoryOption(id, title, id == selectedCategoryId)
