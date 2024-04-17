@@ -7,6 +7,7 @@ import com.wbrawner.twigs.service.requireSession
 import com.wbrawner.twigs.service.transaction.TransactionRequest
 import com.wbrawner.twigs.service.transaction.TransactionResponse
 import com.wbrawner.twigs.service.transaction.TransactionService
+import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.web.NotFoundPage
@@ -21,6 +22,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.Instant
@@ -36,6 +38,7 @@ private val decimalFormat = DecimalFormat.getNumberInstance(Locale.US).apply {
     with(this as DecimalFormat) {
         decimalFormatSymbols = decimalFormatSymbols.apply {
             currencySymbol = ""
+            isGroupingUsed = false
         }
     }
 }
@@ -59,35 +62,25 @@ fun Application.transactionWebRoutes(
                     get {
                         val user = userService.user(requireSession().userId)
                         val budgetId = call.parameters.getOrFail("budgetId")
+                        val transaction = TransactionResponse(
+                            id = "",
+                            title = "",
+                            description = "",
+                            amount = 0,
+                            budgetId = budgetId,
+                            expense = true,
+                            date = Instant.now().toHtmlInputString(),
+                            categoryId = null,
+                            createdBy = user.id
+                        )
                         call.respond(
                             MustacheContent(
                                 "transaction-form.mustache",
                                 TransactionFormPage(
-                                    TransactionResponse(
-                                        id = "",
-                                        title = "",
-                                        description = "",
-                                        amount = 0,
-                                        budgetId = budgetId,
-                                        expense = true,
-                                        date = Instant.now().toHtmlInputString(),
-                                        categoryId = null,
-                                        createdBy = user.id
-                                    ),
+                                    transaction = transaction,
                                     amountLabel = currencyFormat.format(0L),
                                     budget = budgetService.budget(budgetId = budgetId, userId = user.id),
-                                    incomeCategories = categoryService.categories(
-                                        budgetIds = listOf(budgetId),
-                                        userId = user.id,
-                                        expense = false,
-                                        archived = false
-                                    ),
-                                    expenseCategories = categoryService.categories(
-                                        budgetIds = listOf(budgetId),
-                                        userId = user.id,
-                                        expense = true,
-                                        archived = false
-                                    ),
+                                    categoryOptions = categoryOptions(transaction, categoryService, budgetId, user),
                                     user = user
                                 )
                             )
@@ -101,7 +94,7 @@ fun Application.transactionWebRoutes(
                             val request = call.receiveParameters().toTransactionRequest()
                                 .run {
                                     copy(
-                                        date = date + 'Z',
+                                        date = "$date:00Z",
                                         expense = categoryService.category(
                                             categoryId = requireNotNull(categoryId),
                                             userId = user.id
@@ -112,35 +105,30 @@ fun Application.transactionWebRoutes(
                             val transaction = transactionService.save(request, user.id)
                             call.respondRedirect("/budgets/${transaction.budgetId}/transactions/${transaction.id}")
                         } catch (e: HttpException) {
+                            val transaction = TransactionResponse(
+                                id = "",
+                                title = call.parameters["title"],
+                                description = call.parameters["description"],
+                                amount = 0L,
+                                budgetId = urlBudgetId,
+                                expense = call.parameters["expense"]?.toBoolean() ?: true,
+                                date = call.parameters["date"].orEmpty(),
+                                categoryId = call.parameters["categoryId"],
+                                createdBy = user.id
+                            )
                             call.respond(
                                 status = e.statusCode,
                                 MustacheContent(
                                     "transaction-form.mustache",
                                     TransactionFormPage(
-                                        TransactionResponse(
-                                            id = "",
-                                            title = call.parameters["title"],
-                                            description = call.parameters["description"],
-                                            amount = 0L,
-                                            budgetId = urlBudgetId,
-                                            expense = call.parameters["expense"]?.toBoolean() ?: true,
-                                            date = call.parameters["date"].orEmpty(),
-                                            categoryId = call.parameters["categoryId"],
-                                            createdBy = user.id
-                                        ),
+                                        transaction = transaction,
                                         amountLabel = call.parameters["amount"].orEmpty(),
                                         budget = budgetService.budget(budgetId = urlBudgetId, userId = user.id),
-                                        incomeCategories = categoryService.categories(
-                                            budgetIds = listOf(urlBudgetId),
-                                            userId = user.id,
-                                            expense = false,
-                                            archived = false
-                                        ),
-                                        expenseCategories = categoryService.categories(
-                                            budgetIds = listOf(urlBudgetId),
-                                            userId = user.id,
-                                            expense = true,
-                                            archived = false
+                                        categoryOptions = categoryOptions(
+                                            transaction,
+                                            categoryService,
+                                            urlBudgetId,
+                                            user
                                         ),
                                         user = user,
                                         error = e.message
@@ -197,13 +185,129 @@ fun Application.transactionWebRoutes(
                         }
                     }
 
-                    post {
+                    route("/edit") {
+                        get {
+                            val user = userService.user(requireSession().userId)
+                            val budgetId = call.parameters.getOrFail("budgetId")
+                            val transaction = transactionService.transaction(
+                                transactionId = call.parameters.getOrFail("id"),
+                                userId = user.id
+                            )
+                            call.respond(
+                                MustacheContent(
+                                    "transaction-form.mustache",
+                                    TransactionFormPage(
+                                        transaction = transaction.copy(
+                                            date = transaction.date.toInstant().toHtmlInputString()
+                                        ),
+                                        amountLabel = transaction.amount.toDecimalString(),
+                                        budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                        categoryOptions = categoryOptions(transaction, categoryService, budgetId, user),
+                                        user = user
+                                    )
+                                )
+                            )
+                        }
 
+                        post {
+                            val user = userService.user(requireSession().userId)
+                            val transactionId = call.parameters.getOrFail("id")
+                            val urlBudgetId = call.parameters.getOrFail("budgetId")
+                            try {
+                                val request = call.receiveParameters().toTransactionRequest()
+                                    .run {
+                                        copy(
+                                            date = "$date:00Z",
+                                            expense = categoryService.category(
+                                                categoryId = requireNotNull(categoryId),
+                                                userId = user.id
+                                            ).expense,
+                                            budgetId = urlBudgetId
+                                        )
+                                    }
+                                val transaction =
+                                    transactionService.save(request, userId = user.id, transactionId = transactionId)
+                                call.respondRedirect("/budgets/${transaction.budgetId}/transactions/${transaction.id}")
+                            } catch (e: HttpException) {
+                                val transaction = TransactionResponse(
+                                    id = transactionId,
+                                    title = call.parameters["title"],
+                                    description = call.parameters["description"],
+                                    amount = 0L,
+                                    budgetId = urlBudgetId,
+                                    expense = call.parameters["expense"]?.toBoolean() ?: true,
+                                    date = call.parameters["date"].orEmpty(),
+                                    categoryId = call.parameters["categoryId"],
+                                    createdBy = user.id
+                                )
+                                call.respond(
+                                    status = e.statusCode,
+                                    MustacheContent(
+                                        "transaction-form.mustache",
+                                        TransactionFormPage(
+                                            transaction = transaction,
+                                            amountLabel = call.parameters["amount"].orEmpty(),
+                                            budget = budgetService.budget(budgetId = urlBudgetId, userId = user.id),
+                                            categoryOptions = categoryOptions(
+                                                transaction,
+                                                categoryService,
+                                                urlBudgetId,
+                                                user
+                                            ),
+                                            user = user,
+                                            error = e.message
+                                        )
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
+}
+
+private suspend fun categoryOptions(
+    transaction: TransactionResponse,
+    categoryService: CategoryService,
+    budgetId: String,
+    user: UserResponse
+): List<TransactionFormPage.CategoryOption> {
+    val selectedCategoryId = transaction.categoryId.orEmpty()
+    val categoryOptions = listOf(
+        TransactionFormPage.CategoryOption(
+            "",
+            "Select a category",
+            isSelected = transaction.categoryId.isNullOrBlank(),
+            isDisabled = true
+        ),
+        TransactionFormPage.CategoryOption("income", "Income", isDisabled = true),
+    )
+        .plus(
+            categoryService.categories(
+                budgetIds = listOf(budgetId),
+                userId = user.id,
+                expense = false,
+                archived = false
+            ).map { category ->
+                category.asOption(selectedCategoryId)
+            }
+        )
+        .plus(
+            TransactionFormPage.CategoryOption("expense", "Expense", isDisabled = true),
+        )
+        .plus(
+            categoryService.categories(
+                budgetIds = listOf(budgetId),
+                userId = user.id,
+                expense = true,
+                archived = false
+            ).map { category ->
+                category.asOption(selectedCategoryId)
+            }
+        )
+    return categoryOptions
 }
 
 private fun Parameters.toTransactionRequest() = TransactionRequest(
@@ -216,4 +320,9 @@ private fun Parameters.toTransactionRequest() = TransactionRequest(
     budgetId = get("budgetId"),
 )
 
-private fun Instant.toHtmlInputString() = truncatedTo(ChronoUnit.SECONDS).toString().substringBefore('Z')
+private fun Instant.toHtmlInputString() = truncatedTo(ChronoUnit.MINUTES).toString().substringBefore(":00Z")
+
+private fun Long?.toDecimalString(): String {
+    if (this == null) return ""
+    return decimalFormat.format(toBigDecimal().divide(BigDecimal(100), 2, RoundingMode.HALF_UP))
+}

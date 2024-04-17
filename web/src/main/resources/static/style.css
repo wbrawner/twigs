@@ -71,6 +71,11 @@ main {
     max-width: 300px;
 }
 
+#hamburger {
+    color: var(--color-on-background);
+    text-decoration: none;
+}
+
 .stacked-label {
     display: flex;
     flex-direction: column;
@@ -100,9 +105,19 @@ main {
     justify-content: space-evenly;
 }
 
+header.row {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card header .button {
+    margin: 0.5rem;
+}
+
 .card {
     background: var(--background-color-primary);
     border-radius: var(--border-radius);
+    margin-bottom: 1rem;
 }
 
 .button {
@@ -146,12 +161,15 @@ main {
     width: 200px;
 }
 
+.center form {
+    width: 100%;
+    max-width: 1200px;
+}
+
 form {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 100%;
-    max-width: 1200px;
 }
 
 input, select, textarea {
@@ -199,6 +217,30 @@ a {
 
 .body-small {
     font-size: 0.9rem;
+}
+
+@media all and (max-width: 600px) {
+    .hide-small {
+        display: none;
+    }
+}
+
+@media all and (max-width: 900px) {
+    #sidebar {
+        background-color: var(--background-color-primary);
+        position: fixed;
+        transform: translateX(-100%);
+    }
+
+    #sidebar:target {
+        transform: translateX(0);
+    }
+}
+
+@media all and (min-width: 900px) {
+    #hamburger {
+        display: none;
+    }
 }
 
 @media all and (max-width: 400px) {

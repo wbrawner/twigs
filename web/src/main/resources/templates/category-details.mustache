@@ -3,8 +3,18 @@
     {{>partials/sidebar}}
     <main>
         <div class="column">
-            <h1>{{category.category.title}}</h1>
+            <header class="row">
+                <a id="hamburger" href="#sidebar">☰</a>
+                <h1>{{title}}</h1>
+                <a href="/budgets/{{budget.id}}/transactions/new?categoryId={{category.category.id}}"
+                class="button button-secondary">
+                <!-- TODO: Hide text on small widths -->
+                <span aria-description="New Transaction">+</span> <span aria-hidden="true">New Transaction</span>
+                </a>
+            </header>
             <p>{{category.category.description}}</p>
+        </div>
+        <div class="card">
             <div class="row">
                 <div class="stacked-label">
                     <p class="body-small">Budgeted</p>
@@ -22,8 +32,8 @@
             <progress value="{{category.balance}}"
                       max="{{category.category.amount}}">{{category.balanceLabel}}</progress>
         </div>
-        <!-- TODO: Add a search bar to filter transactions by name/description -->
         <div class="card">
+            <!-- TODO: Add a search bar to filter transactions by name/description -->
             <h3>Transactions</h3>
             <ul>
                 {{#transactions}}
