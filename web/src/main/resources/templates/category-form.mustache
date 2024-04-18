@@ -1,0 +1,31 @@
+{{> partials/head }}
+<div id="app">
+    <main>
+        <h1>{{title}}</h1>
+        {{#error }}
+            <p class="error">{{error}}</p>
+        {{/error}}
+        <form method="post">
+            <label for="title">Name</label>
+            <input id="title" type="text" name="title" value="{{ category.title }}" required/>
+            <label for="description">Description</label>
+            <textarea id="description" name="description">{{ category.description }}</textarea>
+            <label for="amount">Amount</label>
+            <input id="amount" type="number" name="amount" value="{{ amountLabel }}" step="0.01" required/>
+            <div class="inline-input">
+                <input id="expense" type="radio" name="expense" value="true" {{expenseChecked}} />
+                <label for="expense">Expense</label>
+            </div>
+            <div class="inline-input">
+                <input id="income" type="radio" name="expense" value="false" {{incomeChecked}} />
+                <label for="income">Income</label>
+            </div>
+            <div class="inline-input">
+                <input id="archived" type="checkbox" name="archived" {{archivedChecked}} />
+                <label for="archived">Archived</label>
+            </div>
+            <input id="submit" type="submit" class="button button-primary" value="Save"/>
+        </form>
+    </main>
+</div>
+{{>partials/foot}}
