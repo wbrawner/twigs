@@ -14,6 +14,8 @@ import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.toInstantOrNull
 import com.wbrawner.twigs.web.NotFoundPage
 import com.wbrawner.twigs.web.budget.toCurrencyString
+import com.wbrawner.twigs.web.getAmount
+import com.wbrawner.twigs.web.toDecimalString
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -57,9 +59,10 @@ fun Application.categoryWebRoutes(
                                         description = "",
                                         amount = 0,
                                         budgetId = budgetId,
-                                        expense = true,
+                                        expense = call.request.queryParameters["expense"]?.toBoolean() ?: true,
                                         archived = false,
                                     ),
+                                    amountLabel = 0L.toDecimalString(),
                                     budget = budgetService.budget(budgetId = budgetId, userId = user.id),
                                     user = user
                                 )
@@ -71,7 +74,7 @@ fun Application.categoryWebRoutes(
                         val user = userService.user(requireSession().userId)
                         val budgetId = call.parameters.getOrFail("budgetId")
                         try {
-                            val request = call.receiveParameters().toCategoryRequest()
+                            val request = call.receiveParameters().toCategoryRequest(budgetId)
                             val category = categoryService.save(request, user.id)
                             call.respondRedirect("/budgets/${category.budgetId}/categories/${category.id}")
                         } catch (e: HttpException) {
@@ -84,11 +87,12 @@ fun Application.categoryWebRoutes(
                                             id = "",
                                             title = call.parameters["title"].orEmpty(),
                                             description = call.parameters["description"].orEmpty(),
-                                            amount = call.parameters["amount"]?.toLongOrNull() ?: 0L,
+                                            amount = 0L,
                                             expense = call.parameters["expense"]?.toBoolean() ?: false,
                                             archived = call.parameters["archived"]?.toBoolean() ?: false,
                                             budgetId = budgetId
                                         ),
+                                        amountLabel = call.parameters["amount"]?.toLongOrNull().toDecimalString(),
                                         budget = budgetService.budget(budgetId = budgetId, userId = user.id),
                                         user = user,
                                         error = e.message
@@ -167,9 +171,42 @@ fun Application.categoryWebRoutes(
                             call.respond(
                                 MustacheContent(
                                     "category-form.mustache",
-                                    CategoryFormPage(category, budget, user)
+                                    CategoryFormPage(category, category.amount.toDecimalString(), budget, user)
                                 )
                             )
+                        }
+
+                        post {
+                            val user = userService.user(requireSession().userId)
+                            val budgetId = call.parameters.getOrFail("budgetId")
+                            val categoryId = call.parameters.getOrFail("id")
+                            try {
+                                val request = call.receiveParameters().toCategoryRequest(budgetId)
+                                val category = categoryService.save(request, userId = user.id, categoryId = categoryId)
+                                call.respondRedirect("/budgets/${category.budgetId}/categories/${category.id}")
+                            } catch (e: HttpException) {
+                                call.respond(
+                                    status = e.statusCode,
+                                    MustacheContent(
+                                        "category-form.mustache",
+                                        CategoryFormPage(
+                                            CategoryResponse(
+                                                id = "",
+                                                title = call.parameters["title"].orEmpty(),
+                                                description = call.parameters["description"].orEmpty(),
+                                                amount = 0L,
+                                                expense = call.parameters["expense"]?.toBoolean() ?: false,
+                                                archived = call.parameters["archived"]?.toBoolean() ?: false,
+                                                budgetId = budgetId
+                                            ),
+                                            amountLabel = call.parameters["amount"]?.toLongOrNull().toDecimalString(),
+                                            budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                            user = user,
+                                            error = e.message
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -178,11 +215,11 @@ fun Application.categoryWebRoutes(
     }
 }
 
-private fun Parameters.toCategoryRequest() = CategoryRequest(
+private fun Parameters.toCategoryRequest(budgetId: String) = CategoryRequest(
     title = get("title"),
     description = get("description"),
-    amount = get("amount")?.toLongOrNull(),
+    amount = getAmount(),
     expense = get("expense")?.toBoolean(),
-    archived = get("archived")?.toBoolean(),
-    budgetId = get("budgetId"),
+    archived = get("archived") == "on",
+    budgetId = budgetId
 )

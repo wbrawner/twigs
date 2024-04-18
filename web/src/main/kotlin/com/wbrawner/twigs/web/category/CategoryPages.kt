@@ -40,6 +40,7 @@ fun TransactionResponse.toListItem(numberFormat: NumberFormat) = TransactionList
 
 data class CategoryFormPage(
     val category: CategoryResponse,
+    val amountLabel: String,
     val budget: BudgetResponse,
     override val user: UserResponse,
     override val error: String? = null
@@ -49,6 +50,10 @@ data class CategoryFormPage(
     } else {
         "Edit Category"
     }
+
+    val expenseChecked: String = if (category.expense) "checked" else ""
+    val incomeChecked: String = if (!category.expense) "checked" else ""
+    val archivedChecked: String = if (category.archived) "checked" else ""
 }
 
 data class CategoryWithBalanceResponse(

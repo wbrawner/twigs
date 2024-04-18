@@ -12,6 +12,9 @@ import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.web.NotFoundPage
 import com.wbrawner.twigs.web.budget.toCurrencyString
+import com.wbrawner.twigs.web.currencyFormat
+import com.wbrawner.twigs.web.getAmount
+import com.wbrawner.twigs.web.toDecimalString
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -21,27 +24,10 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.text.DecimalFormat
-import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
-import java.util.*
-
-private val dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-private val currencyFormat = NumberFormat.getCurrencyInstance(Locale.US)
-private val decimalFormat = DecimalFormat.getNumberInstance(Locale.US).apply {
-    with(this as DecimalFormat) {
-        decimalFormatSymbols = decimalFormatSymbols.apply {
-            currencySymbol = ""
-            isGroupingUsed = false
-        }
-    }
-}
 
 fun Application.transactionWebRoutes(
     budgetService: BudgetService,
@@ -62,6 +48,7 @@ fun Application.transactionWebRoutes(
                     get {
                         val user = userService.user(requireSession().userId)
                         val budgetId = call.parameters.getOrFail("budgetId")
+                        val categoryId = call.request.queryParameters["categoryId"]
                         val transaction = TransactionResponse(
                             id = "",
                             title = "",
@@ -70,7 +57,7 @@ fun Application.transactionWebRoutes(
                             budgetId = budgetId,
                             expense = true,
                             date = Instant.now().toHtmlInputString(),
-                            categoryId = null,
+                            categoryId = categoryId,
                             createdBy = user.id
                         )
                         call.respond(
@@ -78,9 +65,14 @@ fun Application.transactionWebRoutes(
                                 "transaction-form.mustache",
                                 TransactionFormPage(
                                     transaction = transaction,
-                                    amountLabel = currencyFormat.format(0L),
+                                    amountLabel = 0L.toDecimalString(),
                                     budget = budgetService.budget(budgetId = budgetId, userId = user.id),
-                                    categoryOptions = categoryOptions(transaction, categoryService, budgetId, user),
+                                    categoryOptions = categoryOptions(
+                                        transaction = transaction,
+                                        categoryService = categoryService,
+                                        budgetId = budgetId,
+                                        user = user
+                                    ),
                                     user = user
                                 )
                             )
@@ -313,7 +305,7 @@ private suspend fun categoryOptions(
 private fun Parameters.toTransactionRequest() = TransactionRequest(
     title = get("title"),
     description = get("description"),
-    amount = decimalFormat.parse(get("amount"))?.toDouble()?.toBigDecimal()?.times(BigDecimal(100))?.toLong() ?: 0L,
+    amount = getAmount(),
     expense = false,
     date = get("date"),
     categoryId = get("categoryId"),
@@ -322,7 +314,3 @@ private fun Parameters.toTransactionRequest() = TransactionRequest(
 
 private fun Instant.toHtmlInputString() = truncatedTo(ChronoUnit.MINUTES).toString().substringBefore(":00Z")
 
-private fun Long?.toDecimalString(): String {
-    if (this == null) return ""
-    return decimalFormat.format(toBigDecimal().divide(BigDecimal(100), 2, RoundingMode.HALF_UP))
-}

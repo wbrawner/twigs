@@ -44,7 +44,7 @@ h1, h2, h3, h4, h5, h6, p, ul {
     padding: 0;
 }
 
-h1, h2, h3, h4, h5, h6, p, summary {
+h2, h3, h4, h5, h6, p, summary {
     padding: 0.5rem;
 }
 
@@ -184,6 +184,12 @@ input, select, textarea {
 input:disabled {
     background-color: var(--background-color-secondary);
     color: var(--color-on-background);
+}
+
+.inline-input {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
 }
 
 a {
