@@ -5,6 +5,19 @@ import com.wbrawner.twigs.service.category.CategoryResponse
 import com.wbrawner.twigs.service.transaction.TransactionResponse
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.web.AuthenticatedPage
+import com.wbrawner.twigs.web.BudgetListItem
+import com.wbrawner.twigs.web.category.TransactionListItem
+
+data class TransactionListPage(
+    val budget: BudgetResponse,
+    val transactions: List<Map.Entry<String, List<TransactionListItem>>>,
+    override val budgets: List<BudgetListItem>,
+    override val user: UserResponse,
+    override val error: String? = null
+) : AuthenticatedPage {
+    override val title: String = "Transactions"
+}
+
 
 data class TransactionDetailsPage(
     val transaction: TransactionResponse,
@@ -12,8 +25,8 @@ data class TransactionDetailsPage(
     val budget: BudgetResponse,
     val amountLabel: String,
     val dateLabel: String,
-    val budgets: List<BudgetResponse>,
     val createdBy: UserResponse,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
@@ -25,6 +38,7 @@ data class TransactionFormPage(
     val amountLabel: String,
     val budget: BudgetResponse,
     val categoryOptions: List<CategoryOption>,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {

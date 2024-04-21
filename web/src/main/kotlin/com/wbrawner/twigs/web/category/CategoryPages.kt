@@ -5,15 +5,16 @@ import com.wbrawner.twigs.service.category.CategoryResponse
 import com.wbrawner.twigs.service.transaction.TransactionResponse
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.web.AuthenticatedPage
+import com.wbrawner.twigs.web.BudgetListItem
 import com.wbrawner.twigs.web.budget.toCurrencyString
 import java.text.NumberFormat
 
 data class CategoryDetailsPage(
     val category: CategoryWithBalanceResponse,
     val budget: BudgetResponse,
-    val budgets: List<BudgetResponse>,
     val transactionCount: String,
     val transactions: List<Map.Entry<String, List<TransactionListItem>>>,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
@@ -42,6 +43,7 @@ data class CategoryFormPage(
     val category: CategoryResponse,
     val amountLabel: String,
     val budget: BudgetResponse,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {

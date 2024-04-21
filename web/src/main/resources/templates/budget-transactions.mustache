@@ -1,0 +1,29 @@
+{{> partials/head }}
+<div id="app">
+    {{>partials/sidebar}}
+    <main>
+        <div class="column">
+            <header class="row">
+                <a id="hamburger" href="#sidebar">☰</a>
+                <h1>{{title}}</h1>
+                <div class="row">
+                    <a href="/budgets/{{budget.id}}/transactions/new"
+                       class="button button-secondary">
+                        <!-- TODO: Hide text on small widths -->
+                        <span aria-description="New Transaction">+</span> <span
+                            aria-hidden="true">New Transaction</span>
+                    </a>
+                </div>
+            </header>
+        </div>
+        <div class="card">
+            <!-- TODO: Add a search bar to filter transactions by name/description -->
+            <ul>
+                {{#transactions}}
+                    {{>partials/transaction-list}}
+                {{/transactions}}
+            </ul>
+        </div>
+    </main>
+</div>
+{{>partials/foot}}
