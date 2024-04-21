@@ -77,7 +77,7 @@ class UserRouteTest : ApiTest() {
 
     @Test
     fun `login with valid email and password returns 200`() = apiTest { client ->
-        val request = LoginRequest(TEST_USER.email, TEST_USER.password)
+        val request = LoginRequest(requireNotNull(TEST_USER.email), TEST_USER.password)
         val response = client.post("/api/users/login") {
             header("Content-Type", "application/json")
             setBody(request)
@@ -172,14 +172,14 @@ class UserRouteTest : ApiTest() {
         val userResponse = response.body<UserResponse>()
         assert(userResponse.id.isNotBlank())
         assertEquals(request.username, userResponse.username)
-        assertEquals("", userResponse.email)
+        assertEquals(null, userResponse.email)
         assertEquals(initialUserCount + 1, userRepository.entities.size)
         val savedUser: User? = userRepository.findAll("newuser").firstOrNull()
         assertNotNull(savedUser)
         requireNotNull(savedUser)
         assertEquals(userResponse.id, savedUser.id)
         assertEquals(request.username, savedUser.name)
-        assertEquals("", savedUser.email)
+        assertEquals(null, savedUser.email)
         assertEquals("newpass", savedUser.password)
     }
 
