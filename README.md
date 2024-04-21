@@ -1,12 +1,11 @@
-# Twigs Server
+# Twigs
 
-This is the backend application that powers the [Android](../../../twigs-android), [iOS](../../../twigs-ios),
-and [web](../../../twigs-web) applications for Twigs, a personal finance/budgeting app. None of these apps are complete,
-so expect bugs, and they are all in various stages of development, so expect some feature disparity between platforms.
+Twigs is a personal finance application tailored to individuals and small groups that want robust budgeting features
+without needing to pay a monthly subscription.
 
 ## Prerequisites
 
-- JDK 14 or newer
+- JDK 17 or newer
 - PostgreSQL 13 or newer
 - (optional) Docker
 
