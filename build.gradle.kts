@@ -15,6 +15,7 @@ buildscript {
 plugins {
     java
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization) apply false
 }
 
 val javaVersion = JavaVersion.VERSION_17
