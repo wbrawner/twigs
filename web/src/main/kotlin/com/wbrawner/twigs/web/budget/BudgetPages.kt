@@ -3,10 +3,11 @@ package com.wbrawner.twigs.web.budget
 import com.wbrawner.twigs.service.budget.BudgetResponse
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.web.AuthenticatedPage
+import com.wbrawner.twigs.web.BudgetListItem
 import com.wbrawner.twigs.web.category.CategoryWithBalanceResponse
 
 data class BudgetListPage(
-    val budgets: List<BudgetListItem>,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
@@ -14,7 +15,6 @@ data class BudgetListPage(
 }
 
 data class BudgetDetailsPage(
-    val budgets: List<BudgetListItem>,
     val budget: BudgetResponse,
     val balances: BudgetBalances,
     val incomeCategories: List<CategoryWithBalanceResponse>,
@@ -23,6 +23,7 @@ data class BudgetDetailsPage(
     val archivedExpenseCategories: List<CategoryWithBalanceResponse>,
     val transactionCount: String,
     val monthAndYear: String,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
@@ -31,6 +32,7 @@ data class BudgetDetailsPage(
 
 data class BudgetFormPage(
     val budget: BudgetResponse,
+    override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {

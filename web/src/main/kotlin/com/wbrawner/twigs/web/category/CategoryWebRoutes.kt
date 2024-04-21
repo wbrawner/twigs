@@ -12,10 +12,8 @@ import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.toInstantOrNull
-import com.wbrawner.twigs.web.NotFoundPage
+import com.wbrawner.twigs.web.*
 import com.wbrawner.twigs.web.budget.toCurrencyString
-import com.wbrawner.twigs.web.getAmount
-import com.wbrawner.twigs.web.toDecimalString
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -26,7 +24,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
 import io.ktor.util.date.*
-import java.text.DateFormat
 import java.text.NumberFormat
 import java.util.*
 import kotlin.math.abs
@@ -49,6 +46,8 @@ fun Application.categoryWebRoutes(
                     get {
                         val user = userService.user(requireSession().userId)
                         val budgetId = call.parameters.getOrFail("budgetId")
+                        val budgets = budgetService.budgetsForUser(user.id)
+                        val budget = budgets.first { it.id == budgetId }
                         call.respond(
                             MustacheContent(
                                 "category-form.mustache",
@@ -63,7 +62,8 @@ fun Application.categoryWebRoutes(
                                         archived = false,
                                     ),
                                     amountLabel = 0L.toDecimalString(),
-                                    budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                    budget = budget,
+                                    budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                     user = user
                                 )
                             )
@@ -73,6 +73,8 @@ fun Application.categoryWebRoutes(
                     post {
                         val user = userService.user(requireSession().userId)
                         val budgetId = call.parameters.getOrFail("budgetId")
+                        val budgets = budgetService.budgetsForUser(user.id)
+                        val budget = budgets.first { it.id == budgetId }
                         try {
                             val request = call.receiveParameters().toCategoryRequest(budgetId)
                             val category = categoryService.save(request, user.id)
@@ -93,7 +95,8 @@ fun Application.categoryWebRoutes(
                                             budgetId = budgetId
                                         ),
                                         amountLabel = call.parameters["amount"]?.toLongOrNull().toDecimalString(),
-                                        budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                        budget = budget,
+                                        budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                         user = user,
                                         error = e.message
                                     )
@@ -107,18 +110,18 @@ fun Application.categoryWebRoutes(
                     get {
                         val user = userService.user(requireSession().userId)
                         val categoryId = call.parameters.getOrFail("id")
-                        // TODO: Allow user-configurable locale
-                        val numberFormat = NumberFormat.getCurrencyInstance(Locale.US)
                         try {
                             val category = categoryService.category(categoryId = categoryId, userId = user.id)
                             val categoryBalance =
                                 abs(transactionService.sum(categoryId = category.id, userId = user.id))
                             val categoryWithBalance = CategoryWithBalanceResponse(
                                 category = category,
-                                amountLabel = category.amount.toCurrencyString(numberFormat),
+                                amountLabel = category.amount.toCurrencyString(currencyFormat),
                                 balance = categoryBalance,
-                                balanceLabel = categoryBalance.toCurrencyString(numberFormat),
-                                remainingAmountLabel = (category.amount - categoryBalance).toCurrencyString(numberFormat)
+                                balanceLabel = categoryBalance.toCurrencyString(currencyFormat),
+                                remainingAmountLabel = (category.amount - categoryBalance).toCurrencyString(
+                                    currencyFormat
+                                )
                             )
                             val transactions = transactionService.transactions(
                                 budgetIds = listOf(category.budgetId),
@@ -129,13 +132,12 @@ fun Application.categoryWebRoutes(
                             )
                             val transactionCount = NumberFormat.getNumberInstance(Locale.US)
                                 .format(transactions.size)
-                            val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
                             val transactionsByDate = transactions.groupBy {
-                                dateFormat.format(it.date.toInstant().toGMTDate().toJvmDate())
+                                shortDateFormat.format(it.date.toInstant().toGMTDate().toJvmDate())
                             }
-                                .mapValues { (_, transactions) -> transactions.map { it.toListItem(numberFormat) } }
+                                .mapValues { (_, transactions) -> transactions.map { it.toListItem(currencyFormat) } }
                                 .entries
-                                .sortedBy { it.key }
+                                .sortedByDescending { it.key }
                             val budgets = budgetService.budgetsForUser(user.id)
                             val budgetId = call.parameters.getOrFail("budgetId")
                             val budget = budgets.first { it.id == budgetId }
@@ -145,7 +147,7 @@ fun Application.categoryWebRoutes(
                                         category = categoryWithBalance,
                                         transactions = transactionsByDate,
                                         transactionCount = transactionCount,
-                                        budgets = budgets,
+                                        budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                         budget = budget,
                                         user = user
                                     )
@@ -167,11 +169,17 @@ fun Application.categoryWebRoutes(
                                 userId = user.id
                             )
                             val budgetId = call.parameters.getOrFail("budgetId")
-                            val budget = budgetService.budget(budgetId = budgetId, userId = user.id)
+                            val budgets = budgetService.budgetsForUser(user.id)
                             call.respond(
                                 MustacheContent(
                                     "category-form.mustache",
-                                    CategoryFormPage(category, category.amount.toDecimalString(), budget, user)
+                                    CategoryFormPage(
+                                        category = category,
+                                        amountLabel = category.amount.toDecimalString(),
+                                        budget = budgets.first { it.id == budgetId },
+                                        budgets = budgets.map { it.toBudgetListItem(budgetId) },
+                                        user = user
+                                    )
                                 )
                             )
                         }
@@ -179,6 +187,7 @@ fun Application.categoryWebRoutes(
                         post {
                             val user = userService.user(requireSession().userId)
                             val budgetId = call.parameters.getOrFail("budgetId")
+                            val budgets = budgetService.budgetsForUser(user.id)
                             val categoryId = call.parameters.getOrFail("id")
                             try {
                                 val request = call.receiveParameters().toCategoryRequest(budgetId)
@@ -200,7 +209,8 @@ fun Application.categoryWebRoutes(
                                                 budgetId = budgetId
                                             ),
                                             amountLabel = call.parameters["amount"]?.toLongOrNull().toDecimalString(),
-                                            budget = budgetService.budget(budgetId = budgetId, userId = user.id),
+                                            budget = budgets.first { it.id == budgetId },
+                                            budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                             user = user,
                                             error = e.message
                                         )

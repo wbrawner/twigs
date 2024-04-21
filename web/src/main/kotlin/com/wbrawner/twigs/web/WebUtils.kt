@@ -3,6 +3,7 @@ package com.wbrawner.twigs.web
 import io.ktor.http.*
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.*
@@ -16,6 +17,8 @@ val decimalFormat = DecimalFormat.getNumberInstance(Locale.US).apply {
         }
     }
 }
+val shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
+
 
 fun Parameters.getAmount() = decimalFormat.parse(get("amount"))
     ?.toDouble()

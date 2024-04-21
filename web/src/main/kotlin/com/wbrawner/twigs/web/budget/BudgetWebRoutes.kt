@@ -13,6 +13,7 @@ import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstantOrNull
 import com.wbrawner.twigs.web.NotFoundPage
 import com.wbrawner.twigs.web.category.CategoryWithBalanceResponse
+import com.wbrawner.twigs.web.toBudgetListItem
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -52,13 +53,14 @@ fun Application.budgetWebRoutes(
                             MustacheContent(
                                 "budget-form.mustache",
                                 BudgetFormPage(
-                                    BudgetResponse(
+                                    budget = BudgetResponse(
                                         id = "",
                                         name = "",
                                         description = "",
                                         users = listOf()
                                     ),
-                                    user
+                                    budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() },
+                                    user = user
                                 )
                             )
                         )
@@ -76,14 +78,15 @@ fun Application.budgetWebRoutes(
                                 MustacheContent(
                                     "budget-form.mustache",
                                     BudgetFormPage(
-                                        BudgetResponse(
+                                        budget = BudgetResponse(
                                             id = "",
                                             name = call.parameters["name"].orEmpty(),
                                             description = call.parameters["description"].orEmpty(),
                                             users = listOf()
                                         ),
-                                        user,
-                                        e.message
+                                        budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() },
+                                        user = user,
+                                        error = e.message
                                     )
                                 )
                             )
@@ -150,16 +153,16 @@ fun Application.budgetWebRoutes(
                         call.respond(
                             MustacheContent(
                                 "budget-details.mustache", BudgetDetailsPage(
-                                    budgets = budgets.map { it.toBudgetListItem(budgetId) }.sortedBy { it.name },
                                     budget = budget,
                                     balances = balances,
                                     incomeCategories = incomeCategories,
-                                    archivedIncomeCategories = archivedIncomeCategories,
                                     expenseCategories = expenseCategories,
+                                    archivedIncomeCategories = archivedIncomeCategories,
                                     archivedExpenseCategories = archivedExpenseCategories,
                                     transactionCount = NumberFormat.getNumberInstance(Locale.US)
                                         .format(transactions.size),
                                     monthAndYear = YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                                    budgets = budgets.map { it.toBudgetListItem(budgetId) }.sortedBy { it.name },
                                     user = user
                                 )
                             )
@@ -176,7 +179,12 @@ fun Application.budgetWebRoutes(
                             call.respond(
                                 MustacheContent(
                                     "budget-form.mustache",
-                                    BudgetFormPage(budget, user)
+                                    BudgetFormPage(
+                                        budget = budget,
+                                        budgets = budgetService.budgetsForUser(user.id)
+                                            .map { it.toBudgetListItem(budget.id) },
+                                        user = user
+                                    )
                                 )
                             )
                         }
@@ -209,15 +217,6 @@ data class BudgetBalances(
 ) {
     val maxProgressBarValue: Long = maxOf(expectedExpenses, expectedIncome, actualIncome, actualExpenses)
 }
-
-data class BudgetListItem(val id: String, val name: String, val description: String, val selected: Boolean)
-
-private fun BudgetResponse.toBudgetListItem(selectedId: String? = null) = BudgetListItem(
-    id = id,
-    name = name.orEmpty(),
-    description = description.orEmpty(),
-    selected = id == selectedId
-)
 
 private fun Parameters.toBudgetRequest() = BudgetRequest(
     name = get("name"),
