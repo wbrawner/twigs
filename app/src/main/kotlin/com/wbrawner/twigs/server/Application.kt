@@ -33,6 +33,7 @@ import io.ktor.server.mustache.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import kotlinx.coroutines.*
@@ -167,6 +168,7 @@ fun Application.moduleWithDependencies(
     jobs: List<Job>,
     sessionValidator: suspend ApplicationCall.(Session) -> Principal?
 ) {
+    install(XForwardedHeaders)
     install(CallLogging)
     install(Authentication) {
         session<Session> {

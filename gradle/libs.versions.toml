@@ -29,6 +29,7 @@ ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-forwarded-headers = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
 ktor-server-mustache = { module = "io.ktor:ktor-server-mustache", version.ref = "ktor" }
 ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
 ktor-server-test = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
@@ -44,6 +45,7 @@ ktor-server = [
     "ktor-server-content-negotiation",
     "ktor-server-core",
     "ktor-server-cors",
+    "ktor-server-forwarded-headers",
     "ktor-server-sessions"
 ]
 
