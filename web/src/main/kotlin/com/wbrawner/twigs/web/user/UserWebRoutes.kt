@@ -29,9 +29,10 @@ fun Application.userWebRoutes(userService: UserService) {
                     val session = userService.login(request)
                     call.sessions.set(CookieSession(session.token))
                     call.respondRedirect("/")
-                } catch (e: HttpException) {
+                } catch (e: Throwable) {
+                    e.printStackTrace()
                     call.respond(
-                        status = e.statusCode,
+                        status = (e as? HttpException)?.statusCode ?: HttpStatusCode.InternalServerError,
                         MustacheContent("login.mustache", LoginPage(username = request.username, error = e.message))
                     )
                 }
@@ -85,9 +86,9 @@ fun Application.userWebRoutes(userService: UserService) {
     }
 }
 
-private fun Parameters.toLoginRequest() = LoginRequest(getOrFail("username"), getOrFail("password"))
+private fun Parameters.toLoginRequest() = LoginRequest(get("username").orEmpty(), get("password").orEmpty())
 
-private fun Parameters.toUserRequest() = UserRequest(getOrFail("username"), getOrFail("password"), get("email"))
+private fun Parameters.toUserRequest() = UserRequest(get("username").orEmpty(), get("password").orEmpty(), get("email"))
 
 private fun UserRequest.toPage(error: String? = null) =
     RegisterPage(username = username.orEmpty(), email = email.orEmpty(), error = error)
