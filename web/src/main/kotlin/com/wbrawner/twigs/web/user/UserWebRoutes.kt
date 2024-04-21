@@ -37,6 +37,14 @@ fun Application.userWebRoutes(userService: UserService) {
                 }
             }
         }
+
+        route("/logout") {
+            post {
+                call.sessions.clear<CookieSession>()
+                call.respondRedirect("/")
+            }
+        }
+
         route("/register") {
             get {
                 call.respond(MustacheContent("register.mustache", RegisterPage()))
