@@ -209,6 +209,16 @@ fun Application.categoryWebRoutes(
                             }
                         }
                     }
+
+                    route("/delete") {
+                        post {
+                            val user = userService.user(requireSession().userId)
+                            val categoryId = call.parameters.getOrFail("id")
+                            categoryService.delete(categoryId = categoryId, userId = user.id)
+                            val budgetId = call.parameters.getOrFail("budgetId")
+                            call.respondRedirect("/budgets/$budgetId")
+                        }
+                    }
                 }
             }
         }

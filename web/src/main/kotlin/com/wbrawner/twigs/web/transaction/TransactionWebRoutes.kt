@@ -254,6 +254,16 @@ fun Application.transactionWebRoutes(
                             }
                         }
                     }
+
+                    route("/delete") {
+                        post {
+                            val user = userService.user(requireSession().userId)
+                            val transactionId = call.parameters.getOrFail("id")
+                            val urlBudgetId = call.parameters.getOrFail("budgetId")
+                            transactionService.delete(transactionId = transactionId, userId = user.id)
+                            call.respondRedirect("/budgets/${urlBudgetId}")
+                        }
+                    }
                 }
             }
         }
@@ -313,4 +323,3 @@ private fun Parameters.toTransactionRequest() = TransactionRequest(
 )
 
 private fun Instant.toHtmlInputString() = truncatedTo(ChronoUnit.MINUTES).toString().substringBefore(":00Z")
-

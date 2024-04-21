@@ -36,6 +36,12 @@
                             <span class="body-large">{{createdBy.username}}</span>
                         </a>
                     </li>
+                    <li class="list-item">
+                        <form action="/budgets/{{budget.id}}/transactions/{{transaction.id}}/delete" method="post">
+                            <input style="margin-bottom: 0; margin-right: 10px;" type="submit"
+                                   class="button button-danger" value="Delete"/>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

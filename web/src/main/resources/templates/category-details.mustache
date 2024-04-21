@@ -7,16 +7,23 @@
                 <a id="hamburger" href="#sidebar">☰</a>
                 <h1>{{title}}</h1>
                 <div class="row">
-                    <a href="/budgets/{{budget.id}}/categories/{{category.category.id}}/edit"
-                       class="button button-secondary" style="margin-right: 10px;">
-                        <!-- TODO: Hide text on small widths -->
-                        <span aria-description="Edit Category">✎</span> <span aria-hidden="true">Edit Category</span>
-                    </a>
                     <a href="/budgets/{{budget.id}}/transactions/new?categoryId={{category.category.id}}"
                     class="button button-secondary">
                     <!-- TODO: Hide text on small widths -->
                     <span aria-description="New Transaction">+</span> <span aria-hidden="true">New Transaction</span>
                     </a>
+                    <a href="/budgets/{{budget.id}}/categories/{{category.category.id}}/edit"
+                       class="button button-secondary" style="margin-right: 10px;">
+                        <!-- TODO: Hide text on small widths -->
+                        <span aria-description="Edit Category">✎</span> <span aria-hidden="true">Edit Category</span>
+                    </a>
+                    <form action="/budgets/{{budget.id}}/categories/{{category.category.id}}/delete" method="post">
+                        <!-- TODO: Show confirmation dialog before actually deleting -->
+                        <button class="button button-danger" style="margin-right: 10px;">
+                            <span aria-description="Delete Category">🗑</span> <span class="hide-small"
+                                                                                    aria-hidden="true">Delete Category</span>
+                        </button>
+                    </form>
                 </div>
             </header>
             <p>{{category.category.description}}</p>

@@ -181,6 +181,15 @@ fun Application.budgetWebRoutes(
                             )
                         }
                     }
+
+                    route("/delete") {
+                        post {
+                            val user = userService.user(requireSession().userId)
+                            val budgetId = call.parameters.getOrFail("id")
+                            budgetService.delete(budgetId = budgetId, userId = user.id)
+                            call.respondRedirect("/")
+                        }
+                    }
                 }
             }
         }

@@ -5,11 +5,22 @@
         <header class="row">
             <a id="hamburger" href="#sidebar">☰</a>
             <h1>{{title}}</h1>
-            <a href="/budgets/{{budget.id}}/transactions/new"
-               class="button button-secondary">
-                <!-- TODO: Hide text on small widths -->
-                <span aria-description="New Transaction">+</span> <span class="hide-small" aria-hidden="true">New Transaction</span>
-            </a>
+            <div class="row">
+                <a href="/budgets/{{budget.id}}/transactions/new"
+                   class="button button-secondary">
+                    <span aria-description="New Transaction">+</span> <span class="hide-small" aria-hidden="true">New Transaction</span>
+                </a>
+                <a href="/budgets/{{budget.id}}/edit"
+                   class="button button-secondary" style="margin-right: 10px;">
+                    <span aria-description="Edit Budget">✎</span> <span class="hide-small" aria-hidden="true">Edit Budget</span>
+                </a>
+                <form action="/budgets/{{budget.id}}/delete" method="post">
+                    <!-- TODO: Show confirmation dialog before actually deleting -->
+                    <button class="button button-danger" style="margin-right: 10px;">
+                        <span aria-description="Delete Budget">🗑</span> <span class="hide-small" aria-hidden="true">Delete Budget</span>
+                    </button>
+                </form>
+            </div>
         </header>
         <p>{{budget.description}}</p>
         <div class="card">
