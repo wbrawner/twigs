@@ -10,6 +10,7 @@ html, body {
 
 :root {
     --color-accent: #004800;
+    --color-error: #a80000;
     --color-on-accent: #FFFFFF;
     --color-on-background: #000000;
     --color-on-dim: #222222;
@@ -23,6 +24,7 @@ html, body {
 @media all and (prefers-color-scheme: dark) {
     :root {
         --color-accent: #baff33;
+        --color-error: #ff4040;
         --color-on-accent: #000000;
         --color-on-background: #FFFFFF;
         --color-on-dim: #888888;
@@ -144,6 +146,11 @@ header.row {
     color: var(--color-accent);
 }
 
+.button-danger {
+    background-color: var(--color-error);
+    color: var(--color-on-accent);
+}
+
 .center {
     align-items: center;
     display: flex;
@@ -223,6 +230,10 @@ a {
 
 .body-small {
     font-size: 0.9rem;
+}
+
+.error {
+    color: var(--color-error);
 }
 
 @media all and (max-width: 600px) {
