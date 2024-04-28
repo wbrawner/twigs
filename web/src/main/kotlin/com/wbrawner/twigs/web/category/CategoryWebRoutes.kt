@@ -10,7 +10,6 @@ import com.wbrawner.twigs.service.category.CategoryService
 import com.wbrawner.twigs.service.requireSession
 import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
-import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.toInstantOrNull
 import com.wbrawner.twigs.web.*
 import com.wbrawner.twigs.web.budget.toCurrencyString
@@ -23,7 +22,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import io.ktor.util.date.*
 import java.text.NumberFormat
 import java.util.*
 import kotlin.math.abs
@@ -132,12 +130,6 @@ fun Application.categoryWebRoutes(
                             )
                             val transactionCount = NumberFormat.getNumberInstance(Locale.US)
                                 .format(transactions.size)
-                            val transactionsByDate = transactions.groupBy {
-                                shortDateFormat.format(it.date.toInstant().toGMTDate().toJvmDate())
-                            }
-                                .mapValues { (_, transactions) -> transactions.map { it.toListItem(currencyFormat) } }
-                                .entries
-                                .sortedByDescending { it.key }
                             val budgets = budgetService.budgetsForUser(user.id)
                             val budgetId = call.parameters.getOrFail("budgetId")
                             val budget = budgets.first { it.id == budgetId }
@@ -145,7 +137,7 @@ fun Application.categoryWebRoutes(
                                 MustacheContent(
                                     "category-details.mustache", CategoryDetailsPage(
                                         category = categoryWithBalance,
-                                        transactions = transactionsByDate,
+                                        transactions = transactions.groupByDate(),
                                         transactionCount = transactionCount,
                                         budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                         budget = budget,
