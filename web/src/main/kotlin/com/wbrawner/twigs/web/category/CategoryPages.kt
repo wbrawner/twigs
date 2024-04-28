@@ -2,42 +2,23 @@ package com.wbrawner.twigs.web.category
 
 import com.wbrawner.twigs.service.budget.BudgetResponse
 import com.wbrawner.twigs.service.category.CategoryResponse
-import com.wbrawner.twigs.service.transaction.TransactionResponse
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.web.AuthenticatedPage
 import com.wbrawner.twigs.web.BudgetListItem
-import com.wbrawner.twigs.web.budget.toCurrencyString
-import java.text.NumberFormat
+import com.wbrawner.twigs.web.ListGroup
+import com.wbrawner.twigs.web.transaction.TransactionListItem
 
 data class CategoryDetailsPage(
     val category: CategoryWithBalanceResponse,
     val budget: BudgetResponse,
     val transactionCount: String,
-    val transactions: List<Map.Entry<String, List<TransactionListItem>>>,
+    val transactions: List<ListGroup<TransactionListItem>>,
     override val budgets: List<BudgetListItem>,
     override val user: UserResponse,
     override val error: String? = null
 ) : AuthenticatedPage {
     override val title: String = category.category.title
 }
-
-data class TransactionListItem(
-    val id: String,
-    val title: String,
-    val description: String,
-    val budgetId: String,
-    val expenseClass: String,
-    val amountLabel: String
-)
-
-fun TransactionResponse.toListItem(numberFormat: NumberFormat) = TransactionListItem(
-    id,
-    title.orEmpty(),
-    description.orEmpty(),
-    budgetId,
-    if (expense != false) "expense" else "income",
-    (amount ?: 0L).toCurrencyString(numberFormat)
-)
 
 data class CategoryFormPage(
     val category: CategoryResponse,
@@ -65,3 +46,18 @@ data class CategoryWithBalanceResponse(
     val balanceLabel: String,
     val remainingAmountLabel: String,
 )
+
+data class CategoryOption(
+    val id: String,
+    val title: String,
+    val isSelected: Boolean = false,
+    val isDisabled: Boolean = false
+) {
+    val selected: String
+        get() = if (isSelected) "selected" else ""
+
+    val disabled: String
+        get() = if (isDisabled) "disabled" else ""
+}
+
+fun CategoryResponse.asOption(selectedCategoryId: String) = CategoryOption(id, title, id == selectedCategoryId)
