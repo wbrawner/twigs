@@ -260,7 +260,7 @@ fun Application.moduleWithDependencies(
     recurringTransactionRoutes(recurringTransactionService)
     transactionRoutes(transactionService)
     userRoutes(userService)
-    webRoutes(budgetService, categoryService, transactionService, userService)
+    webRoutes(budgetService, categoryService, recurringTransactionService, transactionService, userService)
     launch {
         while (currentCoroutineContext().isActive) {
             jobs.forEach { it.run() }

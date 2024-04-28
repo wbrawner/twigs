@@ -4,10 +4,12 @@ import com.wbrawner.twigs.model.CookieSession
 import com.wbrawner.twigs.service.HttpException
 import com.wbrawner.twigs.service.budget.BudgetService
 import com.wbrawner.twigs.service.category.CategoryService
+import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionService
 import com.wbrawner.twigs.service.transaction.TransactionService
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.web.budget.budgetWebRoutes
 import com.wbrawner.twigs.web.category.categoryWebRoutes
+import com.wbrawner.twigs.web.recurring.recurringTransactionWebRoutes
 import com.wbrawner.twigs.web.transaction.transactionWebRoutes
 import com.wbrawner.twigs.web.user.userWebRoutes
 import io.ktor.server.application.*
@@ -20,6 +22,7 @@ import io.ktor.server.sessions.*
 fun Application.webRoutes(
     budgetService: BudgetService,
     categoryService: CategoryService,
+    recurringTransactionService: RecurringTransactionService,
     transactionService: TransactionService,
     userService: UserService
 ) {
@@ -47,6 +50,13 @@ fun Application.webRoutes(
     }
     budgetWebRoutes(budgetService, categoryService, transactionService, userService)
     categoryWebRoutes(budgetService, categoryService, transactionService, userService)
+    recurringTransactionWebRoutes(
+        budgetService,
+        categoryService,
+        recurringTransactionService,
+        transactionService,
+        userService
+    )
     transactionWebRoutes(budgetService, categoryService, transactionService, userService)
     userWebRoutes(userService)
 }
