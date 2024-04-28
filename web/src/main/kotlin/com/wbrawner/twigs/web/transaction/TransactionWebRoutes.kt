@@ -15,7 +15,8 @@ import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.toInstantOrNull
 import com.wbrawner.twigs.web.*
 import com.wbrawner.twigs.web.budget.toCurrencyString
-import com.wbrawner.twigs.web.category.toListItem
+import com.wbrawner.twigs.web.category.CategoryOption
+import com.wbrawner.twigs.web.category.asOption
 import com.wbrawner.twigs.web.user.TWIGS_SESSION_COOKIE
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -25,11 +26,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import io.ktor.util.date.*
 import java.time.Instant
 import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 
 fun Application.transactionWebRoutes(
     budgetService: BudgetService,
@@ -50,19 +49,13 @@ fun Application.transactionWebRoutes(
                         to = call.parameters["to"]?.toInstantOrNull() ?: endOfMonth,
                         userId = user.id
                     )
-                    val transactionsByDate = transactions.groupBy {
-                        shortDateFormat.format(it.date.toInstant().toGMTDate().toJvmDate())
-                    }
-                        .mapValues { (_, transactions) -> transactions.map { it.toListItem(currencyFormat) } }
-                        .entries
-                        .sortedByDescending { it.key }
                     call.respond(
                         MustacheContent(
                             "budget-transactions.mustache",
                             TransactionListPage(
                                 budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                 budget = budgets.first { it.id == budgetId },
-                                transactions = transactionsByDate,
+                                transactions = transactions.groupByDate(),
                                 user = user
                             )
                         )
@@ -312,16 +305,16 @@ private suspend fun categoryOptions(
     categoryService: CategoryService,
     budgetId: String,
     user: UserResponse
-): List<TransactionFormPage.CategoryOption> {
+): List<CategoryOption> {
     val selectedCategoryId = transaction.categoryId.orEmpty()
     val categoryOptions = listOf(
-        TransactionFormPage.CategoryOption(
+        CategoryOption(
             "",
             "Select a category",
             isSelected = transaction.categoryId.isNullOrBlank(),
             isDisabled = true
         ),
-        TransactionFormPage.CategoryOption("income", "Income", isDisabled = true),
+        CategoryOption("income", "Income", isDisabled = true),
     )
         .plus(
             categoryService.categories(
@@ -334,7 +327,7 @@ private suspend fun categoryOptions(
             }
         )
         .plus(
-            TransactionFormPage.CategoryOption("expense", "Expense", isDisabled = true),
+            CategoryOption("expense", "Expense", isDisabled = true),
         )
         .plus(
             categoryService.categories(
@@ -358,5 +351,3 @@ private fun Parameters.toTransactionRequest() = TransactionRequest(
     categoryId = get("categoryId"),
     budgetId = get("budgetId"),
 )
-
-private fun Instant.toHtmlInputString() = truncatedTo(ChronoUnit.MINUTES).toString().substringBefore(":00Z")
