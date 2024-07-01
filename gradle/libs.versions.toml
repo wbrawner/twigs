@@ -1,7 +1,7 @@
 [versions]
 bcrypt = "0.10.2"
 hikari = "5.1.0"
-junit = "5.10.2"
+junit = "5.10.3"
 kotlin = "2.0.0"
 kotlinx-coroutines = "1.8.1"
 ktor = "2.3.12"
