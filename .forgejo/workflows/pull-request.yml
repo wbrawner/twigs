@@ -6,7 +6,7 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: https://git.wbrawner.com/actions/setup-java@v4
         with:
           distribution: temurin
