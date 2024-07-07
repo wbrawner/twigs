@@ -1,20 +1,22 @@
 {{> partials/head }}
 <div id="app">
-    <h1>{{title}}</h1>
-    <div class="center">
-        <div class="logo"></div>
-        {{#error }}
-            <p class="error">{{error}}</p>
-        {{/error}}
-        <form action="/login" method="post">
-            <label for="username">Username</label>
-            <input id="username" type="text" name="username" value="{{ username }}"/>
-            <label for="password">Password</label>
-            <input id="password" type="password" name="password"/>
-            <input id="submit" type="submit" class="button button-primary" value="Login"/>
-        </form>
-        <a href="/resetpassword" style="padding: var(--input-padding)">Forgot your password?</a>
-        <a href="/register" style="padding: var(--input-padding)">Create an account</a>
-    </div>
+    <main>
+        <h1>{{title}}</h1>
+        <div class="center">
+            <div class="logo"></div>
+            {{#error }}
+                <p class="error">{{error}}</p>
+            {{/error}}
+            <form action="/login" method="post">
+                <label for="username">Username</label>
+                <input id="username" type="text" name="username" value="{{ username }}"/>
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password"/>
+                <input id="submit" type="submit" class="button button-primary" value="Login"/>
+            </form>
+            <a href="/resetpassword" style="padding: var(--input-padding)">Forgot your password?</a>
+            <a href="/register" style="padding: var(--input-padding)">Create an account</a>
+        </div>
+    </main>
 </div>
 {{>partials/foot}}

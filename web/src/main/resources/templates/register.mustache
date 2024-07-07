@@ -1,23 +1,25 @@
 {{> partials/head }}
 <div id="app">
-    <h1>{{title}}</h1>
-    <div class="center">
-        <div class="logo"></div>
-        {{#error }}
-            <p class="error">{{error}}</p>
-        {{/error}}
-        <form action="/register" method="post">
-            <label for="username">Username</label>
-            <input id="username" type="text" name="username" value="{{ username }}"/>
-            <label for="email">Email</label>
-            <input id="email" type="email" name="email" value="{{ email }}"/>
-            <label for="password">Password</label>
-            <input id="password" type="password" name="password"/>
-            <label for="confirm-password">Confirm Password</label>
-            <input id="confirm-password" type="password" name="confirmPassword"/>
-            <input type="submit" class="button button-primary" value="Login"/>
-        </form>
-        <a href="/login" style="padding: var(--input-padding)">Login</a>
-    </div>
+    <main>
+        <h1>{{title}}</h1>
+        <div class="center">
+            <div class="logo"></div>
+            {{#error }}
+                <p class="error">{{error}}</p>
+            {{/error}}
+            <form action="/register" method="post">
+                <label for="username">Username</label>
+                <input id="username" type="text" name="username" value="{{ username }}"/>
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" value="{{ email }}"/>
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password"/>
+                <label for="confirm-password">Confirm Password</label>
+                <input id="confirm-password" type="password" name="confirmPassword"/>
+                <input type="submit" class="button button-primary" value="Register"/>
+            </form>
+            <a href="/login" style="padding: var(--input-padding)">Login</a>
+        </div>
+    </main>
 </div>
 {{>partials/foot}}

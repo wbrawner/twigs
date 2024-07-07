@@ -1,4 +1,5 @@
 * {
+    box-sizing: border-box;
     transition: 0.25s ease;
 }
 
@@ -129,6 +130,7 @@ header.row {
     font-weight: bold;
     padding: var(--input-padding);
     text-decoration: none;
+    text-align: center;
 }
 
 .flex-full-width {
@@ -261,11 +263,22 @@ a {
 }
 
 @media all and (max-width: 400px) {
-    button {
+    .button {
         width: 100%;
+    }
+
+    .center {
+        padding: 10px;
     }
 
     .flex-full-width {
         flex-direction: column;
+        padding: 5px;
+        width: 100%;
+    }
+
+    .flex-full-width .button {
+        flex-direction: column;
+        margin: 5px;
     }
 }
