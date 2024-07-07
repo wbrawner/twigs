@@ -1,0 +1,26 @@
+name: Pull request workflow
+on: pull_request
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: https://git.wbrawner.com/actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Validate Gradle Wrapper
+        uses: https://git.wbrawner.com/gradle/actions/wrapper-validation@v3
+      - name: Build with Gradle
+        uses: https://git.wbrawner.com/gradle/actions/setup-gradle@v3
+        with:
+          arguments: --stacktrace check
+      - name: Publish JUnit Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: Unit Test Results
+          path: "*/build/test-results/test/*.xml"
+          if-no-files-found: error
