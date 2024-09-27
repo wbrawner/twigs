@@ -14,7 +14,7 @@ services:
       - twigs
 
   db:
-    image: postgres:16
+    image: postgres:17
     ports:
       - "5432:5432"
     environment:
