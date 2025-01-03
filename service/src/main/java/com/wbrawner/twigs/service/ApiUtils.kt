@@ -10,7 +10,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.*
 
 suspend fun PermissionRepository.requirePermission(
     userId: String,
@@ -42,11 +42,13 @@ suspend fun Pair<BudgetRepository, PermissionRepository>.budgetWithPermission(
     return BudgetResponse(budget, second.requirePermission(userId, budgetId, permission))
 }
 
-fun PipelineContext<Unit, ApplicationCall>.requireSession() = requireNotNull(call.principal<Session>()) {
+fun RoutingContext.requireSession() = call.requireSession()
+
+fun ApplicationCall.requireSession() = requireNotNull(principal<Session>()) {
     "Session required but was null"
 }
 
-suspend inline fun <reified T : Any> ApplicationCall.respondCatching(block: () -> T) =
+suspend inline fun <reified T : Any> ApplicationCall.respondCatching(block: ApplicationCall.() -> T) =
     try {
         val response = block()
         if (response is HttpStatusCode) {
