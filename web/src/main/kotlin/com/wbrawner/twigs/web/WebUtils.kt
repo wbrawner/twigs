@@ -3,10 +3,14 @@ package com.wbrawner.twigs.web
 import com.wbrawner.twigs.endOfMonth
 import com.wbrawner.twigs.firstOfMonth
 import com.wbrawner.twigs.model.Frequency
+import com.wbrawner.twigs.service.category.CategoryService
 import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionResponse
 import com.wbrawner.twigs.service.transaction.TransactionResponse
+import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.toInstant
 import com.wbrawner.twigs.toInstantOrNull
+import com.wbrawner.twigs.web.category.CategoryOption
+import com.wbrawner.twigs.web.category.asOption
 import com.wbrawner.twigs.web.recurring.toListItem
 import com.wbrawner.twigs.web.transaction.toListItem
 import io.ktor.http.*
@@ -18,7 +22,9 @@ import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.Instant
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -31,7 +37,10 @@ val decimalFormat: NumberFormat = DecimalFormat.getNumberInstance(Locale.US).app
         }
     }
 }
-val shortDateFormat: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
+
+val dateFormat = DateTimeFormatter.ofPattern("H:mm a 'on' MMMM d, yyyy")
+
+val shortDateFormat = DateTimeFormatter.ofPattern("M/d/yy")
 
 fun Parameters.getAmount() = decimalFormat.parse(get("amount"))
     ?.toDouble()
@@ -39,6 +48,8 @@ fun Parameters.getAmount() = decimalFormat.parse(get("amount"))
     ?.times(BigDecimal(100))
     ?.toLong()
     ?: 0L
+
+fun Parameters.getDateString(name: String) = get(name)?.takeUnless { it.isBlank() }?.plus(":00Z")
 
 fun Long?.toDecimalString(): String {
     if (this == null) return ""
@@ -57,7 +68,7 @@ fun List<TransactionResponse>.groupByDate() =
         .sortedByDescending { it.key }
         .map { (date, transactions) ->
             ListGroup(
-                shortDateFormat.format(date.toGMTDate().toJvmDate()),
+                shortDateFormat.format(date.atOffset(ZoneOffset.UTC)),
                 transactions.map { it.toListItem(currencyFormat) })
         }
 
@@ -116,4 +127,45 @@ enum class RecurringTransactionOccurrence {
             word.lowercase()
                 .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
+}
+
+suspend fun categoryOptions(
+    selectedCategoryId: String?,
+    categoryService: CategoryService,
+    budgetId: String,
+    user: UserResponse
+): List<CategoryOption> {
+    val categoryOptions = listOf(
+        CategoryOption(
+            "",
+            "Select a category",
+            isSelected = selectedCategoryId.isNullOrBlank(),
+            isDisabled = true
+        ),
+        CategoryOption("income", "Income", isDisabled = true),
+    )
+        .plus(
+            categoryService.categories(
+                budgetIds = listOf(budgetId),
+                userId = user.id,
+                expense = false,
+                archived = false
+            ).map { category ->
+                category.asOption(selectedCategoryId.orEmpty())
+            }
+        )
+        .plus(
+            CategoryOption("expense", "Expense", isDisabled = true),
+        )
+        .plus(
+            categoryService.categories(
+                budgetIds = listOf(budgetId),
+                userId = user.id,
+                expense = true,
+                archived = false
+            ).map { category ->
+                category.asOption(selectedCategoryId.orEmpty())
+            }
+        )
+    return categoryOptions
 }

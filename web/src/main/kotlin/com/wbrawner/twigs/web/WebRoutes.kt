@@ -50,13 +50,7 @@ fun Application.webRoutes(
     }
     budgetWebRoutes(budgetService, categoryService, transactionService, userService)
     categoryWebRoutes(budgetService, categoryService, transactionService, userService)
-    recurringTransactionWebRoutes(
-        budgetService,
-        categoryService,
-        recurringTransactionService,
-        transactionService,
-        userService
-    )
+    recurringTransactionWebRoutes(budgetService, categoryService, recurringTransactionService, userService)
     transactionWebRoutes(budgetService, categoryService, transactionService, userService)
     userWebRoutes(userService)
 }

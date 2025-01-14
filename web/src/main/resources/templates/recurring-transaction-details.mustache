@@ -1,0 +1,61 @@
+{{> partials/head }}
+<div id="app">
+    {{>partials/sidebar}}
+    <main>
+        <header class="row">
+            <a id="hamburger" href="#sidebar">☰</a>
+            <h1>{{title}}</h1>
+            <a href="/budgets/{{budget.id}}/recurring/{{transaction.id}}/edit"
+               class="button button-secondary">
+                Edit
+            </a>
+        </header>
+        <div class="card">
+            <div class="row">
+                <span class="{{#transaction.expense}}expense{{/transaction.expense}}{{^transaction.expense}}income{{/transaction.expense}} body-large">{{amountLabel}}</span>
+            </div>
+            <div class="column">
+                <p>{{transaction.description}}</p>
+                <ul>
+                    <li class="list-item">
+                        <p>
+                            <span class="body-small">Start</span>
+                            <span class="body-large">{{startLabel}}</span>
+                        </p>
+                    </li>
+                    <li class="list-item">
+                        <p>
+                            <span class="body-small">Finish</span>
+                            <span class="body-large">{{finishLabel}}</span>
+                        </p>
+                    </li>
+                    <li class="list-item">
+                        <a href="/budgets/{{budget.id}}/categories/{{category.id}}">
+                            <span class="body-small">Category</span>
+                            <span class="body-large">{{category.title}}</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="/budgets/{{budget.id}}">
+                            <span class="body-small">Budget</span>
+                            <span class="body-large">{{budget.name}}</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="/budgets/{{budget.id}}">
+                            <span class="body-small">Created by</span>
+                            <span class="body-large">{{createdBy.username}}</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <form action="/budgets/{{budget.id}}/recurring/{{transaction.id}}/delete" method="post">
+                            <input style="margin-bottom: 0; margin-right: 10px;" type="submit"
+                                   class="button button-danger" value="Delete"/>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</div>
+{{>partials/foot}}

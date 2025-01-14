@@ -88,7 +88,7 @@ fun Application.transactionWebRoutes(
                                     amountLabel = 0L.toDecimalString(),
                                     budget = budget,
                                     categoryOptions = categoryOptions(
-                                        transaction = transaction,
+                                        selectedCategoryId = transaction.categoryId,
                                         categoryService = categoryService,
                                         budgetId = budgetId,
                                         user = user
@@ -140,7 +140,7 @@ fun Application.transactionWebRoutes(
                                         amountLabel = call.parameters["amount"].orEmpty(),
                                         budget = budget,
                                         categoryOptions = categoryOptions(
-                                            transaction,
+                                            transaction.categoryId,
                                             categoryService,
                                             urlBudgetId,
                                             user
@@ -220,7 +220,7 @@ fun Application.transactionWebRoutes(
                                         ),
                                         amountLabel = transaction.amount.toDecimalString(),
                                         budget = budget,
-                                        categoryOptions = categoryOptions(transaction, categoryService, budgetId, user),
+                                        categoryOptions = categoryOptions(transaction.categoryId, categoryService, budgetId, user),
                                         budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                         user = user
                                     )
@@ -270,7 +270,7 @@ fun Application.transactionWebRoutes(
                                             amountLabel = call.parameters["amount"].orEmpty(),
                                             budget = budget,
                                             categoryOptions = categoryOptions(
-                                                transaction,
+                                                transaction.categoryId,
                                                 categoryService,
                                                 urlBudgetId,
                                                 user
@@ -298,48 +298,6 @@ fun Application.transactionWebRoutes(
             }
         }
     }
-}
-
-private suspend fun categoryOptions(
-    transaction: TransactionResponse,
-    categoryService: CategoryService,
-    budgetId: String,
-    user: UserResponse
-): List<CategoryOption> {
-    val selectedCategoryId = transaction.categoryId.orEmpty()
-    val categoryOptions = listOf(
-        CategoryOption(
-            "",
-            "Select a category",
-            isSelected = transaction.categoryId.isNullOrBlank(),
-            isDisabled = true
-        ),
-        CategoryOption("income", "Income", isDisabled = true),
-    )
-        .plus(
-            categoryService.categories(
-                budgetIds = listOf(budgetId),
-                userId = user.id,
-                expense = false,
-                archived = false
-            ).map { category ->
-                category.asOption(selectedCategoryId)
-            }
-        )
-        .plus(
-            CategoryOption("expense", "Expense", isDisabled = true),
-        )
-        .plus(
-            categoryService.categories(
-                budgetIds = listOf(budgetId),
-                userId = user.id,
-                expense = true,
-                archived = false
-            ).map { category ->
-                category.asOption(selectedCategoryId)
-            }
-        )
-    return categoryOptions
 }
 
 private fun Parameters.toTransactionRequest() = TransactionRequest(

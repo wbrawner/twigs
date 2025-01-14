@@ -209,7 +209,7 @@ a {
     list-style: none;
 }
 
-.list-item > a {
+.list-item > a, .list-item > p {
     display: flex;
     flex-direction: column;
     text-decoration: none;

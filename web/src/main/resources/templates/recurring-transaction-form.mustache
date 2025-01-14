@@ -1,0 +1,40 @@
+{{> partials/head }}
+<div id="app">
+    <main>
+        <h1>{{title}}</h1>
+        {{#error }}
+            <p class="error">{{error}}</p>
+        {{/error}}
+        <form method="post">
+            <label for="title">Name</label>
+            <input id="title" type="text" name="title" value="{{ transaction.title }}" required/>
+            <label for="description">Description</label>
+            <textarea id="description" name="description">{{ transaction.description }}</textarea>
+            <label for="start">Start</label>
+            <input id="start" type="datetime-local" name="start" value="{{ transaction.start }}" required/>
+            <label for="finish">Finish</label>
+            <input id="finish" type="datetime-local" name="finish" value="{{ transaction.finish }}" />
+            <label for="frequency">Frequency</label>
+            <!-- TODO: Make this a dynamic input type that changes based on the selected unit, maybe using a web-component? -->
+            <input id="frequency" type="text" name="frequency" value="{{ transaction.frequency }}" />
+            <label for="amount">Amount</label>
+            <input id="amount" type="number" name="amount" value="{{ amountLabel }}" step="0.01" required/>
+            <label for="categoryId">Category</label>
+            <select id="categoryId" name="categoryId" required>
+                {{#categoryOptions}}
+                    <option value="{{id}}" {{selected}} {{disabled}}>{{title}}</option>
+                {{/categoryOptions}}
+            </select>
+            <input id="submit" type="submit" class="button button-primary" value="Save"/>
+        </form>
+    </main>
+</div>
+<script type="text/javascript">
+    if (window.location.pathname.endsWith("new")) {
+        const dateField = document.querySelector('#start')
+        let localDateTime = dateField.valueAsDate
+        const localTimeMs = localDateTime.setMinutes(localDateTime.getMinutes() - localDateTime.getTimezoneOffset())
+        dateField.value = new Date(localTimeMs).toISOString().slice(0, -1)
+    }
+</script>
+{{>partials/foot}}
