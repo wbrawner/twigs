@@ -9,7 +9,7 @@ logback = "1.5.16"
 mail = "1.6.2"
 postgres = "42.7.5"
 shadow = "8.1.1"
-sqlite = "3.47.2.0"
+sqlite = "3.48.0.0"
 
 [libraries]
 bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
