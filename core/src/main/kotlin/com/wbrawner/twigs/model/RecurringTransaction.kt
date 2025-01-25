@@ -54,6 +54,7 @@ sealed class Frequency {
 
     data class Weekly(override val count: Int, val daysOfWeek: Set<DayOfWeek>, override val time: Time) : Frequency() {
         override fun toString(): String = "W;$count;${daysOfWeek.joinToString(",")};$time"
+
         companion object {
             fun parse(s: String): Weekly {
                 require(s[0] == 'W') { "Invalid format for Weekly: $s" }
@@ -70,10 +71,11 @@ sealed class Frequency {
 
     data class Monthly(
         override val count: Int,
-        val dayOfMonth: DayOfMonth,
+        val dayOfMonth: DayOfMonth<*>,
         override val time: Time
     ) : Frequency() {
         override fun toString(): String = "M;$count;$dayOfMonth;$time"
+
         companion object {
             fun parse(s: String): Monthly {
                 require(s[0] == 'M') { "Invalid format for Monthly: $s" }
@@ -90,6 +92,7 @@ sealed class Frequency {
 
     data class Yearly(override val count: Int, val dayOfYear: MonthDay, override val time: Time) : Frequency() {
         override fun toString(): String = "Y;$count;%02d-%02d;$time".format(dayOfYear.monthValue, dayOfYear.dayOfMonth)
+
         companion object {
             fun parse(s: String): Yearly {
                 require(s[0] == 'Y') { "Invalid format for Yearly: $s" }
@@ -153,42 +156,48 @@ data class Time(val hours: Int, val minutes: Int, val seconds: Int) {
     }
 }
 
-class DayOfMonth private constructor(
-    val day: Int? = null,
-    val positionalDayOfWeek: PositionalDayOfWeek? = null
-) {
-    override fun toString() = day?.let { "DAY-${it}" } ?: positionalDayOfWeek!!.toString()
+sealed interface DayOfMonth<T> {
+    val position: Position
+    val selection: T
+
+    data class FixedDayOfMonth(override val selection: Int): DayOfMonth<Int> {
+        override val position = Position.FIXED
+        override fun toString() = "DAY-$selection"
+    }
+
+    data class PositionalDayOfMonth(override val position: Position, override val selection: DayOfWeek): DayOfMonth<DayOfWeek> {
+        override fun toString(): String = "${position.name}-${selection.name}"
+    }
 
     companion object {
-        fun day(day: Int): DayOfMonth {
+        fun fixed(day: Int): FixedDayOfMonth {
             require(day in 1..31) { "Day out of range: $day" }
-            return DayOfMonth(day = day)
+            return FixedDayOfMonth(selection = day)
         }
 
-        fun positionalDayOfWeek(position: Position, dayOfWeek: DayOfWeek): DayOfMonth {
-            return DayOfMonth(positionalDayOfWeek = PositionalDayOfWeek(position, dayOfWeek))
+        fun positional(position: Position, dayOfWeek: DayOfWeek): PositionalDayOfMonth {
+            require (position != Position.FIXED) { "Use DayOfMonth.fixed() for absolute dates" }
+            return PositionalDayOfMonth(position = position, selection = dayOfWeek)
         }
 
-        fun parse(s: String): DayOfMonth = with(s.split("-")) {
+        fun parse(s: String): DayOfMonth<*> = with(s.split("-")) {
             when (size) {
                 2 -> when (first()) {
-                    "DAY" -> day(get(1).toInt())
-                    else -> positionalDayOfWeek(
+                    "DAY" -> fixed(get(1).toInt())
+                    else -> positional(
                         Position.valueOf(first()),
                         DayOfWeek.valueOf(get(1))
                     )
                 }
+
                 else -> throw IllegalArgumentException("Failed to parse string $s")
             }
         }
     }
-
-    data class PositionalDayOfWeek(val position: Position, val dayOfWeek: DayOfWeek) {
-        override fun toString(): String = "${position.name}-${dayOfWeek.name}"
-    }
 }
 
 enum class Position {
+    FIXED,
     FIRST,
     SECOND,
     THIRD,

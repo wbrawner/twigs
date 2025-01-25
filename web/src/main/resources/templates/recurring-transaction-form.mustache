@@ -1,4 +1,37 @@
 {{> partials/head }}
+<style>
+    .frequency-modifier {
+      display: none;
+    }
+
+    #weekly:checked ~ .frequency-modifier.weekly {
+      display: block;
+    }
+
+    #monthly:checked ~ .frequency-modifier.monthly {
+      display: block;
+    }
+
+    #dayOfMonthPositionColumn:has(option[value="FIXED"]:checked) ~ #dayOfMonthFixedDayColumn {
+      display: flex;
+    }
+
+    #dayOfMonthPositionColumn:not(:has(option[value="FIXED"]:checked)) ~ #dayOfMonthFixedDayColumn {
+      display: none;
+    }
+
+    #dayOfMonthPositionColumn:not(:has(option[value="FIXED"]:checked)) ~ #dayOfMonthRelativeDayColumn {
+      display: flex;
+    }
+
+    #dayOfMonthPositionColumn:has(option[value="FIXED"]:checked) ~ #dayOfMonthRelativeDayColumn {
+      display: none;
+    }
+
+    #yearly:checked ~ .frequency-modifier.yearly {
+      display: block;
+    }
+</style>
 <div id="app">
     <main>
         <h1>{{title}}</h1>
@@ -13,10 +46,65 @@
             <label for="start">Start</label>
             <input id="start" type="datetime-local" name="start" value="{{ transaction.start }}" required/>
             <label for="finish">Finish</label>
-            <input id="finish" type="datetime-local" name="finish" value="{{ transaction.finish }}" />
-            <label for="frequency">Frequency</label>
-            <!-- TODO: Make this a dynamic input type that changes based on the selected unit, maybe using a web-component? -->
-            <input id="frequency" type="text" name="frequency" value="{{ transaction.frequency }}" />
+            <input id="finish" type="datetime-local" name="finish" value="{{ transaction.finish }}"/>
+            <label for="frequency-count">Repeat every</label>
+            <input id="frequency-count" type="number" name="frequency-count" value="{{ frequencyCount }}"/>
+            <div class="frequency">
+                {{#frequencyUnitOptions}}
+                    <input id="{{ value }}" type="radio" name="unit" {{ checked }} value="{{ value }}"/>
+                    <label for="{{ value }}">{{ title }}</label>
+                {{/frequencyUnitOptions}}
+                <div class="frequency-modifier weekly">
+                    {{#dayOfWeekOptions}}
+                        <input id="{{ value }}" type="checkbox" name="day-of-week[]" value="{{ value }}"/>
+                        <label for="{{ value }}">{{ title }}</label>
+                    {{/dayOfWeekOptions}}
+                </div>
+                <div class="frequency-modifier monthly row">
+                    <div class="column" id="dayOfMonthPositionColumn">
+                        <label for="dayOfMonthPosition">Position</label>
+                        <select id="dayOfMonthPosition" name="dayOfMonthPosition">
+                            {{#positionOptions}}
+                                <option value="{{value}}" {{selected}} {{disabled}}>{{title}}</option>
+                            {{/positionOptions}}
+                        </select>
+                    </div>
+                    <div class="column" id="dayOfMonthFixedDayColumn">
+                        <label for="dayOfMonthFixedDay">Day</label>
+                        <select id="dayOfMonthFixedDay" name="dayOfMonthFixedDay">
+                            {{#dayOfMonthOptions}}
+                                <option value="{{value}}" {{selected}} {{disabled}}>{{title}}</option>
+                            {{/dayOfMonthOptions}}
+                        </select>
+                    </div>
+                    <div class="column" id="dayOfMonthRelativeDayColumn">
+                        <label for="dayOfMonthRelativeDay">Day</label>
+                        <select id="dayOfMonthRelativeDay" name="dayOfMonthRelativeDay">
+                            {{#dayOfWeekOptions}}
+                                <option value="{{value}}" {{selected}} {{disabled}}>{{title}}</option>
+                            {{/dayOfWeekOptions}}
+                        </select>
+                    </div>
+                </div>
+                <div class="frequency-modifier yearly row">
+                    <div class="column">
+                        <label for="dayOfYearMonth">Month</label>
+                        <select id="dayOfYearMonth" name="dayOfYearMonth">
+                            {{#monthsOfYearOptions}}
+                                <option value="{{value}}" {{selected}} {{disabled}}>{{title}}</option>
+                            {{/monthsOfYearOptions}}
+                        </select>
+                    </div>
+                    <div class="column">
+                        <label for="dayOfYearDay">Day</label>
+                        <select id="dayOfYearDay" name="dayOfYearDay">
+                            {{#dayOfMonthOptions}}
+                                <option value="{{value}}" {{selected}} {{disabled}}>{{title}}</option>
+                            {{/dayOfMonthOptions}}
+                        </select>
+                    </div>
+                </div>
+            </div>
             <label for="amount">Amount</label>
             <input id="amount" type="number" name="amount" value="{{ amountLabel }}" step="0.01" required/>
             <label for="categoryId">Category</label>
@@ -30,11 +118,13 @@
     </main>
 </div>
 <script type="text/javascript">
-    if (window.location.pathname.endsWith("new")) {
-        const dateField = document.querySelector('#start')
-        let localDateTime = dateField.valueAsDate
-        const localTimeMs = localDateTime.setMinutes(localDateTime.getMinutes() - localDateTime.getTimezoneOffset())
-        dateField.value = new Date(localTimeMs).toISOString().slice(0, -1)
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.location.pathname.endsWith("new")) {
+            const dateField = document.querySelector('#start')
+            let localDateTime = dateField.valueAsDate
+            const localTimeMs = localDateTime.setMinutes(localDateTime.getMinutes() - localDateTime.getTimezoneOffset())
+            dateField.value = new Date(localTimeMs).toISOString().slice(0, -1)
+        }
+    })
 </script>
 {{>partials/foot}}

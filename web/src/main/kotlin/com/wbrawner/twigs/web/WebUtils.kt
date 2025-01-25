@@ -40,6 +40,8 @@ val decimalFormat: NumberFormat = DecimalFormat.getNumberInstance(Locale.US).app
 
 val dateFormat = DateTimeFormatter.ofPattern("H:mm a 'on' MMMM d, yyyy")
 
+val webInputFormat = DateTimeFormatter.ofPattern("MM/dd/yy HH:mm:ss")
+
 val shortDateFormat = DateTimeFormatter.ofPattern("M/d/yy")
 
 fun Parameters.getAmount() = decimalFormat.parse(get("amount"))

@@ -1,5 +1,8 @@
 package com.wbrawner.twigs.web.recurring
 
+import com.wbrawner.twigs.asFrequency
+import com.wbrawner.twigs.model.Frequency
+import com.wbrawner.twigs.model.Position
 import com.wbrawner.twigs.service.budget.BudgetResponse
 import com.wbrawner.twigs.service.category.CategoryResponse
 import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionResponse
@@ -9,8 +12,12 @@ import com.wbrawner.twigs.web.BudgetListItem
 import com.wbrawner.twigs.web.ListGroup
 import com.wbrawner.twigs.web.budget.toCurrencyString
 import com.wbrawner.twigs.web.category.CategoryOption
+import com.wbrawner.twigs.web.recurring.RecurringTransactionFormPage.Option
 import com.wbrawner.twigs.web.transaction.TransactionListItem
 import java.text.NumberFormat
+import java.time.DayOfWeek
+import java.time.Month
+import kotlin.enums.EnumEntries
 
 data class RecurringTransactionListPage(
     val budget: BudgetResponse,
@@ -60,4 +67,101 @@ data class RecurringTransactionFormPage(
     } else {
         "Edit Recurring Transaction"
     }
+
+    val frequencyCount: Int = 1
+
+    val frequencyUnitOptions: List<Option> = listOf(
+        Frequency.Daily::class,
+        Frequency.Weekly::class,
+        Frequency.Monthly::class,
+        Frequency.Yearly::class
+    )
+        .map {
+            Option(
+                value = it.simpleName!!.uppercase(),
+                title = it.simpleName!!.replace("ly", "(s)").replace("i", "y"),
+                checked = it.simpleName!!.first() == transaction.frequency.first(),
+                selected = it.simpleName!!.first() == transaction.frequency.first(),
+                disabled = false
+            )
+
+        }
+
+    val dayOfWeekOptions: List<Option> = DayOfWeek.entries.toOptionsList(
+        selected = {
+            transaction.frequency.contains(it.name)
+        }
+    )
+
+    val positionOptions: List<Option> = Position.entries.toOptionsList(
+        selected = {
+            transaction.frequency.contains(it.name)
+        }
+    )
+
+    val dayOfMonthOptions: List<Option> = (1..31).map {
+        Option(
+            value = it.toString(),
+            title = it.toString(),
+            selected = when (val frequency = transaction.frequency.asFrequency()) {
+                is Frequency.Monthly -> frequency.dayOfMonth.selection == it
+                is Frequency.Yearly -> frequency.dayOfYear.dayOfMonth == it
+                else -> false
+            },
+            disabled = false
+        )
+    }
+
+    val monthsOfYearOptions: List<Option> = Month.entries.toOptionsList(
+        selected = {
+            when (val frequency = transaction.frequency.asFrequency()) {
+                is Frequency.Yearly -> frequency.dayOfYear.month == it
+                else -> false
+            }
+        }
+    )
+
+    data class Option(
+        val value: String,
+        val title: String,
+        val checked: String = "",
+        val selected: String = "",
+        val disabled: String = "",
+    ) {
+        constructor(
+            value: String,
+            title: String,
+            checked: Boolean = false,
+            selected: Boolean = false,
+            disabled: Boolean = false
+        ) : this(
+            value = value,
+            title = title,
+            checked = if (checked) "checked" else "",
+            selected = if (selected) "selected" else "",
+            disabled = if (disabled) "disabled" else ""
+        )
+    }
 }
+
+private fun EnumEntries<*>.toOptionsList(
+    checked: (Enum<*>) -> Boolean = { false },
+    selected: (Enum<*>) -> Boolean = { false },
+    disabled: (Enum<*>) -> Boolean = { false },
+) = map { entry ->
+    Option(
+        value = entry.name,
+        title = entry.name.capitalize(),
+        checked = checked(entry),
+        selected = selected(entry),
+        disabled = disabled(entry)
+    )
+}
+
+private fun String.capitalize() = mapIndexed { i, c ->
+    if (i == 0) {
+        c.titlecase()
+    } else {
+        c.lowercase()
+    }
+}.joinToString("")

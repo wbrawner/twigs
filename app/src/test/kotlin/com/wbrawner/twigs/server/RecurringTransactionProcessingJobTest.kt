@@ -140,7 +140,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Monthly transaction",
                 amount = 123,
-                frequency = Frequency.Monthly(1, DayOfMonth.day(1), Time(9, 0, 0)),
+                frequency = Frequency.Monthly(1, DayOfMonth.fixed(1), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -163,7 +163,7 @@ class RecurringTransactionProcessingJobTest {
                 RecurringTransaction(
                     title = "Monthly transaction",
                     amount = 123,
-                    frequency = Frequency.Monthly(1, DayOfMonth.day(31), Time(9, 0, 0)),
+                    frequency = Frequency.Monthly(1, DayOfMonth.fixed(31), Time(9, 0, 0)),
                     expense = true,
                     start = start,
                     createdBy = "tester",
@@ -186,7 +186,7 @@ class RecurringTransactionProcessingJobTest {
             RecurringTransaction(
                 title = "Monthly transaction",
                 amount = 123,
-                frequency = Frequency.Monthly(6, DayOfMonth.day(15), Time(9, 0, 0)),
+                frequency = Frequency.Monthly(6, DayOfMonth.fixed(15), Time(9, 0, 0)),
                 expense = true,
                 start = start,
                 createdBy = "tester",
@@ -209,7 +209,7 @@ class RecurringTransactionProcessingJobTest {
                 amount = 123,
                 frequency = Frequency.Monthly(
                     1,
-                    DayOfMonth.positionalDayOfWeek(Position.SECOND, DayOfWeek.TUESDAY),
+                    DayOfMonth.positional(Position.SECOND, DayOfWeek.TUESDAY),
                     Time(9, 0, 0)
                 ),
                 expense = true,
@@ -236,7 +236,7 @@ class RecurringTransactionProcessingJobTest {
                         amount = 123,
                         frequency = Frequency.Monthly(
                                 1,
-                                DayOfMonth.positionalDayOfWeek(Position.LAST, DayOfWeek.FRIDAY),
+                                DayOfMonth.positional(Position.LAST, DayOfWeek.FRIDAY),
                                 Time(9, 0, 0)
                         ),
                         expense = true,
@@ -263,7 +263,7 @@ class RecurringTransactionProcessingJobTest {
                         amount = 123,
                         frequency = Frequency.Monthly(
                                 1,
-                                DayOfMonth.day(1),
+                                DayOfMonth.fixed(1),
                                 Time(9, 0, 0)
                         ),
                         expense = true,

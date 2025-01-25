@@ -1,6 +1,12 @@
 package com.wbrawner.twigs.web.recurring
 
+import com.wbrawner.twigs.model.DayOfMonth
 import com.wbrawner.twigs.model.Frequency
+import com.wbrawner.twigs.model.Frequency.Daily
+import com.wbrawner.twigs.model.Frequency.Weekly
+import com.wbrawner.twigs.model.Frequency.Yearly
+import com.wbrawner.twigs.model.Position
+import com.wbrawner.twigs.model.Position.FIXED
 import com.wbrawner.twigs.model.Time
 import com.wbrawner.twigs.service.HttpException
 import com.wbrawner.twigs.service.budget.BudgetService
@@ -22,7 +28,10 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import java.time.DayOfWeek
 import java.time.Instant
+import java.time.Month
+import java.time.MonthDay
 import java.time.ZoneOffset.UTC
 
 fun Application.recurringTransactionWebRoutes(
@@ -71,8 +80,8 @@ fun Application.recurringTransactionWebRoutes(
                             expense = true,
                             categoryId = categoryId,
                             createdBy = user.id,
-                            frequency = Frequency.Daily(1, Time(9, 0, 0)).toString(),
-                            start = Instant.now().toString(),
+                            frequency = Daily(1, Time(9, 0, 0)).toString(),
+                            start = Instant.now().toHtmlInputString(),
                             finish = null,
                             lastRun = null
                         )
@@ -119,9 +128,9 @@ fun Application.recurringTransactionWebRoutes(
                                 id = "",
                                 title = call.parameters["title"],
                                 description = call.parameters["description"],
-                                amount = call.parameters["amount"]?.toLongOrNull()?: 0L,
+                                amount = call.parameters["amount"]?.toLongOrNull() ?: 0L,
                                 budgetId = urlBudgetId,
-                                expense = call.parameters["expense"]?.toBoolean() ?: true,
+                                expense = call.parameters["expense"]?.toBoolean() != false,
                                 start = call.parameters["start"].orEmpty(),
                                 finish = call.parameters["finish"].orEmpty(),
                                 frequency = call.parameters["frequency"].orEmpty(),
@@ -227,7 +236,12 @@ fun Application.recurringTransactionWebRoutes(
                                         ),
                                         amountLabel = transaction.amount.toDecimalString(),
                                         budget = budget,
-                                        categoryOptions = categoryOptions(transaction.categoryId, categoryService, budgetId, user),
+                                        categoryOptions = categoryOptions(
+                                            transaction.categoryId,
+                                            categoryService,
+                                            budgetId,
+                                            user
+                                        ),
                                         budgets = budgets.map { it.toBudgetListItem(budgetId) },
                                         user = user
                                     )
@@ -263,7 +277,7 @@ fun Application.recurringTransactionWebRoutes(
                                     id = "",
                                     title = call.parameters["title"],
                                     description = call.parameters["description"],
-                                    amount = call.parameters["amount"]?.toLongOrNull()?: 0L,
+                                    amount = call.parameters["amount"]?.toLongOrNull() ?: 0L,
                                     budgetId = urlBudgetId,
                                     expense = call.parameters["expense"]?.toBoolean() ?: true,
                                     start = call.parameters["start"].orEmpty(),
@@ -312,6 +326,36 @@ fun Application.recurringTransactionWebRoutes(
     }
 }
 
+private fun Parameters.getFrequency(): Frequency {
+    val count = get("frequency-count")?.toInt() ?: 0
+    val time = Time(9, 0, 0) // TODO: Parse from start?
+    return when (val timeUnit = get("unit")) {
+        "DAILY" -> Daily(count, time)
+        "WEEKLY" -> Weekly(
+            count,
+            getAll("day-of-week")?.map { DayOfWeek.valueOf(it) }?.toSet() ?: emptySet<DayOfWeek>(),
+            time
+        )
+
+        "MONTHLY" -> Frequency.Monthly(
+            count = count,
+            dayOfMonth = when (val position = Position.valueOf(get("dayOfMonthPosition")!!)) {
+                FIXED -> DayOfMonth.fixed(get("dayOfMonthFixedDay")?.toInt() ?: 1)
+                else -> DayOfMonth.positional(position, DayOfWeek.valueOf(get("dayOfMonthRelativeDay")!!))
+            },
+            time = time
+        )
+
+        "YEARLY" -> Yearly(
+            count = count,
+            dayOfYear = MonthDay.of(Month.valueOf(get("dayOfYearMonth")!!), get("dayOfYearDay")?.toInt() ?: 1),
+            time = time
+        )
+
+        else -> error("Invalid value for timeUnit: $timeUnit")
+    }
+}
+
 private fun Parameters.toRecurringTransactionRequest() = RecurringTransactionRequest(
     title = get("title"),
     description = get("description"),
@@ -321,5 +365,5 @@ private fun Parameters.toRecurringTransactionRequest() = RecurringTransactionReq
     finish = getDateString("finish"),
     categoryId = get("categoryId"),
     budgetId = get("budgetId"),
-    frequency = get("frequency").orEmpty()
+    frequency = getFrequency().toString()
 )
