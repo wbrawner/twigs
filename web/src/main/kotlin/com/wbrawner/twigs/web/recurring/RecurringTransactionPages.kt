@@ -1,6 +1,7 @@
 package com.wbrawner.twigs.web.recurring
 
 import com.wbrawner.twigs.asFrequency
+import com.wbrawner.twigs.model.DayOfMonth
 import com.wbrawner.twigs.model.Frequency
 import com.wbrawner.twigs.model.Position
 import com.wbrawner.twigs.service.budget.BudgetResponse
@@ -51,6 +52,28 @@ data class RecurringTransactionDetailsPage(
     override val error: String? = null
 ) : AuthenticatedPage {
     override val title: String = transaction.title.orEmpty()
+
+    val frequencyValue: String = when (val frequency = transaction.frequency.asFrequency()) {
+        is Frequency.Daily -> if (frequency.count == 1) "Every day" else "Every ${frequency.count} days"
+        is Frequency.Weekly -> if (frequency.count == 1) {
+            "Every week on "
+        } else {
+            "Every ${frequency.count} weeks on"
+        }.plus(frequency.daysOfWeek.joinToString(", ") { it.name.capitalize() })
+        is Frequency.Monthly -> if (frequency.count == 1) {
+            "Every month on the"
+        } else {
+            "Every ${frequency.count} months on the"
+        }.plus(when (val dayOfMonth = frequency.dayOfMonth) {
+            is DayOfMonth.FixedDayOfMonth -> dayOfMonth.selection.toOrdinalString()
+            is DayOfMonth.PositionalDayOfMonth -> "${dayOfMonth.position.name.capitalize()} ${dayOfMonth.selection.name.capitalize()}"
+        })
+        is Frequency.Yearly -> if (frequency.count == 1) {
+            "Every year on "
+        } else {
+            "Every ${frequency.count} years on"
+        }.plus("${frequency.dayOfYear.month.name.capitalize()} ${frequency.dayOfYear.dayOfMonth.toOrdinalString()}")
+    }
 }
 
 data class RecurringTransactionFormPage(
@@ -165,3 +188,10 @@ private fun String.capitalize() = mapIndexed { i, c ->
         c.lowercase()
     }
 }.joinToString("")
+
+private fun Int.toOrdinalString() = when {
+    toString().endsWith("1") -> "${this}st"
+    toString().endsWith("2") -> "${this}nd"
+    toString().endsWith("3") -> "${this}rd"
+    else -> "${this}th"
+}
