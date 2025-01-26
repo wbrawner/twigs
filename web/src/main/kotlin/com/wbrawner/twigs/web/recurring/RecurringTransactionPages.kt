@@ -58,12 +58,12 @@ data class RecurringTransactionDetailsPage(
         is Frequency.Weekly -> if (frequency.count == 1) {
             "Every week on "
         } else {
-            "Every ${frequency.count} weeks on"
+            "Every ${frequency.count} weeks on "
         }.plus(frequency.daysOfWeek.joinToString(", ") { it.name.capitalize() })
         is Frequency.Monthly -> if (frequency.count == 1) {
-            "Every month on the"
+            "Every month on the "
         } else {
-            "Every ${frequency.count} months on the"
+            "Every ${frequency.count} months on the "
         }.plus(when (val dayOfMonth = frequency.dayOfMonth) {
             is DayOfMonth.FixedDayOfMonth -> dayOfMonth.selection.toOrdinalString()
             is DayOfMonth.PositionalDayOfMonth -> "${dayOfMonth.position.name.capitalize()} ${dayOfMonth.selection.name.capitalize()}"
@@ -71,7 +71,7 @@ data class RecurringTransactionDetailsPage(
         is Frequency.Yearly -> if (frequency.count == 1) {
             "Every year on "
         } else {
-            "Every ${frequency.count} years on"
+            "Every ${frequency.count} years on "
         }.plus("${frequency.dayOfYear.month.name.capitalize()} ${frequency.dayOfYear.dayOfMonth.toOrdinalString()}")
     }
 }
