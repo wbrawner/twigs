@@ -30,6 +30,7 @@ dependencies {
     testImplementation(project(":testhelpers"))
     testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.ktor.server.test)
+    testRuntimeOnly(libs.junit.jupiter.platform.launcher)
 }
 
 description = "twigs-server"
