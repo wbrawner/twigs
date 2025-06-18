@@ -43,11 +43,13 @@ fun Application.recurringTransactionRoutes(recurringTransactionService: Recurrin
                 }
 
                 put("/{id}") {
-                    recurringTransactionService.save(
-                        request = call.receive<RecurringTransactionRequest>(),
-                        userId = requireSession().userId,
-                        recurringTransactionId = call.parameters.getOrFail("id")
-                    )
+                    call.respondCatching {
+                        recurringTransactionService.save(
+                            request = call.receive<RecurringTransactionRequest>(),
+                            userId = requireSession().userId,
+                            recurringTransactionId = call.parameters.getOrFail("id")
+                        )
+                    }
                 }
 
                 delete("/{id}") {
