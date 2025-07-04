@@ -1,15 +1,15 @@
 [versions]
 bcrypt = "0.10.2"
 hikari = "6.3.0"
-junit = "5.13.1"
-kotlin = "2.1.21"
+junit = "5.13.3"
+kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
-ktor = "3.2.0"
+ktor = "3.2.1"
 logback = "1.5.18"
 mail = "1.6.2"
 postgres = "42.7.7"
 shadow = "8.1.1"
-sqlite = "3.50.1.0"
+sqlite = "3.50.2.0"
 
 [libraries]
 bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
