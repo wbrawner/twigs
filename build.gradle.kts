@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
@@ -19,6 +20,7 @@ plugins {
 }
 
 val javaVersion = JavaVersion.VERSION_17
+val javaTarget = JvmTarget.JVM_17
 
 allprojects {
     repositories {
@@ -35,6 +37,6 @@ allprojects {
         targetCompatibility = javaVersion.majorVersion
     }
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = javaVersion.majorVersion
+        compilerOptions.jvmTarget.set(javaTarget)
     }
 }
