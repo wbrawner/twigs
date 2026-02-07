@@ -14,7 +14,7 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: https://git.wbrawner.com/gradle/actions/wrapper-validation@49ec880f92204d92aac59e81f28195de48b4a7fa
       - name: Setup Gradle
-        uses: https://git.wbrawner.com/gradle/actions/setup-gradle@v4
+        uses: https://git.wbrawner.com/gradle/actions/setup-gradle@49ec880f92204d92aac59e81f28195de48b4a7fa
       - name: Run Unit Tests
         run: ./gradlew --no-daemon --stacktrace check
       - name: Publish JUnit Results
