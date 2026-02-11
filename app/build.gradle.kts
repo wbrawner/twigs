@@ -4,7 +4,7 @@ plugins {
     java
     kotlin("jvm")
     application
-    alias(libs.plugins.shadow)
+    alias(libs.plugins.ktor)
 }
 
 repositories {
@@ -41,12 +41,9 @@ application {
     mainClass.set(twigsMain)
 }
 
-tasks.shadowJar {
-    manifest {
-        attributes("Main-Class" to twigsMain)
-        archiveBaseName.set("twigs")
-        archiveClassifier.set("")
-        archiveVersion.set("")
+ktor {
+    fatJar {
+        archiveFileName.set("twigs.jar")
     }
 }
 
