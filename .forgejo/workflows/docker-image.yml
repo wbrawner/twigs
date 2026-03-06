@@ -34,7 +34,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.FORGEJO_TOKEN }}
       - name: Build and push
-        uses: https://git.wbrawner.com/docker/build-push-action@v6
+        uses: https://git.wbrawner.com/docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
