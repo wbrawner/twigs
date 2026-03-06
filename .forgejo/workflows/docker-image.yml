@@ -28,7 +28,7 @@ jobs:
         with:
           endpoint: builders
       - name: Login to Container Registry
-        uses: https://git.wbrawner.com/docker/login-action@v3
+        uses: https://git.wbrawner.com/docker/login-action@v4
         with:
           registry: git.wbrawner.com
           username: ${{ github.actor }}
