@@ -13,7 +13,7 @@ jobs:
         uses: https://git.wbrawner.com/actions/checkout@v6
       - name: Docker meta
         id: meta
-        uses: https://git.wbrawner.com/docker/metadata-action@v5
+        uses: https://git.wbrawner.com/docker/metadata-action@v6
         with:
           images: |
             git.wbrawner.com/wbrawner/twigs
