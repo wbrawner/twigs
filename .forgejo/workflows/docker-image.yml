@@ -24,7 +24,7 @@ jobs:
       - name: Set up Docker context
         run: docker context create builders
       - name: Set up Docker Buildx
-        uses: https://git.wbrawner.com/docker/setup-buildx-action@v3
+        uses: https://git.wbrawner.com/docker/setup-buildx-action@v4
         with:
           endpoint: builders
       - name: Login to Container Registry
