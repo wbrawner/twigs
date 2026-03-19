@@ -58,7 +58,6 @@ class RecurringTransactionProcessingJob(
                             val currentDayOfMonth = now.atZone(ZoneId.of("UTC")).dayOfMonth
                             val position = ceil(currentDayOfMonth / 7.0).toInt()
                             when (dayOfMonth.position) {
-                                Position.FIXED -> error("attempt to combine fixed date with positional day of month")
                                 Position.FIRST -> if (position != 1) return@forEach
                                 Position.SECOND -> if (position != 2) return@forEach
                                 Position.THIRD -> if (position != 3) return@forEach

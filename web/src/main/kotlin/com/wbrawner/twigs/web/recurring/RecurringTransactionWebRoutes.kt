@@ -1,19 +1,12 @@
 package com.wbrawner.twigs.web.recurring
 
-import com.wbrawner.twigs.model.DayOfMonth
-import com.wbrawner.twigs.model.Frequency
 import com.wbrawner.twigs.model.Frequency.Daily
-import com.wbrawner.twigs.model.Frequency.Weekly
-import com.wbrawner.twigs.model.Frequency.Yearly
 import com.wbrawner.twigs.model.Position
-import com.wbrawner.twigs.model.Position.FIXED
 import com.wbrawner.twigs.model.Time
 import com.wbrawner.twigs.service.HttpException
 import com.wbrawner.twigs.service.budget.BudgetService
 import com.wbrawner.twigs.service.category.CategoryService
-import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionRequest
-import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionResponse
-import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionService
+import com.wbrawner.twigs.service.recurringtransaction.*
 import com.wbrawner.twigs.service.requireSession
 import com.wbrawner.twigs.service.user.UserService
 import com.wbrawner.twigs.toInstant
@@ -31,7 +24,6 @@ import io.ktor.server.util.*
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.Month
-import java.time.MonthDay
 import java.time.ZoneOffset.UTC
 
 fun Application.recurringTransactionWebRoutes(
@@ -80,7 +72,7 @@ fun Application.recurringTransactionWebRoutes(
                             expense = true,
                             categoryId = categoryId,
                             createdBy = user.id,
-                            frequency = Daily(1, Time(9, 0, 0)).toString(),
+                            frequency = Daily(1, Time(9, 0, 0)).asResponse(),
                             start = Instant.now().toHtmlInputString(),
                             finish = null,
                             lastRun = null
@@ -133,7 +125,7 @@ fun Application.recurringTransactionWebRoutes(
                                 expense = call.parameters["expense"]?.toBoolean() != false,
                                 start = call.parameters["start"].orEmpty(),
                                 finish = call.parameters["finish"].orEmpty(),
-                                frequency = call.parameters["frequency"].orEmpty(),
+                                frequency = call.parameters.getFrequency(),
                                 categoryId = call.parameters["categoryId"],
                                 lastRun = null,
                                 createdBy = user.id
@@ -282,7 +274,7 @@ fun Application.recurringTransactionWebRoutes(
                                     expense = call.parameters["expense"]?.toBoolean() ?: true,
                                     start = call.parameters["start"].orEmpty(),
                                     finish = call.parameters["finish"].orEmpty(),
-                                    frequency = call.parameters["frequency"].orEmpty(),
+                                    frequency = call.parameters.getFrequency(),
                                     categoryId = call.parameters["categoryId"],
                                     lastRun = null,
                                     createdBy = user.id
@@ -326,29 +318,35 @@ fun Application.recurringTransactionWebRoutes(
     }
 }
 
-private fun Parameters.getFrequency(): Frequency {
+private fun Parameters.getFrequency(): FrequencyApi {
     val count = get("frequency-count")?.toInt() ?: 0
-    val time = Time(9, 0, 0) // TODO: Parse from start?
+    val time = TimeApi(9, 0, 0) // TODO: Parse from start?
     return when (val timeUnit = get("unit")) {
-        "DAILY" -> Daily(count, time)
-        "WEEKLY" -> Weekly(
-            count,
-            getAll("day-of-week")?.map { DayOfWeek.valueOf(it) }?.toSet() ?: emptySet<DayOfWeek>(),
-            time
+        "DAILY" -> FrequencyApi.Daily(count, time)
+        "WEEKLY" -> FrequencyApi.Weekly(
+            count = count,
+            daysOfWeek = requireNotNull(getAll("day-of-week[]")) {
+                "Days of week are required"
+            }.map { DayOfWeek.valueOf(it) }.toSet(),
+            time = time
         )
 
-        "MONTHLY" -> Frequency.Monthly(
+        "MONTHLY" -> FrequencyApi.Monthly(
             count = count,
-            dayOfMonth = when (val position = Position.valueOf(get("dayOfMonthPosition")!!)) {
-                FIXED -> DayOfMonth.fixed(get("dayOfMonthFixedDay")?.toInt() ?: 1)
-                else -> DayOfMonth.positional(position, DayOfWeek.valueOf(get("dayOfMonthRelativeDay")!!))
+            dayOfMonth = when (val position = get("dayOfMonthPosition")!!) {
+                "FIXED" -> FrequencyApi.Monthly.DayOfMonthApi.FixedDayOfMonth(get("dayOfMonthFixedDay")?.toInt() ?: 1)
+                else -> FrequencyApi.Monthly.DayOfMonthApi.PositionalDayOfMonth(
+                    position = Position.valueOf(position),
+                    day = DayOfWeek.valueOf(get("dayOfMonthRelativeDay")!!)
+                )
             },
             time = time
         )
 
-        "YEARLY" -> Yearly(
+        "YEARLY" -> FrequencyApi.Yearly(
             count = count,
-            dayOfYear = MonthDay.of(Month.valueOf(get("dayOfYearMonth")!!), get("dayOfYearDay")?.toInt() ?: 1),
+            day = get("dayOfYearDay")?.toInt() ?: 1,
+            month = Month.valueOf(get("dayOfYearMonth")!!),
             time = time
         )
 
@@ -365,5 +363,5 @@ private fun Parameters.toRecurringTransactionRequest() = RecurringTransactionReq
     finish = getDateString("finish"),
     categoryId = get("categoryId"),
     budgetId = get("budgetId"),
-    frequency = getFrequency().toString()
+    frequency = getFrequency()
 )

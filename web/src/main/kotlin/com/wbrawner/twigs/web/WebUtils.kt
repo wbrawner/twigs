@@ -5,6 +5,7 @@ import com.wbrawner.twigs.firstOfMonth
 import com.wbrawner.twigs.model.Frequency
 import com.wbrawner.twigs.service.category.CategoryService
 import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionResponse
+import com.wbrawner.twigs.service.recurringtransaction.asFrequency
 import com.wbrawner.twigs.service.transaction.TransactionResponse
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.toInstant
@@ -14,11 +15,8 @@ import com.wbrawner.twigs.web.category.asOption
 import com.wbrawner.twigs.web.recurring.toListItem
 import com.wbrawner.twigs.web.transaction.toListItem
 import io.ktor.http.*
-import io.ktor.server.util.*
-import io.ktor.util.date.*
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.Instant
@@ -81,7 +79,7 @@ val RecurringTransactionResponse.isThisMonth: Boolean
             return false
         }
         // TODO: Check user's timezone for this
-        return when (val frequencyObj = Frequency.parse(frequency)) {
+        return when (val frequencyObj = frequency.asFrequency()) {
             is Frequency.Daily -> true
             is Frequency.Weekly -> frequencyObj.count < 5
                     || (lastRun ?: start).toInstant()

@@ -56,7 +56,8 @@
                 {{/frequencyUnitOptions}}
                 <div class="frequency-modifier weekly">
                     {{#dayOfWeekOptions}}
-                        <input id="{{ value }}" type="checkbox" name="day-of-week[]" value="{{ value }}"/>
+                        <input id="{{ value }}" type="checkbox" name="day-of-week[]"
+                               value="{{ value }}" {{ checked }} />
                         <label for="{{ value }}">{{ title }}</label>
                     {{/dayOfWeekOptions}}
                 </div>

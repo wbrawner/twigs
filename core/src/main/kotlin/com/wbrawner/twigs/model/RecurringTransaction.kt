@@ -157,16 +157,14 @@ data class Time(val hours: Int, val minutes: Int, val seconds: Int) {
 }
 
 sealed interface DayOfMonth<T> {
-    val position: Position
     val selection: T
 
     data class FixedDayOfMonth(override val selection: Int): DayOfMonth<Int> {
-        override val position = Position.FIXED
         override fun toString() = "DAY-$selection"
     }
 
-    data class PositionalDayOfMonth(override val position: Position, override val selection: DayOfWeek): DayOfMonth<DayOfWeek> {
-        override fun toString(): String = "${position.name}-${selection.name}"
+    data class PositionalDayOfMonth(val position: Position, override val selection: DayOfWeek) : DayOfMonth<DayOfWeek> {
+        override fun toString(): String = "${position}-${selection.name}"
     }
 
     companion object {
@@ -176,7 +174,6 @@ sealed interface DayOfMonth<T> {
         }
 
         fun positional(position: Position, dayOfWeek: DayOfWeek): PositionalDayOfMonth {
-            require (position != Position.FIXED) { "Use DayOfMonth.fixed() for absolute dates" }
             return PositionalDayOfMonth(position = position, selection = dayOfWeek)
         }
 
@@ -197,7 +194,6 @@ sealed interface DayOfMonth<T> {
 }
 
 enum class Position {
-    FIXED,
     FIRST,
     SECOND,
     THIRD,

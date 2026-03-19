@@ -219,7 +219,6 @@ fun Application.moduleWithDependencies(
             allowSpecialFloatingPointValues = true
             allowStructuredMapKeys = true
             prettyPrint = false
-            useArrayPolymorphism = true
         })
 
         formData()

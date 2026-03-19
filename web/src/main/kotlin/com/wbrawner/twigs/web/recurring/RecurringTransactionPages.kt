@@ -1,12 +1,13 @@
 package com.wbrawner.twigs.web.recurring
 
-import com.wbrawner.twigs.asFrequency
 import com.wbrawner.twigs.model.DayOfMonth
 import com.wbrawner.twigs.model.Frequency
 import com.wbrawner.twigs.model.Position
 import com.wbrawner.twigs.service.budget.BudgetResponse
 import com.wbrawner.twigs.service.category.CategoryResponse
+import com.wbrawner.twigs.service.recurringtransaction.FrequencyApi
 import com.wbrawner.twigs.service.recurringtransaction.RecurringTransactionResponse
+import com.wbrawner.twigs.service.recurringtransaction.asFrequency
 import com.wbrawner.twigs.service.user.UserResponse
 import com.wbrawner.twigs.web.AuthenticatedPage
 import com.wbrawner.twigs.web.BudgetListItem
@@ -94,31 +95,38 @@ data class RecurringTransactionFormPage(
     val frequencyCount: Int = 1
 
     val frequencyUnitOptions: List<Option> = listOf(
-        Frequency.Daily::class,
-        Frequency.Weekly::class,
-        Frequency.Monthly::class,
-        Frequency.Yearly::class
+        FrequencyApi.Daily::class,
+        FrequencyApi.Weekly::class,
+        FrequencyApi.Monthly::class,
+        FrequencyApi.Yearly::class
     )
         .map {
             Option(
                 value = it.simpleName!!.uppercase(),
                 title = it.simpleName!!.replace("ly", "(s)").replace("i", "y"),
-                checked = it.simpleName!!.first() == transaction.frequency.first(),
-                selected = it.simpleName!!.first() == transaction.frequency.first(),
+                checked = it == transaction.frequency::class,
+                selected = it == transaction.frequency::class,
                 disabled = false
             )
 
         }
 
     val dayOfWeekOptions: List<Option> = DayOfWeek.entries.toOptionsList(
-        selected = {
-            transaction.frequency.contains(it.name)
+        checked = {
+            (transaction.frequency as? FrequencyApi.Weekly)?.daysOfWeek.orEmpty().contains(it)
         }
     )
 
-    val positionOptions: List<Option> = Position.entries.toOptionsList(
+    val positionOptions: List<Option> = listOf(
+        Option(
+            value = "FIXED",
+            title = "Fixed",
+            selected = (transaction.frequency as? FrequencyApi.Monthly)?.dayOfMonth is FrequencyApi.Monthly.DayOfMonthApi.FixedDayOfMonth,
+            disabled = false
+        )
+    ) + Position.entries.toOptionsList(
         selected = {
-            transaction.frequency.contains(it.name)
+            ((transaction.frequency as? FrequencyApi.Monthly)?.dayOfMonth as? FrequencyApi.Monthly.DayOfMonthApi.PositionalDayOfMonth)?.position == it
         }
     )
 
