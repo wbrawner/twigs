@@ -17,7 +17,8 @@ html, body {
     --color-on-dim: #222222;
     --logo: url("/img/logo-color.svg");
     --background-color-primary: #ffffff;
-    --background-color-secondary: #bbbbbb;
+    --background-color-secondary: #f1f1f1;
+    --background-color-tertiary: #f8f8f8;
     --border-radius: 5px;
     --input-padding: 10px;
 }
@@ -30,14 +31,16 @@ html, body {
         --color-on-background: #FFFFFF;
         --color-on-dim: #888888;
         --logo: url("/img/logo-white.svg");
-        --background-color-primary: #000000;
-        --background-color-secondary: #333333;
+        --background-color-primary: #222222;
+        --background-color-secondary: #000000;
+        --background-color-tertiary: #111111;
     }
 }
 
 body {
-    background-image: linear-gradient(var(--background-color-primary), var(--background-color-secondary));
+    background-color: var(--background-color-secondary);
     background-attachment: fixed;
+    color: var(--color-on-background);
     height: 100vh;
     width: 100vw;
 }
@@ -136,6 +139,7 @@ header.row {
 .flex-full-width {
     display: flex;
     flex-direction: row;
+    gap: 0.5em;
 }
 
 .button-primary {
@@ -188,6 +192,8 @@ input, select, textarea {
     border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--input-padding);
+    background-color: var(--background-color-tertiary);
+    color: var(--color-on-background);
 }
 
 input:disabled {
@@ -223,19 +229,39 @@ a {
 }
 
 .body-large {
+    color: var(--color-on-background);
     font-size: 1.1rem;
 }
 
 .body-medium {
+    color: var(--color-on-background);
     font-size: 1rem;
 }
 
 .body-small {
+    color: var(--color-on-background);
     font-size: 0.9rem;
 }
 
 .error {
     color: var(--color-error);
+}
+
+progress {
+    background-color: var(--background-color-tertiary);
+    border: none;
+    border-radius: var(--border-radius);
+    height: 0.5em;
+    width: 100%;
+    -webkit-appearance: none;
+}
+
+::-moz-progress-bar {
+    background-color: var(--color-accent);
+}
+
+::-webkit-progress-bar {
+    background-color: var(--color-accent);
 }
 
 @media all and (max-width: 600px) {

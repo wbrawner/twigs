@@ -8,9 +8,9 @@
                 <p class="error">{{error}}</p>
             {{/error}}
             <form action="/login" method="post">
-                <label for="username">Username</label>
+                <label class="body-medium" for="username">Username</label>
                 <input id="username" type="text" name="username" value="{{ username }}"/>
-                <label for="password">Password</label>
+                <label class="body-medium" for="password">Password</label>
                 <input id="password" type="password" name="password"/>
                 <input id="submit" type="submit" class="button button-primary" value="Login"/>
             </form>

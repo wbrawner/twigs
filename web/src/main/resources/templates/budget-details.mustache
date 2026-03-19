@@ -5,18 +5,18 @@
         <header class="row">
             <a id="hamburger" href="#sidebar">☰</a>
             <h1>{{title}}</h1>
-            <div class="row">
+            <div class="row" style="gap: 0.5em;">
                 <a href="/budgets/{{budget.id}}/transactions/new"
                    class="button button-secondary">
                     <span aria-description="New Transaction">+</span> <span class="hide-small" aria-hidden="true">New Transaction</span>
                 </a>
                 <a href="/budgets/{{budget.id}}/edit"
-                   class="button button-secondary" style="margin-right: 10px;">
+                   class="button button-secondary">
                     <span aria-description="Edit Budget">✎</span> <span class="hide-small" aria-hidden="true">Edit Budget</span>
                 </a>
                 <form action="/budgets/{{budget.id}}/delete" method="post">
                     <!-- TODO: Show confirmation dialog before actually deleting -->
-                    <button class="button button-danger" style="margin-right: 10px;">
+                    <button class="button button-danger" style="height: 100%;">
                         <span aria-description="Delete Budget">🗑</span> <span class="hide-small" aria-hidden="true">Delete Budget</span>
                     </button>
                 </form>
@@ -42,21 +42,30 @@
         <div class="card">
             <div class="column">
                 <p>Expected income: {{balances.expectedIncomeLabel}}</p>
-                <progress style="margin: 0 0.5rem;"
-                          value="{{balances.expectedIncome}}"
-                          max="{{balances.maxProgressBarValue}}">{{balances.expectedIncomeLabel}}</progress>
+                <div class="row">
+                    <progress style="margin: 0 0.5rem;"
+                              value="{{balances.expectedIncome}}"
+                              max="{{balances.maxProgressBarValue}}">{{balances.expectedIncomeLabel}}</progress>
+                </div>
                 <p>Actual Income: {{balances.actualIncomeLabel}}</p>
-                <progress style="margin: 0 0.5rem;"
-                          value="{{balances.actualIncome}}"
-                          max="{{balances.maxProgressBarValue}}">{{balances.actualIncomeLabel}}</progress>
+                <div class="row">
+                    <progress style="margin: 0 0.5rem;"
+                              value="{{balances.actualIncome}}"
+                              max="{{balances.maxProgressBarValue}}">{{balances.actualIncomeLabel}}</progress>
+                </div>
                 <p>Expected expenses: {{balances.expectedExpensesLabel}}</p>
-                <progress style="margin: 0 0.5rem;"
-                          value="{{balances.expectedExpenses}}"
-                          max="{{balances.maxProgressBarValue}}">{{balances.expectedExpensesLabel}}</progress>
+                <div class="row">
+                    <progress style="margin: 0 0.5rem;"
+                              value="{{balances.expectedExpenses}}"
+                              max="{{balances.maxProgressBarValue}}">{{balances.expectedExpensesLabel}}</progress>
+                </div>
                 <p>Actual Income: {{balances.actualIncomeLabel}}</p>
-                <progress style="margin: 0 0.5rem;"
-                          value="{{balances.actualExpenses}}"
-                          max="{{balances.maxProgressBarValue}}">{{balances.actualExpensesLabel}}</progress>
+                <div class="row">
+                    <progress style="margin: 0 0.5rem 0.5rem;"
+                              value="{{balances.actualExpenses}}"
+                              max="{{balances.maxProgressBarValue}}">{{balances.actualExpensesLabel}}</progress>
+                </div>
+                <br/>
             </div>
         </div>
         <div class="card">

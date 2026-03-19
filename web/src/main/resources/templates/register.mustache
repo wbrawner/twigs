@@ -8,13 +8,13 @@
                 <p class="error">{{error}}</p>
             {{/error}}
             <form action="/register" method="post">
-                <label for="username">Username</label>
+                <label class="body-medium" for="username">Username</label>
                 <input id="username" type="text" name="username" value="{{ username }}"/>
-                <label for="email">Email</label>
+                <label class="body-medium" for="email">Email</label>
                 <input id="email" type="email" name="email" value="{{ email }}"/>
-                <label for="password">Password</label>
+                <label class="body-medium" for="password">Password</label>
                 <input id="password" type="password" name="password"/>
-                <label for="confirm-password">Confirm Password</label>
+                <label class="body-medium" for="confirm-password">Confirm Password</label>
                 <input id="confirm-password" type="password" name="confirmPassword"/>
                 <input type="submit" class="button button-primary" value="Register"/>
             </form>
