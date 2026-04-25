@@ -1,6 +1,5 @@
 package com.wbrawner.twigs.service.recurringtransaction
 
-import com.wbrawner.twigs.asFrequency
 import com.wbrawner.twigs.model.Permission
 import com.wbrawner.twigs.model.RecurringTransaction
 import com.wbrawner.twigs.service.HttpException
@@ -94,7 +93,7 @@ class DefaultRecurringTransactionService(
                 budgetId = request.budgetId?.ifBlank { recurringTransaction.budgetId } ?: recurringTransaction.budgetId,
                 categoryId = request.categoryId ?: recurringTransaction.categoryId,
                 start = request.start?.toInstant() ?: recurringTransaction.start,
-                finish = request.finish?.toInstant() ?: recurringTransaction.finish,
+                finish = request.finish?.toInstant(),
                 frequency = request.frequency.asFrequency()
             )
         ).asResponse()
