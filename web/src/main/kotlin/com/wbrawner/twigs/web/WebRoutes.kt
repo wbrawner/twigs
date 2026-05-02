@@ -17,6 +17,7 @@ import io.ktor.server.http.content.*
 import io.ktor.server.mustache.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.*
 import io.ktor.server.sessions.*
 
 fun Application.webRoutes(
@@ -27,7 +28,7 @@ fun Application.webRoutes(
     userService: UserService
 ) {
     routing {
-        staticResources("/", "static")
+        staticResources("/", "static").hide()
         get("/") {
             call.sessions.get(CookieSession::class)
                 ?.let {
@@ -46,7 +47,7 @@ fun Application.webRoutes(
                             call.respondRedirect("/budgets/${budget.id}")
                         } ?: call.respondRedirect("/budgets")
                 } ?: call.respond(MustacheContent("index.mustache", null))
-        }
+        }.hide()
     }
     budgetWebRoutes(budgetService, categoryService, transactionService, userService)
     categoryWebRoutes(budgetService, categoryService, transactionService, userService)

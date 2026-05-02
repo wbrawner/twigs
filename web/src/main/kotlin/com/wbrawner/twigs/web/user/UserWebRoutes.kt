@@ -11,79 +11,78 @@ import io.ktor.server.mustache.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.*
 import io.ktor.server.sessions.*
 import io.ktor.server.util.*
 
 const val TWIGS_SESSION_COOKIE = "twigsSession"
 
-fun Application.userWebRoutes(userService: UserService) {
-    routing {
-        route("/login") {
-            get {
-                call.respond(MustacheContent("login.mustache", LoginPage()))
-            }
-
-            post {
-                val request = call.receiveParameters().toLoginRequest()
-                try {
-                    val session = userService.login(request)
-                    call.sessions.set(CookieSession(session.token))
-                    call.respondRedirect("/")
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    call.respond(
-                        status = (e as? HttpException)?.statusCode ?: HttpStatusCode.InternalServerError,
-                        MustacheContent("login.mustache", LoginPage(username = request.username, error = e.message))
-                    )
-                }
-            }
+fun Application.userWebRoutes(userService: UserService) = routing {
+    route("/login") {
+        get {
+            call.respond(MustacheContent("login.mustache", LoginPage()))
         }
 
-        route("/logout") {
-            post {
-                call.sessions.clear<CookieSession>()
+        post {
+            val request = call.receiveParameters().toLoginRequest()
+            try {
+                val session = userService.login(request)
+                call.sessions.set(CookieSession(session.token))
                 call.respondRedirect("/")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                call.respond(
+                    status = (e as? HttpException)?.statusCode ?: HttpStatusCode.InternalServerError,
+                    MustacheContent("login.mustache", LoginPage(username = request.username, error = e.message))
+                )
             }
         }
+    }.hide()
 
-        route("/register") {
-            get {
-                call.respond(MustacheContent("register.mustache", RegisterPage()))
+    route("/logout") {
+        post {
+            call.sessions.clear<CookieSession>()
+            call.respondRedirect("/")
+        }
+    }.hide()
+
+    route("/register") {
+        get {
+            call.respond(MustacheContent("register.mustache", RegisterPage()))
+        }
+
+        post {
+            val request = call.receiveParameters()
+            val userRequest = request.toUserRequest()
+            val confirmPassword = request.getOrFail("confirmPassword")
+            if (userRequest.password != confirmPassword) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    MustacheContent(
+                        "register.mustache",
+                        userRequest.toPage("passwords don't match")
+                    )
+                )
+                return@post
             }
-
-            post {
-                val request = call.receiveParameters()
-                val userRequest = request.toUserRequest()
-                val confirmPassword = request.getOrFail("confirmPassword")
-                if (userRequest.password != confirmPassword) {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        MustacheContent(
-                            "register.mustache",
-                            userRequest.toPage("passwords don't match")
-                        )
+            try {
+                userService.register(userRequest)
+                val session = userService.login(
+                    LoginRequest(
+                        requireNotNull(userRequest.username),
+                        requireNotNull(userRequest.password)
                     )
-                    return@post
-                }
-                try {
-                    userService.register(userRequest)
-                    val session = userService.login(
-                        LoginRequest(
-                            requireNotNull(userRequest.username),
-                            requireNotNull(userRequest.password)
-                        )
-                    )
-                    call.sessions.set(CookieSession(session.token))
-                    call.respondRedirect("/")
-                } catch (e: HttpException) {
-                    call.respond(
-                        status = e.statusCode,
-                        MustacheContent("register.mustache", userRequest.toPage(error = e.message))
-                    )
-                }
+                )
+                call.sessions.set(CookieSession(session.token))
+                call.respondRedirect("/")
+            } catch (e: HttpException) {
+                call.respond(
+                    status = e.statusCode,
+                    MustacheContent("register.mustache", userRequest.toPage(error = e.message))
+                )
             }
         }
-    }
+    }.hide()
 }
 
 private fun Parameters.toLoginRequest() = LoginRequest(get("username").orEmpty(), get("password").orEmpty())

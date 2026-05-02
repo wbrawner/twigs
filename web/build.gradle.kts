@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":service"))
     api(libs.ktor.server.core)
     api(libs.ktor.server.mustache)
+    implementation(libs.ktor.server.routing.openapi)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
 }

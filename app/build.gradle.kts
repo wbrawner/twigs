@@ -45,6 +45,11 @@ ktor {
     fatJar {
         archiveFileName.set("twigs.jar")
     }
+    openApi {
+        enabled = true
+        codeInferenceEnabled = false
+        onlyCommented = false
+    }
 }
 
 tasks.getByName<Test>("test") {

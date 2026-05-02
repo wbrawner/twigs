@@ -22,6 +22,7 @@ import io.ktor.server.mustache.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.*
 import io.ktor.server.util.*
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -36,171 +37,169 @@ fun Application.budgetWebRoutes(
     categoryService: CategoryService,
     transactionService: TransactionService,
     userService: UserService
-) {
-    routing {
-        authenticate(TWIGS_SESSION_COOKIE) {
-            route("/budgets") {
+) = routing {
+    authenticate(TWIGS_SESSION_COOKIE) {
+        route("/budgets") {
+            get {
+                val user = userService.user(requireSession().userId)
+                val budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() }
+                call.respond(MustacheContent("budgets.mustache", BudgetListPage(budgets, user)))
+            }
+
+            route("/new") {
                 get {
                     val user = userService.user(requireSession().userId)
-                    val budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() }
-                    call.respond(MustacheContent("budgets.mustache", BudgetListPage(budgets, user)))
+                    call.respond(
+                        MustacheContent(
+                            "budget-form.mustache",
+                            BudgetFormPage(
+                                budget = BudgetResponse(
+                                    id = "",
+                                    name = "",
+                                    description = "",
+                                    users = listOf()
+                                ),
+                                budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() },
+                                user = user
+                            )
+                        )
+                    )
                 }
 
-                route("/new") {
-                    get {
-                        val user = userService.user(requireSession().userId)
+                post {
+                    val user = userService.user(requireSession().userId)
+                    try {
+                        val request = call.receiveParameters().toBudgetRequest()
+                        val budget = budgetService.save(request, user.id)
+                        call.respondRedirect("/budgets/${budget.id}")
+                    } catch (e: HttpException) {
                         call.respond(
+                            status = e.statusCode,
                             MustacheContent(
                                 "budget-form.mustache",
                                 BudgetFormPage(
                                     budget = BudgetResponse(
                                         id = "",
-                                        name = "",
-                                        description = "",
+                                        name = call.parameters["name"].orEmpty(),
+                                        description = call.parameters["description"].orEmpty(),
                                         users = listOf()
                                     ),
                                     budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() },
-                                    user = user
+                                    user = user,
+                                    error = e.message
                                 )
                             )
                         )
-                    }
-
-                    post {
-                        val user = userService.user(requireSession().userId)
-                        try {
-                            val request = call.receiveParameters().toBudgetRequest()
-                            val budget = budgetService.save(request, user.id)
-                            call.respondRedirect("/budgets/${budget.id}")
-                        } catch (e: HttpException) {
-                            call.respond(
-                                status = e.statusCode,
-                                MustacheContent(
-                                    "budget-form.mustache",
-                                    BudgetFormPage(
-                                        budget = BudgetResponse(
-                                            id = "",
-                                            name = call.parameters["name"].orEmpty(),
-                                            description = call.parameters["description"].orEmpty(),
-                                            users = listOf()
-                                        ),
-                                        budgets = budgetService.budgetsForUser(user.id).map { it.toBudgetListItem() },
-                                        user = user,
-                                        error = e.message
-                                    )
-                                )
-                            )
-                        }
-                    }
-                }
-
-                route("/{id}") {
-                    get {
-                        val user = userService.user(requireSession().userId)
-                        val budgetId = call.parameters.getOrFail("id")
-                        val budgets = budgetService.budgetsForUser(userId = user.id).toMutableList()
-                        val budget = budgets.firstOrNull { it.id == budgetId }
-                            ?: run {
-                                call.respond(MustacheContent("404.mustache", NotFoundPage))
-                                return@get
-                            }
-                        val numberFormat = NumberFormat.getCurrencyInstance(Locale.US)
-                        val categories = categoryService.categories(budgetIds = listOf(budget.id), userId = user.id)
-                            .map { category ->
-                                val categoryBalance =
-                                    abs(transactionService.sum(categoryId = category.id, userId = user.id))
-                                CategoryWithBalanceResponse(
-                                    category = category,
-                                    amountLabel = category.amount.toCurrencyString(numberFormat),
-                                    balance = categoryBalance,
-                                    balanceLabel = categoryBalance.toCurrencyString(numberFormat),
-                                    remainingAmountLabel = (category.amount - categoryBalance).toCurrencyString(
-                                        numberFormat
-                                    )
-                                )
-                            }
-                            .toMutableSet()
-                        val incomeCategories = categories.extractIf { !it.category.expense && !it.category.archived }
-                        val archivedIncomeCategories =
-                            categories.extractIf { !it.category.expense && it.category.archived }
-                        val expenseCategories = categories.extractIf { it.category.expense && !it.category.archived }
-                        val archivedExpenseCategories =
-                            categories.extractIf { it.category.expense && it.category.archived }
-                        val transactions = transactionService.transactions(
-                            budgetIds = listOf(budget.id),
-                            from = call.parameters["from"]?.toInstantOrNull() ?: firstOfMonth,
-                            to = call.parameters["to"]?.toInstantOrNull() ?: endOfMonth,
-                            userId = user.id
-                        )
-                        // TODO: Allow user-configurable locale
-                        val budgetBalance = transactionService.sum(budgetId = budget.id, userId = user.id)
-                            .toCurrencyString(numberFormat)
-                        val expectedIncome = incomeCategories.sumOf { it.category.amount }
-                        val actualIncome = transactions.sumOf { if (it.expense == false) it.amount ?: 0L else 0L }
-                        val expectedExpenses = expenseCategories.sumOf { it.category.amount }
-                        val actualExpenses = transactions.sumOf { if (it.expense == true) it.amount ?: 0L else 0L }
-                        val balances = BudgetBalances(
-                            cashFlow = budgetBalance,
-                            expectedIncome = expectedIncome,
-                            expectedIncomeLabel = expectedIncome.toCurrencyString(numberFormat),
-                            actualIncome = actualIncome,
-                            actualIncomeLabel = actualIncome.toCurrencyString(numberFormat),
-                            expectedExpenses = expectedExpenses,
-                            expectedExpensesLabel = expectedExpenses.toCurrencyString(numberFormat),
-                            actualExpenses = actualExpenses,
-                            actualExpensesLabel = actualExpenses.toCurrencyString(numberFormat),
-                        )
-                        call.respond(
-                            MustacheContent(
-                                "budget-details.mustache", BudgetDetailsPage(
-                                    budget = budget,
-                                    balances = balances,
-                                    incomeCategories = incomeCategories,
-                                    expenseCategories = expenseCategories,
-                                    archivedIncomeCategories = archivedIncomeCategories,
-                                    archivedExpenseCategories = archivedExpenseCategories,
-                                    transactionCount = NumberFormat.getNumberInstance(Locale.US)
-                                        .format(transactions.size),
-                                    monthAndYear = YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                                    budgets = budgets.map { it.toBudgetListItem(budgetId) }.sortedBy { it.name },
-                                    user = user
-                                )
-                            )
-                        )
-                    }
-
-                    route("/edit") {
-                        get {
-                            val user = userService.user(requireSession().userId)
-                            val budget = budgetService.budget(
-                                budgetId = call.parameters.getOrFail("id"),
-                                userId = user.id
-                            )
-                            call.respond(
-                                MustacheContent(
-                                    "budget-form.mustache",
-                                    BudgetFormPage(
-                                        budget = budget,
-                                        budgets = budgetService.budgetsForUser(user.id)
-                                            .map { it.toBudgetListItem(budget.id) },
-                                        user = user
-                                    )
-                                )
-                            )
-                        }
-                    }
-
-                    route("/delete") {
-                        post {
-                            val user = userService.user(requireSession().userId)
-                            val budgetId = call.parameters.getOrFail("id")
-                            budgetService.delete(budgetId = budgetId, userId = user.id)
-                            call.respondRedirect("/")
-                        }
                     }
                 }
             }
-        }
+
+            route("/{id}") {
+                get {
+                    val user = userService.user(requireSession().userId)
+                    val budgetId = call.parameters.getOrFail("id")
+                    val budgets = budgetService.budgetsForUser(userId = user.id).toMutableList()
+                    val budget = budgets.firstOrNull { it.id == budgetId }
+                        ?: run {
+                            call.respond(MustacheContent("404.mustache", NotFoundPage))
+                            return@get
+                        }
+                    val numberFormat = NumberFormat.getCurrencyInstance(Locale.US)
+                    val categories = categoryService.categories(budgetIds = listOf(budget.id), userId = user.id)
+                        .map { category ->
+                            val categoryBalance =
+                                abs(transactionService.sum(categoryId = category.id, userId = user.id))
+                            CategoryWithBalanceResponse(
+                                category = category,
+                                amountLabel = category.amount.toCurrencyString(numberFormat),
+                                balance = categoryBalance,
+                                balanceLabel = categoryBalance.toCurrencyString(numberFormat),
+                                remainingAmountLabel = (category.amount - categoryBalance).toCurrencyString(
+                                    numberFormat
+                                )
+                            )
+                        }
+                        .toMutableSet()
+                    val incomeCategories = categories.extractIf { !it.category.expense && !it.category.archived }
+                    val archivedIncomeCategories =
+                        categories.extractIf { !it.category.expense && it.category.archived }
+                    val expenseCategories = categories.extractIf { it.category.expense && !it.category.archived }
+                    val archivedExpenseCategories =
+                        categories.extractIf { it.category.expense && it.category.archived }
+                    val transactions = transactionService.transactions(
+                        budgetIds = listOf(budget.id),
+                        from = call.parameters["from"]?.toInstantOrNull() ?: firstOfMonth,
+                        to = call.parameters["to"]?.toInstantOrNull() ?: endOfMonth,
+                        userId = user.id
+                    )
+                    // TODO: Allow user-configurable locale
+                    val budgetBalance = transactionService.sum(budgetId = budget.id, userId = user.id)
+                        .toCurrencyString(numberFormat)
+                    val expectedIncome = incomeCategories.sumOf { it.category.amount }
+                    val actualIncome = transactions.sumOf { if (it.expense == false) it.amount ?: 0L else 0L }
+                    val expectedExpenses = expenseCategories.sumOf { it.category.amount }
+                    val actualExpenses = transactions.sumOf { if (it.expense == true) it.amount ?: 0L else 0L }
+                    val balances = BudgetBalances(
+                        cashFlow = budgetBalance,
+                        expectedIncome = expectedIncome,
+                        expectedIncomeLabel = expectedIncome.toCurrencyString(numberFormat),
+                        actualIncome = actualIncome,
+                        actualIncomeLabel = actualIncome.toCurrencyString(numberFormat),
+                        expectedExpenses = expectedExpenses,
+                        expectedExpensesLabel = expectedExpenses.toCurrencyString(numberFormat),
+                        actualExpenses = actualExpenses,
+                        actualExpensesLabel = actualExpenses.toCurrencyString(numberFormat),
+                    )
+                    call.respond(
+                        MustacheContent(
+                            "budget-details.mustache", BudgetDetailsPage(
+                                budget = budget,
+                                balances = balances,
+                                incomeCategories = incomeCategories,
+                                expenseCategories = expenseCategories,
+                                archivedIncomeCategories = archivedIncomeCategories,
+                                archivedExpenseCategories = archivedExpenseCategories,
+                                transactionCount = NumberFormat.getNumberInstance(Locale.US)
+                                    .format(transactions.size),
+                                monthAndYear = YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                                budgets = budgets.map { it.toBudgetListItem(budgetId) }.sortedBy { it.name },
+                                user = user
+                            )
+                        )
+                    )
+                }
+
+                route("/edit") {
+                    get {
+                        val user = userService.user(requireSession().userId)
+                        val budget = budgetService.budget(
+                            budgetId = call.parameters.getOrFail("id"),
+                            userId = user.id
+                        )
+                        call.respond(
+                            MustacheContent(
+                                "budget-form.mustache",
+                                BudgetFormPage(
+                                    budget = budget,
+                                    budgets = budgetService.budgetsForUser(user.id)
+                                        .map { it.toBudgetListItem(budget.id) },
+                                    user = user
+                                )
+                            )
+                        )
+                    }
+                }
+
+                route("/delete") {
+                    post {
+                        val user = userService.user(requireSession().userId)
+                        val budgetId = call.parameters.getOrFail("id")
+                        budgetService.delete(budgetId = budgetId, userId = user.id)
+                        call.respondRedirect("/")
+                    }
+                }
+            }
+        }.hide()
     }
 }
 

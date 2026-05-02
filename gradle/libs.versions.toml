@@ -31,7 +31,9 @@ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 ktor-server-forwarded-headers = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
 ktor-server-mustache = { module = "io.ktor:ktor-server-mustache", version.ref = "ktor" }
+ktor-server-routing-openapi = { module = "io.ktor:ktor-server-routing-openapi", version.ref = "ktor" }
 ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
+ktor-server-swagger = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor" }
 ktor-server-test = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mail = { module = "com.sun.mail:javax.mail", version.ref = "mail" }
@@ -46,7 +48,9 @@ ktor-server = [
     "ktor-server-core",
     "ktor-server-cors",
     "ktor-server-forwarded-headers",
-    "ktor-server-sessions"
+    "ktor-server-routing-openapi",
+    "ktor-server-sessions",
+    "ktor-server-swagger"
 ]
 
 [plugins]

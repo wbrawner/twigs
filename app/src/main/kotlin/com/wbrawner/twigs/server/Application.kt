@@ -24,6 +24,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import io.ktor.openapi.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -34,7 +35,10 @@ import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.forwardedheaders.*
+import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.*
 import io.ktor.server.sessions.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
@@ -259,6 +263,14 @@ fun Application.moduleWithDependencies(
     recurringTransactionRoutes(recurringTransactionService)
     transactionRoutes(transactionService)
     userRoutes(userService)
+    routing {
+        swaggerUI("/swagger") {
+            info = OpenApiInfo("Twigs API", "1.0")
+            source = OpenApiDocSource.Routing(ContentType.Application.Json) {
+                routingRoot.descendants()
+            }
+        }
+    }
     webRoutes(budgetService, categoryService, recurringTransactionService, transactionService, userService)
     launch {
         while (currentCoroutineContext().isActive) {
